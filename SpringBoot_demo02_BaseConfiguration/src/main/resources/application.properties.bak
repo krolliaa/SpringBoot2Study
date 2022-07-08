@@ -1,0 +1,7 @@
+#???????
+server.port=80
+#????banner
+spring.main.banner-mode=console
+spring.banner.image.location=1.png
+#????
+logging.level.root=info

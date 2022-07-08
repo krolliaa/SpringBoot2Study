@@ -1,0 +1,30 @@
+country: China
+
+users:
+  name: ZhangSan
+  age: 100
+
+user1:
+  - name: LiSi
+    age: 11
+  - name: WangWu
+    age: 22
+
+likes: [game,music,sleep]
+
+likes1:
+  - game
+  - music
+  - sleep
+
+server:
+  port: 80
+
+baseDir: c:\windows
+tmpDir: ${baseDir}\temp
+
+datasource:
+  driver: com.mysql.cj.jdbc.Driver
+  url: jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=Asia/Shanghai
+  username: root
+  password: 123456
