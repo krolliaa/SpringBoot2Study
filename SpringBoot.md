@@ -355,3 +355,140 @@ class SpringBootDemo03JUnitApplicationTests {
 ```
 
 该测试类的位置需要在引导类所在的包或者子包下，否则需要设置`@SpringBootTest(classes = Application.class)`指定配置类【其实这种情况就是默认省略掉了而已】。
+
+### 整合`MyBatis`
+
+- 核心配置：数据库连接相关信息（连谁？连什么？）
+- 配置方式：注解还是配置文件
+
+创建项目时选择了`SQL --> MyBatis Framework + MySQL Driver`，在`pom.xml`中发生了一些变化：
+
+```xml
+<dependency>
+    <groupId>org.mybatis.spring.boot</groupId>
+    <artifactId>mybatis-spring-boot-starter</artifactId>
+    <version>2.2.2</version>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+配置`application.yml`：
+
+```yaml
+#配置MyBatis相关信息
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+```
+
+创建`Book`实体类：
+
+```java
+package com.kk.pojo;
+
+public class Book {
+    private Integer id;
+    private String type;
+    private String name;
+    private String description;
+
+    public Book() {
+    }
+
+    public Book(Integer id, String type, String name, String description) {
+        this.id = id;
+        this.type = type;
+        this.name = name;
+        this.description = description;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", type='" + type + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
+}
+```
+
+创建`BookDao`类：
+
+```java
+package com.kk.dao;
+
+import com.kk.pojo.Book;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+@Mapper
+public interface BookDao {
+    @Select("select * from tbl_book where id = ${id}")
+    public abstract Book getById(Integer id);
+}
+```
+
+创建测试类：
+
+```java
+package com.kk;
+
+import com.kk.dao.BookDao;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class SpringBootDemo04MyBatisApplicationTests {
+
+    @Autowired
+    private BookDao bookDao;
+
+    @Test
+    void contextLoads() {
+        System.out.println(bookDao.getById(1));
+    }
+}
+```
+
