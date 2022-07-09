@@ -684,3 +684,206 @@ class SpringBootDemo06DruidApplicationTests {
 }
 ```
 
+## `SSMP`整合案例
+
+- 实体类开发：使用`Lombok`快速制作实体类
+- `Dao`开发：整合`MyBatisPlus`，进行数据层测试类
+- `Service`开发：基于`MyBatisPlus`进行增量开发，使用`PostMan`测试接口功能
+- `Controller`开发：基于`Restful`开发，使用`PostMan`测试接口功能
+- `Controller`开发：前后端开发协议制作
+- 页面开发：基于`Vue+Element`制作，前后端联调，页面数据处理，页面消息处理
+  - 列表、增删改查、分页
+- 项目异常处理
+- 按条件查询：页面功能调整、`Controller`修正功能、`Service`修正功能
+
+1. 创建该模块`SpringBoot_demo07_SSMP`，配置好`pom.xml`和`application.yml`
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+       <modelVersion>4.0.0</modelVersion>
+       <parent>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-parent</artifactId>
+           <version>2.7.1</version>
+           <relativePath/> <!-- lookup parent from repository -->
+       </parent>
+       <groupId>com.kk</groupId>
+       <artifactId>SpringBoot_demo07_SSMP</artifactId>
+       <version>0.0.1-SNAPSHOT</version>
+       <properties>
+           <java.version>1.8</java.version>
+       </properties>
+       <dependencies>
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-web</artifactId>
+           </dependency>
+           <dependency>
+               <groupId>org.projectlombok</groupId>
+               <artifactId>lombok</artifactId>
+           </dependency>
+           <dependency>
+               <groupId>com.baomidou</groupId>
+               <artifactId>mybatis-plus-boot-starter</artifactId>
+               <version>3.5.2</version>
+           </dependency>
+           <dependency>
+               <groupId>com.alibaba</groupId>
+               <artifactId>druid-spring-boot-starter</artifactId>
+               <version>1.2.11</version>
+           </dependency>
+           <dependency>
+               <groupId>mysql</groupId>
+               <artifactId>mysql-connector-java</artifactId>
+               <scope>runtime</scope>
+           </dependency>
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-test</artifactId>
+               <scope>test</scope>
+           </dependency>
+       </dependencies>
+   
+       <build>
+           <plugins>
+               <plugin>
+                   <groupId>org.springframework.boot</groupId>
+                   <artifactId>spring-boot-maven-plugin</artifactId>
+               </plugin>
+           </plugins>
+       </build>
+   
+   </project>
+   ```
+
+   ```yaml
+   server:
+     port: 80
+   spring:
+     datasource:
+       druid:
+         driver-class-name: com.mysql.cj.jdbc.Driver
+         url: jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=Asia/Shanghai
+         username: root
+         password: 123456
+   mybatis-plus:
+     global-config:
+       db-config:
+         table-prefix: tbl_
+   ```
+
+2. 使用`lombok`快速开发实体类：
+
+   `SpringBoot`已经集合了`lombok`，所以不用添加版本也是可以的
+
+   ```java
+   package com.kk.pojo;
+   
+   import lombok.*;
+   
+   @Data
+   @NoArgsConstructor
+   @AllArgsConstructor
+   public class Book {
+       private Integer id;
+       private String type;
+       private String name;
+       private String description;
+   }
+   ```
+
+3. 测试整合`MyBatisPlus`、`BookMapper`
+
+   ```java
+   package com.kk.mapper;
+   
+   import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+   import com.kk.pojo.Book;
+   import org.apache.ibatis.annotations.Mapper;
+   
+   @Mapper
+   public interface BookMapper extends BaseMapper<Book> {
+   }
+   ```
+
+   ```java
+   package com.kk;
+   
+   import com.kk.mapper.BookMapper;
+   import com.kk.pojo.Book;
+   import org.junit.jupiter.api.Test;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.boot.test.context.SpringBootTest;
+   
+   import java.util.List;
+   
+   @SpringBootTest
+   class SpringBootDemo07SsmpApplicationTests {
+   
+       @Autowired
+       private BookMapper bookMapper;
+   
+       @Test
+       void contextLoads() {
+       }
+   
+       @Test
+       void testSelectById() {
+           Book book = bookMapper.selectById(10);
+           System.out.println(book);
+       }
+   
+       @Test
+       void testSelectAll() {
+           List<Book> bookList = bookMapper.selectList(null);
+           bookList.stream().forEach(System.out::println);
+       }
+   
+       @Test
+       void testAddBook() {
+           Book book = new Book();
+           book.setType("Java");
+           book.setName("《Java 核心技术卷》");
+           book.setDescription("Java 秘器");
+           bookMapper.insert(book);
+       }
+   
+       @Test
+       void testDeleteBook() {
+           bookMapper.deleteById(36);
+       }
+   
+       @Test
+       void testUpdateBook() {
+           Book book = new Book();
+           book.setId(36);
+           book.setType("JavaEE");
+           book.setName("《Java 核心技术卷》");
+           book.setDescription("Java 秘器");
+           bookMapper.update(book, null);
+       }
+   }
+   ```
+
+   配置文件：
+
+   ```yaml
+   server:
+     port: 80
+   spring:
+     datasource:
+       druid:
+         driver-class-name: com.mysql.cj.jdbc.Driver
+         url: jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=Asia/Shanghai
+         username: root
+         password: 123456
+   mybatis-plus:
+     global-config:
+       db-config:
+         table-prefix: tbl_
+         id-type: auto
+   ```
+
+   
