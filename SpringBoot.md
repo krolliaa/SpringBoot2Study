@@ -628,3 +628,59 @@ mybatis-plus:
       table-prefix: tbl_
 ```
 
+### 整合`Druid`
+
+导入必要的坐标：
+
+```xml
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid-spring-boot-starter</artifactId>
+    <version>1.2.11</version>
+</dependency>
+```
+
+配置`application.yml`文件：
+
+```yaml
+spring:
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=Asia/Shanghai
+      username: root
+      password: 123456
+mybatis-plus:
+  global-config:
+    db-config:
+      table-prefix: tbl_
+```
+
+创建实体类【直接复制粘贴】
+
+创建`BookDao`【直接复制粘贴】
+
+测试
+
+```java
+package com.kk;
+
+import com.kk.dao.BookDao;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class SpringBootDemo06DruidApplicationTests {
+
+    @Autowired
+    private BookDao bookDao;
+
+    @Test
+    void contextLoads() {
+        System.out.println(bookDao.selectById(10));
+    }
+
+}
+```
+
