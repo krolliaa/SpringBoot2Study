@@ -492,3 +492,139 @@ class SpringBootDemo04MyBatisApplicationTests {
 }
 ```
 
+### 整合`MyBatis-Plus`
+
+手动导入必要的坐标【`SpringBoot`没有整合】：
+
+```xml
+<!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter -->
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-boot-starter</artifactId>
+    <version>3.5.2</version>
+</dependency>
+```
+
+创建`Book`实体类：
+
+```java
+package com.kk.pojo;
+
+public class Book {
+    private Integer id;
+    private String type;
+    private String name;
+    private String description;
+
+    public Book() {
+    }
+
+    public Book(Integer id, String type, String name, String description) {
+        this.id = id;
+        this.type = type;
+        this.name = name;
+        this.description = description;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", type='" + type + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
+}
+```
+
+创建`BookDao`【`MyBatisPlus`直接继承`BaseMapper`接口即可】
+
+```java
+package com.kk.dao;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.kk.pojo.Book;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface BookDao extends BaseMapper<Book> {
+}
+```
+
+测试
+
+```java
+package com.kk;
+
+import com.kk.dao.BookDao;
+import com.kk.pojo.Book;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
+
+@SpringBootTest
+class SpringBootDemo05MyBatisPlusApplicationTests {
+
+    @Autowired
+    private BookDao bookDao;
+
+    @Test
+    void contextLoads() {
+        Book book = bookDao.selectById(12);
+        System.out.println(book);
+        List<Book> bookList = bookDao.selectList(null);
+        System.out.println(bookList);
+    }
+}
+```
+
+`yaml`配置
+
+```yaml
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+mybatis-plus:
+  global-config:
+    db-config:
+      table-prefix: tbl_
+```
+
