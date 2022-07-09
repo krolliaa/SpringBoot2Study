@@ -886,4 +886,25 @@ class SpringBootDemo06DruidApplicationTests {
          id-type: auto
    ```
 
+4. 配置日志信息`application.yml`：
+
+   ```yaml
+   server:
+     port: 80
+   spring:
+     datasource:
+       druid:
+         driver-class-name: com.mysql.cj.jdbc.Driver
+         url: jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=Asia/Shanghai
+         username: root
+         password: 123456
+   mybatis-plus:
+     global-config:
+       db-config:
+         table-prefix: tbl_
+         id-type: auto
+     configuration:
+       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+   ```
+
    
