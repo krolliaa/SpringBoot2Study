@@ -260,6 +260,76 @@ public String getYml() {
     password: 123456
   ```
 
+  封装类如下：
+  
+  ```java
+  package com.kk.pojo;
+  
+  import org.springframework.boot.context.properties.ConfigurationProperties;
+  import org.springframework.stereotype.Component;
+  
+  @Component
+  @ConfigurationProperties(prefix = "datasource")
+  public class MyDataSource {
+      private String driver;
+      private String url;
+      private String username;
+      private String password;
+  
+      public MyDataSource() {
+      }
+  
+      public MyDataSource(String driver, String url, String username, String password) {
+          this.driver = driver;
+          this.url = url;
+          this.username = username;
+          this.password = password;
+      }
+  
+      public String getDriver() {
+          return driver;
+      }
+  
+      public void setDriver(String driver) {
+          this.driver = driver;
+      }
+  
+      public String getUrl() {
+          return url;
+      }
+  
+      public void setUrl(String url) {
+          this.url = url;
+      }
+  
+      public String getUsername() {
+          return username;
+      }
+  
+      public void setUsername(String username) {
+          this.username = username;
+      }
+  
+      public String getPassword() {
+          return password;
+      }
+  
+      public void setPassword(String password) {
+          this.password = password;
+      }
+  
+      @Override
+      public String toString() {
+          return "MyDataSource{" +
+                  "driver='" + driver + '\'' +
+                  ", url='" + url + '\'' +
+                  ", username='" + username + '\'' +
+                  ", password='" + password + '\'' +
+                  '}';
+      }
+  }
+  ```
+  
   ```java
   package com.kk.controller;
   
@@ -311,7 +381,7 @@ public String getYml() {
       }
   }
   ```
-
+  
   ```java
   @Autowired
   private MyDataSource myDataSource;
@@ -321,7 +391,7 @@ public String getYml() {
       return myDataSource.toString();
   }
   ```
-
+  
   注意这里的`@ConfigurationProperties(prefix = "")`注解中的`prefix`属性值需要全部小写，否则会报错。
 
 ## 整合第三方技术
@@ -330,7 +400,17 @@ public String getYml() {
 
 ### 整合`JUnit`
 
-`@SpringBootTest`帮我们完成了测试任务，只需要导入对象即可使用。
+导入依赖：
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+`@SpringBootTest`和`@Test`帮我们完成了测试任务，只需要导入对象即可使用。
 
 ```java
 package com.kk;
@@ -946,4 +1026,21 @@ class SpringBootDemo06DruidApplicationTests {
 
    出现了`LIMIT`关键字表示分页功能正常使用了。
 
-   
+6. 按条件查询
+
+   `MyBatisPlus`中的查询条件都是使用条件包装器完成的：`QueryWrapper`
+
+   从`QueryWrapper`升级到`LambdaQueryWrapper`，这两个都可以加条件`condition`【第一个形参】从而判定拼装还是不拼装`where`语句，第二个参数则是指定`column`即哪一列，第三个参数则是指定具体的自定义参数。建议优先使用`LambdaQueryWrapper`因为这个可以解决掉`QueryWrapper`直接传入`column`可能产生的变量名错误的问题。
+
+   ```java
+   @Test
+   void testQueryWrapper() {
+       QueryWrapper<Book> queryWrapper = new QueryWrapper<>();
+       queryWrapper.like("type", "JavaEE");
+       bookMapper.selectList(queryWrapper);
+       //也可以使用 LambdaQueryWrapper 解决变量名出错的问题
+       //还可以使用 condition ，如果变量为 null 则不使用条件查询
+       String type = "JavaEE";
+       LambdaQueryWrapper<Book> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+       lambdaQueryWrapper.like(type != null, Book::getType, type);
+   }

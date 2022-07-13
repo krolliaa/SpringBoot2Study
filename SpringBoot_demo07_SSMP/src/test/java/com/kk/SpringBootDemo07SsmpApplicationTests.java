@@ -1,5 +1,7 @@
 package com.kk;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kk.mapper.BookMapper;
@@ -56,5 +58,17 @@ class SpringBootDemo07SsmpApplicationTests {
         book.setName("《Java 核心技术卷》");
         book.setDescription("Java 秘器");
         bookMapper.update(book, null);
+    }
+
+    @Test
+    void testQueryWrapper() {
+        QueryWrapper<Book> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("type", "JavaEE");
+        bookMapper.selectList(queryWrapper);
+        //也可以使用 LambdaQueryWrapper 解决变量名出错的问题
+        //还可以使用 condition ，如果变量为 null 则不使用条件查询
+        String type = "JavaEE";
+        LambdaQueryWrapper<Book> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.like(type != null, Book::getType, type);
     }
 }
