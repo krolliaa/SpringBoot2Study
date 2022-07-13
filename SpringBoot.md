@@ -907,4 +907,43 @@ class SpringBootDemo06DruidApplicationTests {
        log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
    ```
 
+5. 完成分页功能
+
+   - 需要使用配置拦截器`com.kk.config.MyBatisPlusConfig`
+
+     ```java
+     package com.kk.config;
+     
+     import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+     import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+     import org.springframework.context.annotation.Bean;
+     import org.springframework.context.annotation.Configuration;
+     
+     @Configuration
+     public class MyBatisPlusPageConfig {
+         @Bean
+         public MybatisPlusInterceptor mybatisPlusInterceptor() {
+             MybatisPlusInterceptor mybatisPlusInterceptor = new MybatisPlusInterceptor();
+             mybatisPlusInterceptor.addInnerInterceptor(new PaginationInnerInterceptor());
+             return mybatisPlusInterceptor;
+         }
+     }
+     ```
+
+   - 测试分页功能
+
+     ```java
+     @Test
+     void contextLoads() {
+         IPage iPage = new Page(2, 5);
+         bookMapper.selectPage(iPage, null);
+     }
+     ```
+
+   因为之前在`application.yaml`中配置了日志功能，所以可以看见`SQL`语句：
+
+   `Preparing: SELECT id,type,name,description FROM tbl_book LIMIT ?,?`
+
+   出现了`LIMIT`关键字表示分页功能正常使用了。
+
    

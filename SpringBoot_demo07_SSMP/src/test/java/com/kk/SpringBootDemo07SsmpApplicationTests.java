@@ -1,5 +1,7 @@
 package com.kk;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kk.mapper.BookMapper;
 import com.kk.pojo.Book;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,8 @@ class SpringBootDemo07SsmpApplicationTests {
 
     @Test
     void contextLoads() {
+        IPage iPage = new Page(2, 5);
+        bookMapper.selectPage(iPage, null);
     }
 
     @Test
