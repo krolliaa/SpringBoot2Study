@@ -1044,3 +1044,71 @@ class SpringBootDemo06DruidApplicationTests {
        LambdaQueryWrapper<Book> lambdaQueryWrapper = new LambdaQueryWrapper<>();
        lambdaQueryWrapper.like(type != null, Book::getType, type);
    }
+
+7. 业务层开发
+
+   接口层`BookService`：
+
+   ```java
+   package com.kk.service;
+   
+   import com.kk.pojo.Book;
+   
+   import java.util.List;
+   
+   public interface BookService {
+       Boolean save(Book book);
+       Boolean update(Book book);
+       Boolean delete(Integer id);
+       Book getBookById(Integer id);
+       List<Book> getAll();
+   }
+   ```
+
+   接口层实现类`BookServiceImpl`：
+
+   ```java
+   package com.kk.service.impl;
+   
+   import com.kk.mapper.BookMapper;
+   import com.kk.pojo.Book;
+   import com.kk.service.BookService;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.stereotype.Service;
+   
+   import java.util.List;
+   
+   @Service
+   public class BookServiceImpl implements BookService {
+   
+       @Autowired
+       private BookMapper bookMapper;
+   
+       @Override
+       public Boolean save(Book book) {
+           return bookMapper.insert(book) > 0;
+       }
+   
+       @Override
+       public Boolean update(Book book) {
+           return bookMapper.updateById(book) > 0;
+       }
+   
+       @Override
+       public Boolean delete(Integer id) {
+           return bookMapper.deleteById(id) > 0;
+       }
+   
+       @Override
+       public Book getBookById(Integer id) {
+           return bookMapper.selectById(id);
+       }
+   
+       @Override
+       public List<Book> getAll() {
+           return bookMapper.selectList(null);
+       }
+   }
+   ```
+
+   
