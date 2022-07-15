@@ -1111,4 +1111,38 @@ class SpringBootDemo06DruidApplicationTests {
    }
    ```
 
+   测试类：
+
+   ```java
+   package com.kk;
    
+   import com.baomidou.mybatisplus.core.metadata.IPage;
+   import com.kk.pojo.Book;
+   import com.kk.service.impl.BookServiceImpl;
+   import org.junit.jupiter.api.Test;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.boot.test.context.SpringBootTest;
+   
+   @SpringBootTest
+   public class TestService {
+   
+       @Autowired
+       private BookServiceImpl bookService;
+   
+       @Test
+       void testGetById() {
+           System.out.println(bookService.getBookById(1));
+       }
+   
+       @Test
+       void TestPage() {
+           IPage<Book> iPage = bookService.getPage(2, 10);
+           System.out.println(iPage.getCurrent());//获取当前页
+           System.out.println(iPage.getSize());//获取当前条数
+           System.out.println(iPage.getTotal());//获取总条数
+           System.out.println(iPage.getRecords());//获取得到的记录
+       }
+   }
+   ```
+
+   之前写这个现在写这个，都写吐了，换个`pojo`实体类还是这样写，难道就没有什么可以让这个开发更快速，大大提高效率的工具吗？肯定是有的，那就是**使用`MyBatisPlus`自动化开发**。
