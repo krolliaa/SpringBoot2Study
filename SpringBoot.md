@@ -1276,4 +1276,134 @@ class SpringBootDemo06DruidApplicationTests {
    GET http://localhost/books/1/10
    ```
 
-   
+10. 解决表现层消息一致性问题
+
+    传递给前端的数据有`JSON`数组，有单个`JSON`数据，还有`Boolean`值，还有分页查询返回的格式。这使得传递给前端的消息格式显得乱七八糟，有没有什么办法可以**统一一个格式**发送给前端呢？
+
+    不是要统一吗？本来我们全部加个`data`，把数据都放到`data`里头，那如果数据返回的是`null`如何处理？
+
+    因为这个`"data":null`有两种情况：
+
+    1. 表示没有返回数据导致返回`null`
+    2.  表示中途出现异常导致返回`null`
+
+    所以为了分辨这两种情况，我们有必要还需要加上`flag`标志位，来辨别到底成功了还是失败了。如下图：
+
+    ![](https://img-blog.csdnimg.cn/3fd0e684cd9e42a4a9ade9d933ef121c.png)
+
+    所以我们可以专门封装一个消息模型类用于返回给前端：
+
+    ```java
+    @Data
+    public class R {
+        private Boolean flag;
+        private Object data;
+    }
+    ```
+
+    前端后端都统一使用这个格式传递数据，我们称其为：**<font color="red">前后端数据协议</font>**。
+
+    制作消息协议：
+
+    ```java
+    package com.kk.controller.utils;
+    
+    import lombok.AllArgsConstructor;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class MessageAgreement {
+        private Boolean flag;
+        private Object data;
+    
+        public MessageAgreement(Boolean flag) {
+            this.flag = flag;
+        }
+    }
+    
+    ```
+
+    更改表现层：
+
+    ```java
+    package com.kk.controller;
+    
+    import com.baomidou.mybatisplus.core.metadata.IPage;
+    import com.kk.controller.utils.MessageAgreement;
+    import com.kk.pojo.Book;
+    import com.kk.service.impl.IBookServiceImpl;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.web.bind.annotation.*;
+    
+    import java.util.List;
+    
+    @RestController
+    @RequestMapping("/books")
+    public class BookController2 {
+    
+        @Autowired
+        private IBookServiceImpl iBookService;
+    
+        @GetMapping
+        public MessageAgreement getAll() {
+            return new MessageAgreement(true, iBookService.list());
+        }
+    
+        @PostMapping
+        public MessageAgreement save(@RequestBody Book book) {
+            return new MessageAgreement(iBookService.save(book));
+        }
+    
+        @PutMapping
+        public MessageAgreement update(@RequestBody Book book) {
+            return new MessageAgreement(iBookService.updateById(book));
+        }
+    
+        @DeleteMapping(value = "/{id}")
+        public MessageAgreement delete(@PathVariable Integer id) {
+            return new MessageAgreement(iBookService.removeById(id));
+        }
+    
+        @GetMapping(value = "/{id}")
+        public MessageAgreement getById(@PathVariable Integer id) {
+            return new MessageAgreement(true, iBookService.getById(id));
+        }
+    
+        @GetMapping(value = "/{current}/{pageSize}")
+        public MessageAgreement getPage(@PathVariable Integer current, @PathVariable Integer pageSize) {
+            return new MessageAgreement(true, iBookService.getPage(current, pageSize));
+        }
+    }
+    ```
+
+    使用`Postman`进行测试。
+
+11. 页面开发
+
+    `MVC`三层已经开发完毕，现在只剩下页面开发。现在常用的就是前后端分离，前端服务器向后端服务器索要数据，后端服务器向数据库要数据，后端服务器从前端服务器获取数据。为了简化开发，这里使用单体服务器来完成该项演示。
+
+    静态页面全部放置到`resources/static`目录中【拷贝即可】【`Maven clean`然后重启服务器】。
+
+    【注：如果服务器被占用在`cmd`使用：`netstat -ano | findstr "80" + taskkill /pid xxxxx /F`解除占用即可】
+
+    访问页面：`http://localhost/pages/books.html`
+
+    修改`books.html`从后端获取数据：
+
+    ```html
+    //钩子函数，VUE对象初始化完成后自动执行
+    created() {
+        this.getAll();
+    },
+    methods: {
+        //列表
+        getAll() {
+            axios.get("/books").then((res)=>{
+                console.log(res.data)
+            })
+        },
+    }
+    ```
