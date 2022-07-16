@@ -1380,3 +1380,30 @@ class SpringBootDemo06DruidApplicationTests {
     ```
 
     使用`Postman`进行测试。
+
+11. 页面开发
+
+    `MVC`三层已经开发完毕，现在只剩下页面开发。现在常用的就是前后端分离，前端服务器向后端服务器索要数据，后端服务器向数据库要数据，后端服务器从前端服务器获取数据。为了简化开发，这里使用单体服务器来完成该项演示。
+
+    静态页面全部放置到`resources/static`目录中【拷贝即可】【`Maven clean`然后重启服务器】。
+
+    【注：如果服务器被占用在`cmd`使用：`netstat -ano | findstr "80" + taskkill /pid xxxxx /F`解除占用即可】
+
+    访问页面：`http://localhost/pages/books.html`
+
+    修改`books.html`从后端获取数据：
+
+    ```html
+    //钩子函数，VUE对象初始化完成后自动执行
+    created() {
+        this.getAll();
+    },
+    methods: {
+        //列表
+        getAll() {
+            axios.get("/books").then((res)=>{
+                console.log(res.data)
+            })
+        },
+    }
+    ```
