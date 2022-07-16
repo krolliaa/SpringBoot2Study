@@ -1276,4 +1276,107 @@ class SpringBootDemo06DruidApplicationTests {
    GET http://localhost/books/1/10
    ```
 
-   
+10. 解决表现层消息一致性问题
+
+    传递给前端的数据有`JSON`数组，有单个`JSON`数据，还有`Boolean`值，还有分页查询返回的格式。这使得传递给前端的消息格式显得乱七八糟，有没有什么办法可以**统一一个格式**发送给前端呢？
+
+    不是要统一吗？本来我们全部加个`data`，把数据都放到`data`里头，那如果数据返回的是`null`如何处理？
+
+    因为这个`"data":null`有两种情况：
+
+    1. 表示没有返回数据导致返回`null`
+    2.  表示中途出现异常导致返回`null`
+
+    所以为了分辨这两种情况，我们有必要还需要加上`flag`标志位，来辨别到底成功了还是失败了。如下图：
+
+    ![](https://img-blog.csdnimg.cn/3fd0e684cd9e42a4a9ade9d933ef121c.png)
+
+    所以我们可以专门封装一个消息模型类用于返回给前端：
+
+    ```java
+    @Data
+    public class R {
+        private Boolean flag;
+        private Object data;
+    }
+    ```
+
+    前端后端都统一使用这个格式传递数据，我们称其为：**<font color="red">前后端数据协议</font>**。
+
+    制作消息协议：
+
+    ```java
+    package com.kk.controller.utils;
+    
+    import lombok.AllArgsConstructor;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class MessageAgreement {
+        private Boolean flag;
+        private Object data;
+    
+        public MessageAgreement(Boolean flag) {
+            this.flag = flag;
+        }
+    }
+    
+    ```
+
+    更改表现层：
+
+    ```java
+    package com.kk.controller;
+    
+    import com.baomidou.mybatisplus.core.metadata.IPage;
+    import com.kk.controller.utils.MessageAgreement;
+    import com.kk.pojo.Book;
+    import com.kk.service.impl.IBookServiceImpl;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.web.bind.annotation.*;
+    
+    import java.util.List;
+    
+    @RestController
+    @RequestMapping("/books")
+    public class BookController2 {
+    
+        @Autowired
+        private IBookServiceImpl iBookService;
+    
+        @GetMapping
+        public MessageAgreement getAll() {
+            return new MessageAgreement(true, iBookService.list());
+        }
+    
+        @PostMapping
+        public MessageAgreement save(@RequestBody Book book) {
+            return new MessageAgreement(iBookService.save(book));
+        }
+    
+        @PutMapping
+        public MessageAgreement update(@RequestBody Book book) {
+            return new MessageAgreement(iBookService.updateById(book));
+        }
+    
+        @DeleteMapping(value = "/{id}")
+        public MessageAgreement delete(@PathVariable Integer id) {
+            return new MessageAgreement(iBookService.removeById(id));
+        }
+    
+        @GetMapping(value = "/{id}")
+        public MessageAgreement getById(@PathVariable Integer id) {
+            return new MessageAgreement(true, iBookService.getById(id));
+        }
+    
+        @GetMapping(value = "/{current}/{pageSize}")
+        public MessageAgreement getPage(@PathVariable Integer current, @PathVariable Integer pageSize) {
+            return new MessageAgreement(true, iBookService.getPage(current, pageSize));
+        }
+    }
+    ```
+
+    使用`Postman`进行测试。
