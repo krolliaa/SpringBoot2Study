@@ -1146,3 +1146,44 @@ class SpringBootDemo06DruidApplicationTests {
    ```
 
    之前写这个现在写这个，都写吐了，换个`pojo`实体类还是这样写，难道就没有什么可以让这个开发更快速，大大提高效率的工具吗？肯定是有的，那就是**使用`MyBatisPlus`自动化开发**。
+   
+8. 使用`MyBatisPlus`对业务层接口进行快速开发
+
+   定义`IBookService`继承`IService<>`
+
+   ```java
+   package com.kk.service;
+   
+   import com.baomidou.mybatisplus.extension.service.IService;
+   import com.kk.pojo.Book;
+   
+   public interface IBookService extends IService<Book> {
+   }
+   ```
+
+   定义实现类`IBookServiceImpl`继承`ServiceImpl`
+
+   ```java
+   package com.kk.service.impl;
+   
+   import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+   import com.kk.mapper.BookMapper;
+   import com.kk.pojo.Book;
+   import com.kk.service.IBookService;
+   
+   public class IBookServiceImpl extends ServiceImpl<BookMapper, Book> implements IBookService {
+   }
+   ```
+
+   测试类：
+
+   ```java
+   @Test
+   void testMyBatisPlusService() {
+       iBookService.getById(11);
+   }
+   ```
+
+   如果原本的功能不满足需求，可以在原本已经有的功能上做追加，尽量就是不要去重写【改变方法体内容】，可以做重载【同名不同参】也可以重新写一个另外所需要的功能封装成一个方法。
+
+   最好是不要覆盖`ServiceImpl`中的方法，否则你用这个就失去了其意义所在。
