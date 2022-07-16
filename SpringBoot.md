@@ -1187,3 +1187,93 @@ class SpringBootDemo06DruidApplicationTests {
    如果原本的功能不满足需求，可以在原本已经有的功能上做追加，尽量就是不要去重写【改变方法体内容】，可以做重载【同名不同参】也可以重新写一个另外所需要的功能封装成一个方法。
 
    最好是不要覆盖`ServiceImpl`中的方法，否则你用这个就失去了其意义所在。
+
+9. 开发表现层 ===> `Controller`层
+
+   - 基于`Restful`进行表现层接口开发
+   - 使用`Postman`测试表现层接口功能
+
+   `BookController`表现层开发：
+
+   ```java
+   package com.kk.controller;
+   
+   import com.baomidou.mybatisplus.core.metadata.IPage;
+   import com.kk.pojo.Book;
+   import com.kk.service.impl.IBookServiceImpl;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.web.bind.annotation.*;
+   
+   import java.util.List;
+   
+   @RestController
+   @RequestMapping("/books")
+   public class BookController {
+   
+       @Autowired
+       private IBookServiceImpl iBookService;
+   
+       @GetMapping
+       public List<Book> getAll() {
+           return iBookService.list();
+       }
+   
+       @PostMapping
+       public Boolean save(@RequestBody Book book) {
+           return iBookService.save(book);
+       }
+   
+       @PutMapping
+       public Boolean update(@RequestBody Book book) {
+           return iBookService.updateById(book);
+       }
+   
+       @DeleteMapping(value = "/{id}")
+       public Boolean delete(@PathVariable Integer id) {
+           return iBookService.removeById(id);
+       }
+   
+       @GetMapping(value = "/{id}")
+       public Book getById(@PathVariable Integer id) {
+           return iBookService.getById(id);
+       }
+   
+       @GetMapping(value = "/{current}/{pageSize}")
+       public IPage<Book> getPage(@PathVariable Integer current, @PathVariable Integer pageSize) {
+           return iBookService.getPage(current, pageSize);
+       }
+   }
+   ```
+
+   `Postman`测试接口是否正常：
+
+   ```java
+   查询功能：
+   GET http://localhost/books
+   GET http://localhost/books/1
+   
+   增加功能：
+   POST JSON http://localhost/books
+   {
+       "type": "测试数据1",
+       "name": "测试数据2",
+       "description": "测试数据3"
+   }
+   
+   删除功能：
+   DELETE JSON http://localhost/books/37
+   
+   修改功能：
+   PUT JSON http://localhost/books
+   {
+       "id": "37",
+       "type": "测试数据1111111111111",
+       "name": "测试数据2",
+       "description": "测试数据3"
+   }
+   
+   分页查询：
+   GET http://localhost/books/1/10
+   ```
+
+   
