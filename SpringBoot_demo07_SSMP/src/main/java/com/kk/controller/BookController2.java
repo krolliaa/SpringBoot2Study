@@ -16,6 +16,7 @@ public class BookController2 {
 
     @GetMapping
     public MessageAgreement getAll() {
+        //模拟添加失败的情况：return new MessageAgreement(false);
         return new MessageAgreement(true, iBookService.list());
     }
 
