@@ -1,13 +1,11 @@
 package com.kk.controller;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.kk.controller.utils.MessageAgreement;
 import com.kk.pojo.Book;
 import com.kk.service.impl.IBookServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/books")
