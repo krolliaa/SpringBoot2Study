@@ -6,6 +6,8 @@ import com.kk.service.impl.IBookServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 
 @RestController
 @RequestMapping("/books")
@@ -21,8 +23,10 @@ public class BookController2 {
     }
 
     @PostMapping
-    public MessageAgreement save(@RequestBody Book book) {
-        return new MessageAgreement(iBookService.save(book));
+    public MessageAgreement save(@RequestBody Book book) throws Exception {
+        if(book.getName().equals("11")) throw new Exception();
+        Boolean flag = iBookService.save(book);
+        return new MessageAgreement(flag, null, flag ? "添加成功！" : "添加失败！");
     }
 
     @PutMapping
