@@ -32,6 +32,7 @@ public class BookController2 {
 
     @DeleteMapping(value = "/{id}")
     public MessageAgreement delete(@PathVariable Integer id) {
+        //模拟删除失败的情况：return new MessageAgreement(false);
         return new MessageAgreement(iBookService.removeById(id));
     }
 
