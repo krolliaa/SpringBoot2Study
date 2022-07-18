@@ -1393,7 +1393,7 @@ class SpringBootDemo06DruidApplicationTests {
 
     修改`books.html`从后端获取数据：
 
-    ```html
+    ```java
     //钩子函数，VUE对象初始化完成后自动执行
     created() {
         this.getAll();
@@ -1405,5 +1405,601 @@ class SpringBootDemo06DruidApplicationTests {
                 console.log(res.data)
             })
         },
+    }
+    ```
+
+    加载数据到页面中，从`el-table`标签中可以看到页面显示的数据都保存在`dataList`中所以需要在页面加载的时候就往`dataList`中填充数据，填充如下：
+
+    ```java
+    //钩子函数，VUE对象初始化完成后自动执行
+    created() {
+        this.getAll();
+    },
+    methods: {
+        //列表
+        getAll() {
+            axios.get("/books").then((res)=>{
+                console.log(res.data);
+                this.dataList = res.data.data;
+            })
+        },
+    }
+    ```
+
+12. 完成页面之增加图书功能
+
+    通过观察新增标签弹层可以看到标签弹层是通过`dialogFormVisible`来调控的，默认该变量的值为`false`，并且当我们点击**新增按钮**时，会调用`handleCreate()`方法，所以我们需要在该方法中将`dialogFormVisible()`设置为`true`，使其显示新增的弹层。
+
+    ```html
+    <!-- 新增标签弹层 -->
+    <div class="add-form">
+        <el-dialog title="新增图书" :visible.sync="dialogFormVisible">
+            <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right" label-width="100px">
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="图书类别" prop="type">
+                            <el-input v-model="formData.type"/>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="图书名称" prop="name">
+                            <el-input v-model="formData.name"/>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="24">
+                        <el-form-item label="描述">
+                            <el-input v-model="formData.description" type="textarea"></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="cancel()">取消</el-button>
+                <el-button type="primary" @click="handleAdd()">确定</el-button>
+            </div>
+        </el-dialog>
+    </div>
+    ```
+
+    ```javascript
+    //弹出添加窗口
+    handleCreate() {
+        //弹出新增标签弹层 ---> :visible.sync="dialogFormVisible" ---> 默认该变量为 false
+        this.dialogFormVisible = true;
+    }
+    ```
+
+    通过测试可以看到点击新建按钮弹出了新增图书的弹窗：
+
+    ![](https://img-blog.csdnimg.cn/936659fd2f924c97961a8f4360542a85.png)
+
+    接下来就是完成点击确定增添图书的操作了【往后端传数据】：
+
+    通过代码可以看到增添图书弹窗点击取消和确定时分别调用了`cancel`和`handleAdd`两个方法
+
+    ```html
+    <div slot="footer" class="dialog-footer">
+        <el-button @click="cancel()">取消</el-button>
+        <el-button type="primary" @click="handleAdd()">确定</el-button>
+    </div>
+    ```
+
+    先完成简单的`cancel()`方法，当点击取消按钮时`dialogFormVisible`的值会设为`false`，并且弹出提示信息表示操作取消：
+
+    ```javascript
+    //取消
+    cancel() {
+        this.dialogFormVisible = false;
+        this.$message.info("操作取消");
+    },
+    ```
+
+    测试通过。
+
+    现在来看看确定功能，`handleAdd`要写的应该是往后端传递新增图书的数据，这项操作可以通过`axios`发送`Ajax`请求来完成，根据`Restful`规则增加操作我们应该发送的是`Post`请求：
+
+    需要分情况讨论：
+
+    - 一种就是添加成功我们需要关闭掉弹窗然后告诉用户添加数据成功了。
+
+    - 另外一种就是添加失败我们不需要关闭弹窗，但是要告诉用户添加失败了。
+    - 无论成功还是失败最后都需要刷新新的数据
+
+    ```javascript
+    //添加
+    handleAdd() {
+        axios.post("/books", this.formData).then((res) => {
+            //如果添加成功则关闭弹层，刷新页面，告知用户添加成功
+            //console.log(res.data.flag);
+            if (res.data.flag) {
+                this.dialogFormVisible = false;
+                this.$message.success("新增图书成功！");
+            } else {
+                //如果添加失败则不关闭弹层，告知用户添加失败同时刷新页面
+                this.$message.error("新增图书失败！");
+            }
+        }).finally(() => {
+            this.getAll();
+        });
+    },
+    ```
+
+    模拟添加数据失败的情况：更改下后端`BookController`中的代码【记得改回去】
+
+    ```java
+    @PostMapping
+    public MessageAgreement save(@RequestBody Book book) {
+        return new MessageAgreement(false);
+        //return new MessageAgreement(iBookService.save(book));
+    }
+    ```
+
+    因为有缓存的存在，所以我们添加完毕【成功的情况】，当我们再次点开时弹窗会保留我们上一次的数据，所以我们需要在每次弹窗弹出的时候就清空下缓存，我们知道数据都保存在【通过`books.html`页面代码中获取该信息】`formData`中，所以我们可以使用`this.formData = {}`清空掉数据，因为清空数据的功能非常常用所以我们将其封装为`resetForm()`方法。当我们弹窗的时候就清空表格信息：
+
+    ```java
+    //弹出添加窗口
+    handleCreate() {
+        //弹出新增标签弹层 ---> :visible.sync="dialogFormVisible" ---> 默认该变量为 false
+        this.dialogFormVisible = true;
+        //打开窗口就清空数据
+        this.resetForm();
+    },
+    //重置表单
+    resetForm() {
+        this.formData = {};
+    },
+    ```
+
+13. 完成页面之删除图书的功能
+
+    有了添加图书的例子，删除图书的例子就很好做了：
+
+    ```java
+    @DeleteMapping(value = "/{id}")
+    public MessageAgreement delete(@PathVariable Integer id) {
+        //模拟删除失败的情况：return new MessageAgreement(false);
+        return new MessageAgreement(iBookService.removeById(id));
+    }
+    ```
+
+    ```javascript
+    // 删除
+    handleDelete(row) {
+        console.log(row);
+        axios.delete("/books/" + row.id).then((res) => {
+            res.data.flag ? this.$message.success("删除成功！") : this.$message.error("删除失败！");
+        }).finally(() => {
+            this.getAll();
+        })
+    },
+    ```
+
+    但是这样做有一个问题，删除是个很严肃的操作，万一不小心点错了，也删除吗？当然不一定，所以可以使用`this.$confirm("", "", {type:"info}).then(() => {})`先做一个验证，提示用户是否确认删除：
+
+    ```javascript
+    // 删除
+    handleDelete(row) {
+        //console.log(row);
+        //确认是否删除
+        this.$confirm("确认此操作将永久删除记录，是否继续？", "提示", {type: "info"}).then(() => {
+            axios.delete("/books/" + row.id).then((res) => {
+                res.data.flag ? this.$message.success("删除成功！") : this.$message.error("删除失败！");
+            }).finally(() => {
+                this.getAll();
+            });
+        }).catch(() => {
+            this.$message.info("操作取消！");
+        })
+    },
+    ```
+
+14. 完成页面之修改图书的功能
+
+    弹出编辑窗口：
+
+    ```javascript
+    //弹出编辑窗口
+    handleUpdate(row) {
+        //弹出编辑窗口，显示当前行的数据在表格里
+        this.dialogFormVisible4Edit = true;
+        this.formData = row;
+    },
+    ```
+
+    这里有个小问题，因为别人也可能在修改数据，所以最好是不要直接使用`row`里的数据，而是取数据库中查询：
+
+    ```java
+    //弹出编辑窗口
+    handleUpdate(row) {
+        //弹出编辑窗口，显示当前行的数据在表格里
+        //避免脏读，从数据库中获取数据
+        axios.get("/books/" + row.id).then((res) => {
+            if (res.data.flag && (res.data.data != null)) {
+                this.dialogFormVisible4Edit = true;
+                this.formData = res.data.data;
+            } else {
+                this.$message.error("数据同步失败，自动刷新");
+            }
+        }).finally(() => {
+            this.getAll();
+        })
+    },
+    ```
+
+    点击取消按钮时需要关闭弹窗然后显示提示信息，这里需要更改下`cancel()`方法：
+
+    ```javascript
+    //取消
+    cancel() {
+        this.dialogFormVisible = false;
+        this.dialogFormVisible4Edit = false;
+        this.$message.info("操作取消");
+    },
+    ```
+
+    点击确定按钮时需要发送消息：
+
+    ```javascript
+    //修改
+    handleEdit() {
+        axios.put("/books", this.formData).then((res) => {
+            console.log(res);
+            //后续的操作就跟新增图书的操作其实是一致的
+            if (res.data.flag) {
+                this.dialogFormVisible4Edit = false;
+                this.$message.success("修改图书成功！");
+            } else {
+                this.$message.error("修改图书失败！");
+            }
+        }).finally(() => {
+            this.getAll();
+        });
+    },
+    ```
+
+    这就完成了修改图书的功能。
+
+15. 异常消息处理
+
+    开发过程中肯定会有一些`bug`的存在。上述全部代码，如果在前端调用后端接口时发生了异常那么前端就会获取一个全新的数据格式，我们可以举证一下：
+
+    ```java
+    @GetMapping
+    public MessageAgreement getAll() throws IOException {
+        //模拟添加失败的情况：return new MessageAgreement(false);
+        if(true) throw new IOException();
+        return new MessageAgreement(true, iBookService.list());
+    }
+    ```
+
+    使用`Postman`调用测试接口，获取到`JSON`数据如下：
+
+    ```java
+    GET http://localhost/books
+    {
+        "timestamp": "2022-07-17T15:19:25.138+00:00",
+        "status": 500,
+        "error": "Internal Server Error",
+        "path": "/books"
+    }
+    ```
+
+    可以看到这跟我们前面统一的消息协议是完全不符合的，所以就需要有一个专门统一的异常处理，将异常统一成跟原先一样的格式。所以当发生异常的时候必然需要有个东西去管理它，于是我们就拿出了`@RestControllerAdvice`和`@ExceptionHandler`，创建`MyExceptionHandlerAdvice`类：【返回统一消息格式`MessageAgreement`，这里因为需要返回报错信息，所以我们需要在`MessageAgreement`中添加必要的`message`属性】
+
+    所以有必要先更改下`MessageAgreement`类：
+
+    ```java
+    package com.kk.controller.utils;
+    
+    import lombok.AllArgsConstructor;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class MessageAgreement {
+        private Boolean flag;
+        private Object data;
+        private String message;
+    
+        public MessageAgreement(Boolean flag) {
+            this.flag = flag;
+        }
+    
+        public MessageAgreement(Boolean flag, Object data) {
+            this.flag = flag;
+            this.data = data;
+        }
+    
+        public MessageAgreement(String message) {
+            this.flag = false;
+            this.message = message;
+        }
+    }
+    ```
+
+    然后回到统一异常处理类`MyExceptionHandlerAdvice`：
+
+    ```java
+    package com.kk.controller.utils;
+    
+    import org.springframework.web.bind.annotation.ExceptionHandler;
+    import org.springframework.web.bind.annotation.RestControllerAdvice;
+    
+    @RestControllerAdvice
+    public class MyExceptionHandlerAdvice {
+        @ExceptionHandler(value = {Exception.class})
+        public MessageAgreement myExceptionHandler(Exception exception) {
+            exception.printStackTrace();
+            return new MessageAgreement("系统错误，请稍后再试！");
+        }
+    }
+    ```
+
+    修改每一个`controller`方法，使之适应新的`MessageAgreement`类
+
+    这又会有新的问题，以添加为例，如果消息如果在只发生异常时才使用`res.data.message`【后端控制】而在说明操作成功和操作失败时却是在前端控制，为了统一，我们希望将全部都放到后端去【以添加方法`save`为例】：
+
+    ```java
+    @PostMapping
+    public MessageAgreement save(@RequestBody Book book) {
+        Boolean flag = iBookService.save(book);
+        return new MessageAgreement(flag, flag ? "添加成功！" : "添加失败！");
+    }
+    ```
+
+    这里我们还可以再稍微验证下异常的情况【名字为`11`才抛异常】：
+
+    ```java
+    @PostMapping
+    public MessageAgreement save(@RequestBody Book book) throws Exception {
+        if(book.getName().equals("11")) throw new Exception();
+        Boolean flag = iBookService.save(book);
+        return new MessageAgreement(flag, null, flag ? "添加成功！" : "添加失败！");
+    }
+    ```
+
+    然后就是到前端页面，也需要改造下，输出的信息应该都是直接从`res.data.message`中获取【暂时还是现以添加图书为例子，为了方便区分这里先贴出之前的代码】：
+
+    ```javascript
+    //添加
+    handleAdd() {
+        axios.post("/books", this.formData).then((res) => {
+            //如果添加成功则关闭弹层，刷新页面，告知用户添加成功
+            //console.log(res.data.flag);
+            if (res.data.flag) {
+                this.dialogFormVisible = false;
+                this.$message.success("新增图书成功！");
+            } else {
+                //如果添加失败则不关闭弹层，告知用户添加失败同时刷新页面
+                this.$message.error("新增图书失败！");
+            }
+        }).finally(() => {
+            this.getAll();
+        });
+    },
+    ```
+
+    ```java
+    //添加
+    handleAdd() {
+        axios.post("/books", this.formData).then((res) => {
+            //如果添加成功则关闭弹层，刷新页面，告知用户添加成功
+            //console.log(res.data.flag);
+            if (res.data.flag) {
+                this.dialogFormVisible = false;
+                this.$message.success(res.data.message);
+            } else {
+                //如果添加失败则不关闭弹层，告知用户添加失败同时刷新页面
+                this.$message.error(res.data.message);
+            }
+        }).finally(() => {
+            this.getAll();
+        });
+    },
+    ```
+
+    其余的方法更改都是一样的操作，这就不多赘述。
+
+16. 完成分页功能
+
+    前面我们显示页面调用的都是`getAll()`方法，所以为了避免修改的麻烦，我们直接覆盖`getAll()`方法即可：
+
+    从前端页面代码可知关于分页的重要数据`current`和`pageSize`保存在`pagination`中，全部条数保存在：`pagination.total`中：
+
+    ```html
+    <!--分页组件-->
+    <div class="pagination-container">
+        <el-pagination
+                class="pagiantion"
+                @current-change="handleCurrentChange"
+                :current-page="pagination.currentPage"
+                :page-size="pagination.pageSize"
+                layout="total, prev, pager, next, jumper"
+                :total="pagination.total">
+        </el-pagination>
+    </div>
+    ```
+
+    ```javascript
+    //分页查询 ---> 直接覆盖 getAll()
+    getAll() {
+        //调用分页查询接口方法
+        axios.get("/books/" + this.pagination.currentPage + "/" + this.pagination.pageSize)
+            this.pagination.total = res.data.data.total;
+            //展示数据到页面
+            this.dataList = res.data.data.records;
+        });
+    },
+    ```
+
+    点击按钮切换页码功能：
+
+    ```javascript
+    //切换页码
+    handleCurrentChange(currentPage) {
+        //点击页面时切换
+        this.pagination.currentPage = currentPage;
+        this.getAll();
+    },
+    ```
+
+17. 解决分页查询出现的`bug`
+
+    当我们删除最后一页的所有数据，比如说这是第`6`页，但是第`6`页上的记录已经被删完了，可是为什么还是展示在第`6`页呢？这并不合理，这就是一个需要解决的`bug`，此时最大页数为第`5`页，但你却显示了第`6`页，那要如何解决呢？我们就在后端判断下，如果`currentPage`大于了最大页码数，我们就将其转换为最大页码数。
+
+    ```javascript
+    @GetMapping(value = "/{current}/{pageSize}")
+    public MessageAgreement getPage(@PathVariable Integer current, @PathVariable Integer pageSize) {
+        IPage<Book> iPage = iBookService.getPage(current, pageSize);
+        //比较最大页码数和要显示的页码，若最大页码小于则需要将当前页码转为最大页码
+        if(iPage.getPages() < current) {
+            //重新查一遍
+            iPage = iBookService.getPage((int) iPage.getPages(), pageSize);
+        }
+        return new MessageAgreement(true, iPage);
+    }
+    ```
+
+18. 完成按条件查询的功能
+
+    前端条件查询的代码为：【可以看到并没有获取方框值，所以我们需要写上】
+
+    ```html
+    <div class="filter-container">
+        <el-input placeholder="图书类别" style="width: 200px;" class="filter-item"></el-input>
+        <el-input placeholder="图书名称" style="width: 200px;" class="filter-item"></el-input>
+        <el-input placeholder="图书描述" style="width: 200px;" class="filter-item"></el-input>
+        <el-button @click="getAll()" class="dalfBut">查询</el-button>
+        <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+    </div>
+    ```
+
+    为了统一，我们在`pagination`中写：
+
+    ```javascript
+    pagination: {//分页相关模型数据
+        currentPage: 1,//当前页码
+        pageSize: 6,//每页显示的记录数
+        total: 0,//总记录数
+        type: "",//图书类型
+        name: "",//图书名称
+        description: ""//图书描述
+    }
+    ```
+
+    绑定到`html`页面中：
+
+    ```html
+    <div class="filter-container">
+        <el-input placeholder="图书类别" v-model="pagination.type" style="width: 200px;" class="filter-item"></el-input>
+        <el-input placeholder="图书名称" v-model="pagination.name" style="width: 200px;" class="filter-item"></el-input>
+        <el-input placeholder="图书描述" v-model="pagination.description" style="width: 200px;" class="filter-item"></el-input>
+        <el-button @click="getAll()" class="dalfBut">查询</el-button>
+        <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+    </div>
+    ```
+
+    点击查询时使用的也是`getAll()`方法，我们可以在`url`地址中绑定参数，然后我们可以使用`LambdaQueryWrapper`，如果参数为空则不加条件，如果参数不为空则加条件，明确了主根之后，前端要做的就是传递参数，后端要做的就是接收参数判断是否为空从而确定要不要加条件：
+
+    ```javascript
+    //分页查询 ---> 直接覆盖 getAll()
+    getAll() {
+        let param = "?type=" + this.pagination.type;
+        param += "&name=" + this.pagination.name;
+        param += "&description=" + this.pagination.description;
+        let url = "/books/" + this.pagination.currentPage + "/" + this.pagination.pageSize + param;
+        console.log(url);
+        //调用分页查询接口方法
+        axios.get(url).then((res) => {
+            this.pagination.total = res.data.data.total;
+            //展示数据到页面
+            this.dataList = res.data.data.records;
+        });
+        1
+    },
+    ```
+
+    更改表现层代码：
+
+    ```java
+    //分页查询 + 按条件查询
+    @GetMapping(value = "/{current}/{pageSize}")
+    public MessageAgreement getPage(@PathVariable Integer current, @PathVariable Integer pageSize, Book book) {
+        System.out.println(book);
+        IPage<Book> iPage = iBookService.getPage(current, pageSize, book);
+        //比较最大页码数和要显示的页码，若最大页码小于则需要将当前页码转为最大页码
+        if(iPage.getPages() < current) {
+            //重新查一遍
+            iPage = iBookService.getPage((int) iPage.getPages(), pageSize, book);
+        }
+        return new MessageAgreement(true, iPage);
+    }
+    ```
+
+    更改服务层接口：
+
+    ```java
+    package com.kk.service;
+    
+    import com.baomidou.mybatisplus.core.metadata.IPage;
+    import com.baomidou.mybatisplus.extension.service.IService;
+    import com.kk.pojo.Book;
+    
+    public interface IBookService extends IService<Book> {
+        IPage<Book> getPage(int current, int pageSize, Book book);
+    }
+    ```
+
+    更改服务层实现代码：
+
+    ```java
+    package com.kk.service.impl;
+    
+    import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+    import com.baomidou.mybatisplus.core.metadata.IPage;
+    import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+    import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+    import com.kk.mapper.BookMapper;
+    import com.kk.pojo.Book;
+    import com.kk.service.IBookService;
+    import org.apache.logging.log4j.util.Strings;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.stereotype.Service;
+    
+    @Service
+    public class IBookServiceImpl extends ServiceImpl<BookMapper, Book> implements IBookService {
+    
+        @Autowired
+        private BookMapper bookMapper;
+    
+        public IPage<Book> getPage(int current, int pageSize, Book book) {
+            LambdaQueryWrapper<Book> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.like(Strings.isNotEmpty(book.getType()), Book::getType, book.getType());
+            lambdaQueryWrapper.like(Strings.isNotEmpty(book.getName()), Book::getName, book.getName());
+            lambdaQueryWrapper.like(Strings.isNotEmpty(book.getDescription()), Book::getDescription, book.getDescription());
+            IPage<Book> iPage = new Page<>(current, pageSize);
+            bookMapper.selectPage(iPage, lambdaQueryWrapper);
+            return iPage;
+        }
+    }
+    ```
+
+    外加一个重置条件查询的按钮：
+
+    ```html
+    <el-button @click="handleGetAll()" class="dalfBut">重置</el-button>
+    ```
+
+    ```javascript
+    //条件查询重置按钮
+    handleGetAll() {
+        this.pagination.type = "";
+        this.pagination.name = "";
+        this.pagination.description = "";
+        this.getAll();
     }
     ```
