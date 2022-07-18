@@ -46,13 +46,14 @@ public class BookController2 {
         return new MessageAgreement(true, iBookService.getById(id));
     }
 
+    //分页查询 + 按条件查询
     @GetMapping(value = "/{current}/{pageSize}")
-    public MessageAgreement getPage(@PathVariable Integer current, @PathVariable Integer pageSize) {
-        IPage<Book> iPage = iBookService.getPage(current, pageSize);
+    public MessageAgreement getPage(@PathVariable Integer current, @PathVariable Integer pageSize, Book book) {
+        IPage<Book> iPage = iBookService.getPage(current, pageSize, book);
         //比较最大页码数和要显示的页码，若最大页码小于则需要将当前页码转为最大页码
         if(iPage.getPages() < current) {
             //重新查一遍
-            iPage = iBookService.getPage((int) iPage.getPages(), pageSize);
+            iPage = iBookService.getPage((int) iPage.getPages(), pageSize, book);
         }
         return new MessageAgreement(true, iPage);
     }
