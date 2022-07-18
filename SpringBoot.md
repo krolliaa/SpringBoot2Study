@@ -1,4 +1,4 @@
-# `SpringBoot`
+# `SpringBoot`基础篇
 
 - 小白：初步掌握`SpringBoot`程序的开发流程，能够基于`SpringBoot`实现基础`SSM`框架整合
 
@@ -2003,3 +2003,90 @@ class SpringBootDemo06DruidApplicationTests {
         this.getAll();
     }
     ```
+
+# `SpringBoot`运维实用篇
+
+- 打包与运行
+
+  - 为什么需要打包？倘若你的写代码的电脑一关那用户就无法使用了，所以需要打包放到服务器上 ==> 这里是生成`Jar`包。
+
+  - `Windows`
+
+    - 打包使用`Maven`打包即可：`clean ---> package`然后就可以看到`target`文件夹出现`jar`包，也可以使用命令`mv package`
+
+    - 在改文件夹下输入`cmd`进入窗口
+
+    - 然后输入`java -jar xxx.jar`
+
+    - 打包过程会调用测试程序，所以需要点击`IDEA ---> Maven`那个跳过测试的按钮
+
+    - 然后重复上述过程即可
+
+    - 注：`jar`支持命令行启动需要依赖`maven`插件支持，所以需要确保`SpringBoot`对应着`Maven`插件
+
+      ```xml
+      <build>
+          <plugins>
+              <plugin>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-maven-plugin</artifactId>
+              </plugin>
+          </plugins>
+      </build>
+      ```
+
+      使用这个插件跟不使用这个插件的关键在于`jar`描述文件不同【可以使用压缩软件打开来瞧一瞧】
+
+      ```yml
+      Manifest-Version: 1.0
+      Spring-Boot-Classpath-Index: BOOT-INF/classpath.idx
+      Implementation-Title: SpringBoot_demo07_SSMP
+      Implementation-Version: 0.0.1-SNAPSHOT
+      Spring-Boot-Layers-Index: BOOT-INF/layers.idx
+      Start-Class: com.kk.Application
+      Spring-Boot-Classes: BOOT-INF/classes/
+      Spring-Boot-Lib: BOOT-INF/lib/
+      Build-Jdk-Spec: 1.8
+      Spring-Boot-Version: 2.7.1
+      Created-By: Maven JAR Plugin 3.2.2
+      Main-Class: org.springframework.boot.loader.JarLauncher
+      ```
+
+      不使用这个插件时是这样子的：
+
+      ```yml
+      Manifest-Version: 1.0
+      Spring-Boot-Classpath-Index: BOOT-INF/classpath.idx
+      Implementation-Title: SpringBoot_demo07_SSMP
+      Implementation-Version: 0.0.1-SNAPSHOT
+      ```
+
+      这样子是无法直接启动的，因为最关键的两个描述信息没有描述：
+
+      ```yml
+      Start-Class: com.kk.Application
+      Main-Class: org.springframework.boot.loader.JarLauncher
+      ```
+
+      一个是`jar`包的主类一个是启动类，如果这两家伙不见了则是无法启动的，所以打包的时候需要带上`spring-boot-maven-plugin`插件。
+
+      除此之外还可以看到使用插件进行打包跟不使用插件进行打包其打包出来的包大小非常不一样，其原因是因为使用插件打包会将依赖也打包到`lib`目录下，这就是为什么打包出来的包这么大的原因。
+
+    - 关于端口占用的问题前面有提到过，这里重温一遍：
+
+      ```powershell
+      netstat -ano | find "端口号"
+      #然后记录进程 PID 杀死该进程即可
+      taskkill /PID "进程PID号" /F
+      #或者可以查询出进程名杀死进程名
+      tasklist | findstr "进程PID号"
+      taskkill -f -t -im "进程名"
+      ```
+
+  - `Linux`
+
+- 配置高级
+
+- 多环境开发
+
+- 日志
