@@ -1,5 +1,6 @@
 package com.kk.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.kk.controller.utils.MessageAgreement;
 import com.kk.pojo.Book;
 import com.kk.service.impl.IBookServiceImpl;
@@ -47,6 +48,12 @@ public class BookController2 {
 
     @GetMapping(value = "/{current}/{pageSize}")
     public MessageAgreement getPage(@PathVariable Integer current, @PathVariable Integer pageSize) {
-        return new MessageAgreement(true, iBookService.getPage(current, pageSize));
+        IPage<Book> iPage = iBookService.getPage(current, pageSize);
+        //比较最大页码数和要显示的页码，若最大页码小于则需要将当前页码转为最大页码
+        if(iPage.getPages() < current) {
+            //重新查一遍
+            iPage = iBookService.getPage((int) iPage.getPages(), pageSize);
+        }
+        return new MessageAgreement(true, iPage);
     }
 }
