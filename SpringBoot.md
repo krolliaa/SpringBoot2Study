@@ -2933,7 +2933,38 @@ class SpringBootDemo06DruidApplicationTests {
          ```java
          2022-07-19 13:07:58.783  INFO 33076 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 80 (http) with context path ''
          ```
+  - `4`级配置文件    
+
+    - 有个问题就是在开发过程中用到的密码等属性跟最后项目经理整合的密码这些是不太一样的，项目经理不可能都把临时属性写到一条命令上吧~那要怎么解决这个问题呢？
+
+      `SpringBoot`早就想到了这个问题，你可以在`resources`目录下建立一个`config`目录，然后在这个目录中将`application.yml`复制过来，这里就增添项目经理想要的配置，并且这两个配置文件存在的是合作关系，如果两个文件配置的那里冲突了，按照优先级是`config`目录中的数据被优先读取。
+
+      `resources/config/application.yml`：
+
+      ```yaml
+      server:
+        port: 8083
+      ```
+
+      运行程序，查看端口是否为`8083`：【正确】
+
+      ```yaml
+      2022-07-19 16:12:58.015  INFO 19260 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8083 (http)
+      ```
+
+    - 这时又冒出来另外一个问题了，就是有些涉密级别很高的配置比如数据库密码等是无法给到开发的，无法给到开发意味着这些东西你是无法直接加的，那该如何办好呢？
+
+      3. 在一个路径下，只要`jar`包跟`application.yml`放在一块，该配置文件的级别将比`resources/config/application.yml`的级别还要大。
+
+      4. 如若在一个路径下中再加个`config`，内再配置`application.yml`文件，则该级别比上一级别还要大【文件路径跟`jar`包放一块的】
+
+      配置文件之前我们说过：`properties > yml > yaml`级别是这样划分的。
+
+      现在`SpringBoot`为了解决各种实际应用场景权限级别的问题，又再细分给`application.yml/properties/yaml`做了更加细化的级别。
+
+      **<font color="red">`application.yml < resources/config/application.yml < [file] application.yml < [file] config/application.yml`</font>**
 
 - 多环境开发
 
 - 日志
+
