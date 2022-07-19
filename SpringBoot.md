@@ -261,7 +261,7 @@ public String getYml() {
   ```
 
   封装类如下：
-  
+
   ```java
   package com.kk.pojo;
   
@@ -329,7 +329,7 @@ public String getYml() {
       }
   }
   ```
-  
+
   ```java
   package com.kk.controller;
   
@@ -381,7 +381,7 @@ public String getYml() {
       }
   }
   ```
-  
+
   ```java
   @Autowired
   private MyDataSource myDataSource;
@@ -391,7 +391,7 @@ public String getYml() {
       return myDataSource.toString();
   }
   ```
-  
+
   注意这里的`@ConfigurationProperties(prefix = "")`注解中的`prefix`属性值需要全部小写，否则会报错。
 
 ## 整合第三方技术
@@ -1044,6 +1044,7 @@ class SpringBootDemo06DruidApplicationTests {
        LambdaQueryWrapper<Book> lambdaQueryWrapper = new LambdaQueryWrapper<>();
        lambdaQueryWrapper.like(type != null, Book::getType, type);
    }
+   ```
 
 7. 业务层开发
 
@@ -1146,7 +1147,7 @@ class SpringBootDemo06DruidApplicationTests {
    ```
 
    之前写这个现在写这个，都写吐了，换个`pojo`实体类还是这样写，难道就没有什么可以让这个开发更快速，大大提高效率的工具吗？肯定是有的，那就是**使用`MyBatisPlus`自动化开发**。
-   
+
 8. 使用`MyBatisPlus`对业务层接口进行快速开发
 
    定义`IBookService`继承`IService<>`
@@ -1285,7 +1286,7 @@ class SpringBootDemo06DruidApplicationTests {
     因为这个`"data":null`有两种情况：
 
     1. 表示没有返回数据导致返回`null`
-    2.  表示中途出现异常导致返回`null`
+    2. 表示中途出现异常导致返回`null`
 
     所以为了分辨这两种情况，我们有必要还需要加上`flag`标志位，来辨别到底成功了还是失败了。如下图：
 
@@ -2003,9 +2004,9 @@ class SpringBootDemo06DruidApplicationTests {
         this.getAll();
     }
     ```
-    
+
     加载数据到页面中，从`el-table`标签中可以看到页面显示的数据都保存在`dataList`中所以需要在页面加载的时候就往`dataList`中填充数据，填充如下：
-    
+
     ```javascript
     //钩子函数，VUE对象初始化完成后自动执行
     created() {
@@ -2602,277 +2603,351 @@ class SpringBootDemo06DruidApplicationTests {
 
 # `SpringBoot`运维实用篇
 
-- 打包与运行
+## 打包与运行
 
-  - 为什么需要打包？倘若你的写代码的电脑一关那用户就无法使用了，所以需要打包放到服务器上 ==> 这里是生成`Jar`包。
+为什么需要打包？倘若你的写代码的电脑一关那用户就无法使用了，所以需要打包放到服务器上 ==> 这里是生成`Jar`包。
 
-  - `Windows`
+### `Windows`
 
-    - 打包使用`Maven`打包即可：`clean ---> package`然后就可以看到`target`文件夹出现`jar`包，也可以使用命令`mv package`
+- 打包使用`Maven`打包即可：`clean ---> package`然后就可以看到`target`文件夹出现`jar`包，也可以使用命令`mv package`
 
-    - 在改文件夹下输入`cmd`进入窗口
+- 在改文件夹下输入`cmd`进入窗口
 
-    - 然后输入`java -jar xxx.jar`
+- 然后输入`java -jar xxx.jar`
 
-    - 打包过程会调用测试程序，所以需要点击`IDEA ---> Maven`那个跳过测试的按钮
+- 打包过程会调用测试程序，所以需要点击`IDEA ---> Maven`那个跳过测试的按钮
 
-    - 然后重复上述过程即可
+- 然后重复上述过程即可
 
-    - 注：`jar`支持命令行启动需要依赖`maven`插件支持，所以需要确保`SpringBoot`对应着`Maven`插件
+- 注：`jar`支持命令行启动需要依赖`maven`插件支持，所以需要确保`SpringBoot`对应着`Maven`插件
 
-      ```xml
-      <build>
-          <plugins>
-              <plugin>
-                  <groupId>org.springframework.boot</groupId>
-                  <artifactId>spring-boot-maven-plugin</artifactId>
-              </plugin>
-          </plugins>
-      </build>
-      ```
+  ```xml
+  <build>
+      <plugins>
+          <plugin>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-maven-plugin</artifactId>
+          </plugin>
+      </plugins>
+  </build>
+  ```
 
-      使用这个插件跟不使用这个插件的关键在于`jar`描述文件不同【可以使用压缩软件打开来瞧一瞧】
+  使用这个插件跟不使用这个插件的关键在于`jar`描述文件不同【可以使用压缩软件打开来瞧一瞧】
 
-      ```yml
-      Manifest-Version: 1.0
-      Spring-Boot-Classpath-Index: BOOT-INF/classpath.idx
-      Implementation-Title: SpringBoot_demo07_SSMP
-      Implementation-Version: 0.0.1-SNAPSHOT
-      Spring-Boot-Layers-Index: BOOT-INF/layers.idx
-      Start-Class: com.kk.Application
-      Spring-Boot-Classes: BOOT-INF/classes/
-      Spring-Boot-Lib: BOOT-INF/lib/
-      Build-Jdk-Spec: 1.8
-      Spring-Boot-Version: 2.7.1
-      Created-By: Maven JAR Plugin 3.2.2
-      Main-Class: org.springframework.boot.loader.JarLauncher
-      ```
+  ```yml
+  Manifest-Version: 1.0
+  Spring-Boot-Classpath-Index: BOOT-INF/classpath.idx
+  Implementation-Title: SpringBoot_demo07_SSMP
+  Implementation-Version: 0.0.1-SNAPSHOT
+  Spring-Boot-Layers-Index: BOOT-INF/layers.idx
+  Start-Class: com.kk.Application
+  Spring-Boot-Classes: BOOT-INF/classes/
+  Spring-Boot-Lib: BOOT-INF/lib/
+  Build-Jdk-Spec: 1.8
+  Spring-Boot-Version: 2.7.1
+  Created-By: Maven JAR Plugin 3.2.2
+  Main-Class: org.springframework.boot.loader.JarLauncher
+  ```
 
-      不使用这个插件时是这样子的：
+  不使用这个插件时是这样子的：
 
-      ```yml
-      Manifest-Version: 1.0
-      Spring-Boot-Classpath-Index: BOOT-INF/classpath.idx
-      Implementation-Title: SpringBoot_demo07_SSMP
-      Implementation-Version: 0.0.1-SNAPSHOT
-      ```
+  ```yml
+  Manifest-Version: 1.0
+  Spring-Boot-Classpath-Index: BOOT-INF/classpath.idx
+  Implementation-Title: SpringBoot_demo07_SSMP
+  Implementation-Version: 0.0.1-SNAPSHOT
+  ```
 
-      这样子是无法直接启动的，因为最关键的两个描述信息没有描述：
+  这样子是无法直接启动的，因为最关键的两个描述信息没有描述：
 
-      ```yml
-      Start-Class: com.kk.Application
-      Main-Class: org.springframework.boot.loader.JarLauncher
-      ```
+  ```yml
+  Start-Class: com.kk.Application
+  Main-Class: org.springframework.boot.loader.JarLauncher
+  ```
 
-      一个是`jar`包的主类一个是启动类，如果这两家伙不见了则是无法启动的，所以打包的时候需要带上`spring-boot-maven-plugin`插件。
+  一个是`jar`包的主类一个是启动类，如果这两家伙不见了则是无法启动的，所以打包的时候需要带上`spring-boot-maven-plugin`插件。
 
-      除此之外还可以看到使用插件进行打包跟不使用插件进行打包其打包出来的包大小非常不一样，其原因是因为使用插件打包会将依赖也打包到`lib`目录下，这就是为什么打包出来的包这么大的原因。
+  除此之外还可以看到使用插件进行打包跟不使用插件进行打包其打包出来的包大小非常不一样，其原因是因为使用插件打包会将依赖也打包到`lib`目录下，这就是为什么打包出来的包这么大的原因。
 
-    - 关于端口占用的问题前面有提到过，这里重温一遍：
+- 关于端口占用的问题前面有提到过，这里重温一遍：
 
-      ```powershell
-      netstat -ano | find "端口号"
-      #然后记录进程 PID 杀死该进程即可
-      taskkill /PID "进程PID号" /F
-      #或者可以查询出进程名杀死进程名
-      tasklist | findstr "进程PID号"
-      taskkill -f -t -im "进程名"
-      ```
+  ```powershell
+  netstat -ano | find "端口号"
+  #然后记录进程 PID 杀死该进程即可
+  taskkill /PID "进程PID号" /F
+  #或者可以查询出进程名杀死进程名
+  tasklist | findstr "进程PID号"
+  taskkill -f -t -im "进程名"
+  ```
 
-    - 注意：其实这些东西知道就行因为日后不会在`windows`使用`jar`包而是在`Linux`环境下使用。
+- 注意：其实这些东西知道就行因为日后不会在`windows`使用`jar`包而是在`Linux`环境下使用。
 
-  - `Linux`
+### `Linux`
 
-    - 安装`jdk 1.8`
+- 安装`jdk 1.8`
 
-    - 安装`mysql` ===> 结合`navicat`上传数据【记得关闭防火墙】
+- 安装`mysql` ===> 结合`navicat`上传数据【记得关闭防火墙】
 
-    - 创建`/usr/local/app`目录或者放在`$HOME`即`~`中也可以
+- 创建`/usr/local/app`目录或者放在`$HOME`即`~`中也可以
 
-    - 上传`jar`包
+- 上传`jar`包
 
-    - 可以使用`java -jar xx.jar`也可以使用后台启动：`nohup java -jar xx.jar > server.log > server.log 2>&1 &` ===> `cat server.log`可以查看日志
+- 可以使用`java -jar xx.jar`也可以使用后台启动：`nohup java -jar xx.jar > server.log > server.log 2>&1 &` ===> `cat server.log`可以查看日志
 
-      ![](https://img-blog.csdnimg.cn/506e5a4b5f054fba8a6cb424fb7c4888.png)
+  ![](https://img-blog.csdnimg.cn/506e5a4b5f054fba8a6cb424fb7c4888.png)
 
-    - 尝试访问：`ip`地址访问【关闭防火墙`systemctl stop firewalld`】
+- 尝试访问：`ip`地址访问【关闭防火墙`systemctl stop firewalld`】
 
-    - 关闭进程：
+- 关闭进程：
 
-      ```java
-      ps -ef | grep "java -jar" ---> 查询 PID 27125
-      kill -9 27125
-      ```
+  ```java
+  ps -ef | grep "java -jar" ---> 查询 PID 27125
+  kill -9 27125
+  ```
 
-    - 在这里发现一个`bug`，重置后显示的不是跳到第一页，所以需要修改下代码：
+- 在这里发现一个`bug`，重置后显示的不是跳到第一页，所以需要修改下代码：
 
-      ```javascript
-      //条件查询重置按钮
-      handleGetAll() {
-          //点击重置需要回到第一页
-          this.pagination.currentPage = 1;
-          this.pagination.type = "";
-          this.pagination.name = "";
-          this.pagination.description = "";
-          this.getAll();
+  ```javascript
+  //条件查询重置按钮
+  handleGetAll() {
+      //点击重置需要回到第一页
+      this.pagination.currentPage = 1;
+      this.pagination.type = "";
+      this.pagination.name = "";
+      this.pagination.description = "";
+      this.getAll();
+  }
+  ```
+
+## 配置高级
+
+### 配置临时属性
+
+- 有时候某个属性需要被替代，但是此时已经打包好了，如果要去修改`properties/yml`文件等则是非常麻烦的一件事情，比如我们在`yml`文件中设定的`server.port = 80`但是此时如果`80`端口被更重要的服务所占用了，那我们就必须改变，此时我们就可以使用临时属性改变：`--server.port=8080 `。这就是临时属性的意义，可以赋予运维更高的机动性。
+
+  为什么临时属性可以生效呢？这是因为在命令行中设定的属性优先级高于临时属性。所以临时属性才可以生效。
+
+  ```powershell
+  java -jar SpringBoot_demo07_SSMP-0.0.1-SNAPSHOT.jar --server.port=8080
+  ```
+
+- 如果一个临时属性在命令行中一直用不了，那是后端的工作没做到位，所以后端人员需要在`IDEA`中对临时属性进行测试。
+
+  可以在`Application.java`入口类进行参数的测试：
+
+  ```java
+  package com.kk;
+  
+  import org.springframework.boot.SpringApplication;
+  import org.springframework.boot.autoconfigure.SpringBootApplication;
+  
+  @SpringBootApplication
+  public class Application {
+      public static void main(String[] args) {
+          SpringApplication.run(Application.class, args);
       }
-      ```
+  }
+  ```
 
-- 配置高级
+  可以看到这里带了一个`args`参数，这个`args`参数其实就是用来接收临时属性的，如何设定临时属性的传递有两个方法，一是在`IDEA`中给，另外一个就是直接在代码编辑。如果你完全不想有临时属性发挥作用，那你可以将`args`属性去掉，此时临时属性无论怎么添加都不再发挥作用。我们一个一个来说明下：
 
-  - 配置临时属性
+  1. 直接在`IDEA`测试参数
 
-    - 有时候某个属性需要被替代，但是此时已经打包好了，如果要去修改`properties/yml`文件等则是非常麻烦的一件事情，比如我们在`yml`文件中设定的`server.port = 80`但是此时如果`80`端口被更重要的服务所占用了，那我们就必须改变，此时我们就可以使用临时属性改变：`--server.port=8080 `。这就是临时属性的意义，可以赋予运维更高的机动性。
+     图片中的`Program arguments`就是我们可以添加的参数。
 
-      为什么临时属性可以生效呢？这是因为在命令行中设定的属性优先级高于临时属性。所以临时属性才可以生效。
+     ![](https://img-blog.csdnimg.cn/fe0c98b9f91e442393b3bfaf88691d75.png)
 
-      ```powershell
-      java -jar SpringBoot_demo07_SSMP-0.0.1-SNAPSHOT.jar --server.port=8080
-      ```
+     设置：`--server.port=8080`，运行项目发现项目正是运行在`8080`端口上的
 
-    - 如果一个临时属性在命令行中一直用不了，那是后端的工作没做到位，所以后端人员需要在`IDEA`中对临时属性进行测试。
+     ```java
+     2022-07-19 12:57:13.068  INFO 36280 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+     ```
 
-      可以在`Application.java`入口类进行参数的测试：
+  2. 在代码中传递参数
 
-      ```java
-      package com.kk;
-      
-      import org.springframework.boot.SpringApplication;
-      import org.springframework.boot.autoconfigure.SpringBootApplication;
-      
-      @SpringBootApplication
-      public class Application {
-          public static void main(String[] args) {
-              SpringApplication.run(Application.class, args);
-          }
-      }
-      ```
+     我们知道传递的参数本质上是通过`args`传递的，所以我们完全可以仿照来传递参数
 
-      可以看到这里带了一个`args`参数，这个`args`参数其实就是用来接收临时属性的，如何设定临时属性的传递有两个方法，一是在`IDEA`中给，另外一个就是直接在代码编辑。如果你完全不想有临时属性发挥作用，那你可以将`args`属性去掉，此时临时属性无论怎么添加都不再发挥作用。我们一个一个来说明下：
-
-      1. 直接在`IDEA`测试参数
-
-         图片中的`Program arguments`就是我们可以添加的参数。
-
-         ![](https://img-blog.csdnimg.cn/fe0c98b9f91e442393b3bfaf88691d75.png)
-
-         设置：`--server.port=8080`，运行项目发现项目正是运行在`8080`端口上的
-
-         ```java
-         2022-07-19 12:57:13.068  INFO 36280 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-         ```
-
-      2. 在代码中传递参数
-
-         我们知道传递的参数本质上是通过`args`传递的，所以我们完全可以仿照来传递参数
-
-         ```java
-         package com.kk;
-         
-         import org.springframework.boot.SpringApplication;
-         import org.springframework.boot.autoconfigure.SpringBootApplication;
-         
-         @SpringBootApplication
-         public class Application {
-             public static void main(String[] args) {
-                 String[] arg = {"--server.port = 8081", "--a=b"};
-                 SpringApplication.run(Application.class, arg);
-             }
+     ```java
+     package com.kk;
+     
+     import org.springframework.boot.SpringApplication;
+     import org.springframework.boot.autoconfigure.SpringBootApplication;
+     
+     @SpringBootApplication
+     public class Application {
+         public static void main(String[] args) {
+             String[] arg = {"--server.port = 8081", "--a=b"};
+             SpringApplication.run(Application.class, arg);
          }
-         ```
+     }
+     ```
 
-         此时我们可以看到启动项目是在`8081`端口上进行的，这表明参数发挥了作用：
+     此时我们可以看到启动项目是在`8081`端口上进行的，这表明参数发挥了作用：
 
-         ```java
-         2022-07-19 13:06:27.868  INFO 14576 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
-         ```
+     ```java
+     2022-07-19 13:06:27.868  INFO 14576 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+     ```
 
-      3. 如果我们不希望临时参数发挥作用，我们完全可以修改代码，将参数去除
+  3. 如果我们不希望临时参数发挥作用，我们完全可以修改代码，将参数去除
 
-         ```java
-         package com.kk;
-         
-         import org.springframework.boot.SpringApplication;
-         import org.springframework.boot.autoconfigure.SpringBootApplication;
-         
-         @SpringBootApplication
-         public class Application {
-             public static void main(String[] args) {
-                 String[] arg = {"--server.port = 8081", "--a=b"};
-                 SpringApplication.run(Application.class);
-             }
+     ```java
+     package com.kk;
+     
+     import org.springframework.boot.SpringApplication;
+     import org.springframework.boot.autoconfigure.SpringBootApplication;
+     
+     @SpringBootApplication
+     public class Application {
+         public static void main(String[] args) {
+             String[] arg = {"--server.port = 8081", "--a=b"};
+             SpringApplication.run(Application.class);
          }
-         ```
+     }
+     ```
 
-         通过项目运行的端口可以发现此时项目是运行在`yml`配置文件中配置的`80`端口上的，而临时参数没有发挥作用：
+     通过项目运行的端口可以发现此时项目是运行在`yml`配置文件中配置的`80`端口上的，而临时参数没有发挥作用：
 
-         ```java
-         2022-07-19 13:07:58.783  INFO 33076 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 80 (http) with context path ''
-         ```
-    
-  - `4`级配置文件    
+     ```java
+     2022-07-19 13:07:58.783  INFO 33076 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 80 (http) with context path ''
+     ```
 
-    - 有个问题就是在开发过程中用到的密码等属性跟最后项目经理整合的密码这些是不太一样的，项目经理不可能都把临时属性写到一条命令上吧~那要怎么解决这个问题呢？
+### `4`级配置文件    
 
-      `SpringBoot`早就想到了这个问题，你可以在`resources`目录下建立一个`config`目录，然后在这个目录中将`application.yml`复制过来，这里就增添项目经理想要的配置，并且这两个配置文件存在的是合作关系，如果两个文件配置的那里冲突了，按照优先级是`config`目录中的数据被优先读取。
+- 有个问题就是在开发过程中用到的密码等属性跟最后项目经理整合的密码这些是不太一样的，项目经理不可能都把临时属性写到一条命令上吧~那要怎么解决这个问题呢？
 
-      `resources/config/application.yml`：
+  `SpringBoot`早就想到了这个问题，你可以在`resources`目录下建立一个`config`目录，然后在这个目录中将`application.yml`复制过来，这里就增添项目经理想要的配置，并且这两个配置文件存在的是合作关系，如果两个文件配置的那里冲突了，按照优先级是`config`目录中的数据被优先读取。
 
-      ```yaml
-      server:
-        port: 8083
-      ```
+  `resources/config/application.yml`：
 
-      运行程序，查看端口是否为`8083`：【正确】
+  ```yaml
+  server:
+    port: 8083
+  ```
 
-      ```yaml
-      2022-07-19 16:12:58.015  INFO 19260 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8083 (http)
-      ```
+  运行程序，查看端口是否为`8083`：【正确】
 
-    - 这时又冒出来另外一个问题了，就是有些涉密级别很高的配置比如数据库密码等是无法给到开发的，无法给到开发意味着这些东西你是无法直接加的，那该如何办好呢？
+  ```yaml
+  2022-07-19 16:12:58.015  INFO 19260 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8083 (http)
+  ```
 
-      3. 在一个路径下，只要`jar`包跟`application.yml`放在一块，该配置文件的级别将比`resources/config/application.yml`的级别还要大。
+- 这时又冒出来另外一个问题了，就是有些涉密级别很高的配置比如数据库密码等是无法给到开发的，无法给到开发意味着这些东西你是无法直接加的，那该如何办好呢？
 
-      4. 如若在一个路径下中再加个`config`，内再配置`application.yml`文件，则该级别比上一级别还要大【文件路径跟`jar`包放一块的】
+  3. 在一个路径下，只要`jar`包跟`application.yml`放在一块，该配置文件的级别将比`resources/config/application.yml`的级别还要大。
 
-      配置文件之前我们说过：`properties > yml > yaml`级别是这样划分的。
+  4. 如若在一个路径下中再加个`config`，内再配置`application.yml`文件，则该级别比上一级别还要大【文件路径跟`jar`包放一块的】
 
-      现在`SpringBoot`为了解决各种实际应用场景权限级别的问题，又再细分给`application.yml/properties/yaml`做了更加细化的级别。
+  配置文件之前我们说过：`properties > yml > yaml`级别是这样划分的。
 
-      **<font color="red">`application.yml < resources/config/application.yml < [file] application.yml < [file] config/application.yml`</font>**
-    
-  - 自定义配置文件
+  现在`SpringBoot`为了解决各种实际应用场景权限级别的问题，又再细分给`application.yml/properties/yaml`做了更加细化的级别。
 
-    - 设定了四个级别的配置文件其安全性还不够，要是有个人搞个后门就知道所有的配置密码什么的都放在名为`application.yml`配置文件中，就很容易找到盗取，更好的方法就是换一个名字，连配置文件的名字都改了。但我们知道`SpringBoot`默认只识别`application.`文件名的配置文件的，如何更改呢？
+  **<font color="red">`application.yml < resources/config/application.yml < [file] application.yml < [file] config/application.yml`</font>**
 
-      1. 第一种方式：使用临时属性配置配置文件名
+### 自定义配置文件
 
-         使用临时属性`--spring.config.name=""`即可指定自定义的配置文件名的配置当作配置文件，这里可以使用`IDEA`中的`Program Arguments`进行测试：
+- 设定了四个级别的配置文件其安全性还不够，要是有个人搞个后门就知道所有的配置密码什么的都放在名为`application.yml`配置文件中，就很容易找到盗取，更好的方法就是换一个名字，连配置文件的名字都改了。但我们知道`SpringBoot`默认只识别`application.`文件名的配置文件的，如何更改呢？
 
-         ![](https://img-blog.csdnimg.cn/18b2898b36fc42e6810468758e56c841.png)
+  1. **第一种方式：使用临时属性配置配置文件名**
 
-         在`ebank.yml`我们设置了服务器端口为：`server.port=81`，重启服务器可以看到运行端口号为`81`：证明自定义配置文件生效【即使`application.yml`但是我们指定了`ebank.yml`就是配置文件，所以`application.yml`是不起作用的，并且通过测试，就算`application.yml`中有，但是`ebank.yml`中没有，其在`application.yml`的配置属性也不会生效，二者是竞争关系而不是合作关系】
+     使用临时属性`--spring.config.name=""`即可指定自定义的配置文件名的配置当作配置文件，这里可以使用`IDEA`中的`Program Arguments`进行测试：
 
-         ```java
-         2022-07-19 16:46:00.360  INFO 16480 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 81 (http)
-         ```
+     ![](https://img-blog.csdnimg.cn/18b2898b36fc42e6810468758e56c841.png)
 
-         当然如果你想多个名称都可以当作配置文件也可以，比如这样：【但是要注意一点的就是这样配置的优先级越是后面配置的优先级越高，比如这里有`1 2 3`按照顺序配置，那么最高采用的都先采用`3`其次采用`2`最后采用`1`依次递减】
+     在`ebank.yml`我们设置了服务器端口为：`server.port=81`，重启服务器可以看到运行端口号为`81`：证明自定义配置文件生效【即使`application.yml`但是我们指定了`ebank.yml`就是配置文件，所以`application.yml`是不起作用的，并且通过测试，就算`application.yml`中有，但是`ebank.yml`中没有，其在`application.yml`的配置属性也不会生效，二者是竞争关系而不是合作关系】
 
-         比如这里，最优先配置的就是：`ebank-server.yml`这个配置文件
+     ```java
+     2022-07-19 16:46:00.360  INFO 16480 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 81 (http)
+     ```
 
-         ```java
-         --spring.config.name=ebank,application,ebank-server
-         ```
+     当然如果你想多个名称都可以当作配置文件也可以，比如这样：【但是要注意一点的就是这样配置的优先级越是后面配置的优先级越高，比如这里有`1 2 3`按照顺序配置，那么最高采用的都先采用`3`其次采用`2`最后采用`1`依次递减】
 
-      2. 第二种方式：使用临时属性配置配置文件路径【可以是绝对路径，也可以是类路径】
+     比如这里，最优先配置的就是：`ebank-server.yml`这个配置文件
 
-         ```java
-         --spring.config.location=classpath:/ebank.yml,classpath:/ebank-server.yml
-         ```
+     ```java
+     --spring.config.name=ebank,application,ebank-server
+     ```
 
-      3. 第三种方式：使用微服务配置中心集中管理配置文件
+  2. **第二种方式：使用临时属性配置配置文件路径【可以是绝对路径，也可以是类路径】**
 
-- 多环境开发
+     ```java
+     --spring.config.location=classpath:/ebank.yml,classpath:/ebank-server.yml
+     ```
 
-- 日志
+  3. **第三种方式：使用微服务配置中心集中管理配置文件**
+
+## 多环境开发
+
+企业开发一般分为三种环境：生产环境、开发环境、测试环境，每个不同的环境其配置文件大概率是不相同的，所以可以给每一个环境都配置一个配置文件，再具体使用哪个时用哪个就可以了。
+
+### `yaml`版本单个文件的多环境开发
+
+- 这里设置环境名的时候可以使用`spring.profiles`也可以使用`spring.config.activate.om-profile`只不过前者`SpringBoot`官方不推荐使用了而已。
+
+- 使用`---`即可区分不同的环境配置
+
+  ```yaml
+  #应用环境
+  spring:
+    profiles:
+      active: dev
+  #设置环境
+  ---
+  #生产环境
+  spring:
+    config:
+      activate:
+        on-profile: pro
+  server:
+    port: 80
+  ---
+  #开发环境
+  spring:
+    profiles: dev
+  server:
+    port: 81
+  ---
+  #测试环境
+  spring:
+    config:
+      activate:
+        on-profile: test
+  server:
+    port: 82
+  ```
+
+### `yaml`版本多个文件的多环境开发
+
+将各种环境的配置信息全部放在同一个文件是相当不安全的，为此我们需要分开来放不同环境的配置文件，这样做不仅可以增加安全性还有利于更好地维护不同环境地配置信息。
+
+**主配置文件通常用于配置通用属性，而环境分类配置文件通常用于设置冲突属性。**
+
+生产环境配置文件`application-pro.yml`：
+
+```yaml
+server:
+  port: 80
+```
+
+开发环境配置文件`application-dev.yml`：
+
+```yaml
+server:
+  port: 81
+```
+
+测试环境配置文件`application-test.yml`：
+
+```yaml
+server:
+  port: 82
+```
+
+主配置文件`application-pro.yml`：
+
+```yaml
+spring:
+  profiles:
+    active: pro
+```
+
+日志
+
