@@ -2083,7 +2083,44 @@ class SpringBootDemo06DruidApplicationTests {
       taskkill -f -t -im "进程名"
       ```
 
+    - 注意：其实这些东西知道就行因为日后不会在`windows`使用`jar`包而是在`Linux`环境下使用。
+
   - `Linux`
+
+    - 安装`jdk 1.8`
+
+    - 安装`mysql` ===> 结合`navicat`上传数据【记得关闭防火墙】
+
+    - 创建`/usr/local/app`目录或者放在`$HOME`即`~`中也可以
+
+    - 上传`jar`包
+
+    - 可以使用`java -jar xx.jar`也可以使用后台启动：`nohup java -jar xx.jar > server.log > server.log 2>&1 &` ===> `cat server.log`可以查看日志
+
+      ![](https://img-blog.csdnimg.cn/506e5a4b5f054fba8a6cb424fb7c4888.png)
+
+    - 尝试访问：`ip`地址访问【关闭防火墙`systemctl stop firewalld`】
+
+    - 关闭进程：
+
+      ```java
+      ps -ef | grep "java -jar" ---> 查询 PID 27125
+      kill -9 27125
+      ```
+
+    - 在这里发现一个`bug`，重置后显示的不是跳到第一页，所以需要修改下代码：
+
+      ```javascript
+      //条件查询重置按钮
+      handleGetAll() {
+          //点击重置需要回到第一页
+          this.pagination.currentPage = 1;
+          this.pagination.type = "";
+          this.pagination.name = "";
+          this.pagination.description = "";
+          this.getAll();
+      }
+      ```
 
 - 配置高级
 
