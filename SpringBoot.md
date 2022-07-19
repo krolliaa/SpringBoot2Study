@@ -2856,6 +2856,84 @@ class SpringBootDemo06DruidApplicationTests {
 
     - 如果一个临时属性在命令行中一直用不了，那是后端的工作没做到位，所以后端人员需要在`IDEA`中对临时属性进行测试。
 
+      可以在`Application.java`入口类进行参数的测试：
+
+      ```java
+      package com.kk;
+      
+      import org.springframework.boot.SpringApplication;
+      import org.springframework.boot.autoconfigure.SpringBootApplication;
+      
+      @SpringBootApplication
+      public class Application {
+          public static void main(String[] args) {
+              SpringApplication.run(Application.class, args);
+          }
+      }
+      ```
+
+      可以看到这里带了一个`args`参数，这个`args`参数其实就是用来接收临时属性的，如何设定临时属性的传递有两个方法，一是在`IDEA`中给，另外一个就是直接在代码编辑。如果你完全不想有临时属性发挥作用，那你可以将`args`属性去掉，此时临时属性无论怎么添加都不再发挥作用。我们一个一个来说明下：
+
+      1. 直接在`IDEA`测试参数
+
+         图片中的`Program arguments`就是我们可以添加的参数。
+
+         ![](https://img-blog.csdnimg.cn/fe0c98b9f91e442393b3bfaf88691d75.png)
+
+         设置：`--server.port=8080`，运行项目发现项目正是运行在`8080`端口上的
+
+         ```java
+         2022-07-19 12:57:13.068  INFO 36280 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+         ```
+
+      2. 在代码中传递参数
+
+         我们知道传递的参数本质上是通过`args`传递的，所以我们完全可以仿照来传递参数
+
+         ```java
+         package com.kk;
+         
+         import org.springframework.boot.SpringApplication;
+         import org.springframework.boot.autoconfigure.SpringBootApplication;
+         
+         @SpringBootApplication
+         public class Application {
+             public static void main(String[] args) {
+                 String[] arg = {"--server.port = 8081", "--a=b"};
+                 SpringApplication.run(Application.class, arg);
+             }
+         }
+         ```
+
+         此时我们可以看到启动项目是在`8081`端口上进行的，这表明参数发挥了作用：
+
+         ```java
+         2022-07-19 13:06:27.868  INFO 14576 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+         ```
+
+      3. 如果我们不希望临时参数发挥作用，我们完全可以修改代码，将参数去除
+
+         ```java
+         package com.kk;
+         
+         import org.springframework.boot.SpringApplication;
+         import org.springframework.boot.autoconfigure.SpringBootApplication;
+         
+         @SpringBootApplication
+         public class Application {
+             public static void main(String[] args) {
+                 String[] arg = {"--server.port = 8081", "--a=b"};
+                 SpringApplication.run(Application.class);
+             }
+         }
+         ```
+
+         通过项目运行的端口可以发现此时项目是运行在`yml`配置文件中配置的`80`端口上的，而临时参数没有发挥作用：
+
+         ```java
+         2022-07-19 13:07:58.783  INFO 33076 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 80 (http) with context path ''
+         ```
+
 - 多环境开发
 
 - 日志
