@@ -2949,5 +2949,39 @@ spring:
     active: pro
 ```
 
+### `properties`版本多个文件的多环境开发
+
+### `Maven`和`SpringBoot`多环境控制开发
+
+```xml
+<profiles>
+    <profile>
+        <id>env_dev</id>
+        <properties>
+            <profile.active>dev</profile.active>
+        </properties>
+    </profile>
+    <profile>
+        <id>env_pro</id>
+        <properties>
+            <profile.active>pro</profile.active>
+        </properties>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+    </profile>
+</profiles>
+```
+
+```yaml
+spring:
+  profiles:
+    active: @profile.active@
+    group:
+      "dev": devDB, devRedis, devMVC
+      "pro": proDB, proRedis, proMVC
+      "test": testDB, testRedis, testMVC
+```
+
 日志
 
