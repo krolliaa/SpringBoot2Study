@@ -1,0 +1,10 @@
+server:
+  port: 80
+logging:
+  group:
+    ebanK: com.kk.controller,com.kk.service,com.kk.mapper
+    iservice: com.alibaba
+  level:
+    com.kk.controller: debug
+    root: debug
+    ebank: debug
