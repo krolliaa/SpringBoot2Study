@@ -1,0 +1,18 @@
+2022-07-20 15:04:03.970 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658300643970 sessioncount 0
+2022-07-20 15:04:03.972 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 2 expired sessions: 0
+2022-07-20 15:05:04.026 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658300704025 sessioncount 0
+2022-07-20 15:05:04.026 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 1 expired sessions: 0
+2022-07-20 15:06:04.070 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658300764070 sessioncount 0
+2022-07-20 15:06:04.071 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 1 expired sessions: 0
+2022-07-20 15:07:04.125 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658300824125 sessioncount 0
+2022-07-20 15:07:04.125 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0
+2022-07-20 15:08:04.174 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658300884174 sessioncount 0
+2022-07-20 15:08:04.174 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0
+2022-07-20 15:09:04.231 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658300944231 sessioncount 0
+2022-07-20 15:09:04.231 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0
+2022-07-20 15:10:04.280 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658301004280 sessioncount 0
+2022-07-20 15:10:04.280 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0
+2022-07-20 15:11:04.350 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658301064350 sessioncount 0
+2022-07-20 15:11:04.350 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0
+2022-07-20 15:12:04.408 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658301124408 sessioncount 0
+2022-07-20 15:12:04.408 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0

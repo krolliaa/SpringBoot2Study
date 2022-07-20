@@ -1,0 +1,18 @@
+2022-07-20 15:31:05.323 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658302265323 sessioncount 0
+2022-07-20 15:31:05.325 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 2 expired sessions: 0
+2022-07-20 15:32:05.372 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658302325371 sessioncount 0
+2022-07-20 15:32:05.372 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 1 expired sessions: 0
+2022-07-20 15:33:05.435 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658302385435 sessioncount 0
+2022-07-20 15:33:05.437 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 2 expired sessions: 0
+2022-07-20 15:34:05.484 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658302445484 sessioncount 0
+2022-07-20 15:34:05.484 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0
+2022-07-20 15:35:05.523 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658302505523 sessioncount 0
+2022-07-20 15:35:05.523 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0
+2022-07-20 15:36:05.582 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658302565582 sessioncount 0
+2022-07-20 15:36:05.583 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 1 expired sessions: 0
+2022-07-20 15:37:05.638 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658302625638 sessioncount 0
+2022-07-20 15:37:05.638 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0
+2022-07-20 15:37:13.829 DEBUG 13780 --- [SpringApplicationShutdownHook] o.s.b.a.ApplicationAvailabilityBean      : Application availability state ReadinessState changed from ACCEPTING_TRAFFIC to REFUSING_TRAFFIC
+2022-07-20 15:37:13.829 DEBUG 13780 --- [SpringApplicationShutdownHook] ConfigServletWebServerApplicationContext : Closing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@101952da, started on Wed Jul 20 15:00:02 CST 2022
+2022-07-20 15:37:13.829 DEBUG 13780 --- [SpringApplicationShutdownHook] ySourcesPropertyResolver$DefaultResolver : Found key 'spring.liveBeansView.mbeanDomain' in PropertySource 'systemProperties' with value of type String
+2022-07-20 15:37:13.831 DEBUG 13780 --- [SpringApplicationShutdownHook] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483647

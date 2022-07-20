@@ -1,13 +1,5 @@
-2022-07-20 15:00:05.875 DEBUG 13780 --- [RMI TCP Connection(4)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(4)-192.168.56.1: accepted socket from [192.168.56.1:55337]
-2022-07-20 15:00:05.876 DEBUG 13780 --- [RMI TCP Connection(4)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(4)-192.168.56.1: (port 55330) op = 80
-2022-07-20 15:00:05.876 DEBUG 13780 --- [RMI TCP Connection(4)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(4)-192.168.56.1: name = "[Ljava.rmi.server.ObjID;", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
-2022-07-20 15:00:05.876 DEBUG 13780 --- [RMI TCP Connection(4)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(4)-192.168.56.1: name = "java.rmi.server.ObjID", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
-2022-07-20 15:00:05.879 DEBUG 13780 --- [RMI TCP Connection(4)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(4)-192.168.56.1: name = "java.rmi.server.UID", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
-2022-07-20 15:00:05.879 DEBUG 13780 --- [RMI TCP Connection(4)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(4)-192.168.56.1: name = "java.rmi.dgc.VMID", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
-2022-07-20 15:00:05.879 DEBUG 13780 --- [RMI TCP Connection(4)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(4)-192.168.56.1: name = "[B", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
-2022-07-20 15:00:32.703 DEBUG 13780 --- [RMI TCP Connection(4)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(4)-192.168.56.1: (port 55330) connection closed
-2022-07-20 15:00:32.703 DEBUG 13780 --- [RMI TCP Connection(4)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(4)-192.168.56.1: close connection
-2022-07-20 15:01:03.847 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658300463846 sessioncount 0
-2022-07-20 15:01:03.847 DEBUG 13780 --- [Catalina-utility-1] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 1 expired sessions: 0
-2022-07-20 15:02:03.887 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : Start expire sessions StandardManager at 1658300523887 sessioncount 0
-2022-07-20 15:02:03.887 DEBUG 13780 --- [Catalina-utility-2] org.apache.catalina.session.ManagerBase  : End expire sessions StandardManager processingTime 0 expired sessions: 0
+2022-07-20 15:37:13.833 DEBUG 13780 --- [SpringApplicationShutdownHook] o.s.c.support.DefaultLifecycleProcessor  : Bean 'webServerGracefulShutdown' completed its stop procedure
+2022-07-20 15:37:13.835 DEBUG 13780 --- [SpringApplicationShutdownHook] o.s.c.support.DefaultLifecycleProcessor  : Stopping beans in phase 2147483646
+2022-07-20 15:37:14.394 DEBUG 13780 --- [SpringApplicationShutdownHook] o.s.c.support.DefaultLifecycleProcessor  : Bean 'webServerStartStop' completed its stop procedure
+2022-07-20 15:37:14.395 DEBUG 13780 --- [SpringApplicationShutdownHook] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+2022-07-20 15:37:14.397 DEBUG 13780 --- [SpringApplicationShutdownHook] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'applicationTaskExecutor'
