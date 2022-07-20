@@ -11,3 +11,9 @@ logging:
   pattern:
     console: "%d - %clr(%p) --- [%16t] %clr(%-40.40c){cyan} : %m %n"
     #console: "%d - %m%n"
+  file:
+    name: server.log
+  logback:
+    rollingpolicy:
+      max-file-size: 3KB
+      file-name-pattern: server.%d{yyyy-MM-dd}.%i.log

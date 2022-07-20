@@ -1,0 +1,92 @@
+2022-07-20 15:00:03.752 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(1)-192.168.56.1: (port 55330) op = 82
+2022-07-20 15:00:03.748 DEBUG 13780 --- [main] o.s.b.w.s.ServletContextInitializerBeans : Mapping filters: characterEncodingFilter urls=[/*] order=-2147483648, formContentFilter urls=[/*] order=-9900, requestContextFilter urls=[/*] order=-105
+2022-07-20 15:00:03.754 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(1)-192.168.56.1: (port 55330) op = 80
+2022-07-20 15:00:03.754 DEBUG 13780 --- [main] o.s.b.w.s.ServletContextInitializerBeans : Mapping servlets: dispatcherServlet urls=[/]
+2022-07-20 15:00:03.755 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(1)-192.168.56.1: (port 55330) op = 80
+2022-07-20 15:00:03.755 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(1)-192.168.56.1: name = "[Ljava.rmi.server.ObjID;", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
+2022-07-20 15:00:03.755 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(1)-192.168.56.1: name = "java.rmi.server.ObjID", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
+2022-07-20 15:00:03.755 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(1)-192.168.56.1: name = "java.rmi.server.UID", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
+2022-07-20 15:00:03.756 DEBUG 13780 --- [main] org.apache.catalina.core.ContainerBase   : Add child StandardWrapper[dispatcherServlet] StandardEngine[Tomcat].StandardHost[localhost].TomcatEmbeddedContext[]
+2022-07-20 15:00:03.756 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(1)-192.168.56.1: name = "java.rmi.dgc.Lease", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
+2022-07-20 15:00:03.756 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(1)-192.168.56.1: name = "java.rmi.dgc.VMID", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
+2022-07-20 15:00:03.757 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(1)-192.168.56.1: name = "[B", codebase = "", defaultLoader = sun.misc.Launcher$ExtClassLoader@27ddd392
+2022-07-20 15:00:03.757 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(1)-192.168.56.1: (port 55330) op = 84
+2022-07-20 15:00:03.758 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(1)-192.168.56.1: (port 55330) op = 80
+2022-07-20 15:00:03.758 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(1)-192.168.56.1: (port 55330) op = 80
+2022-07-20 15:00:03.758 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.loader                           : RMI TCP Connection(1)-192.168.56.1: name = "javax.management.ObjectName", codebase = ""
+2022-07-20 15:00:03.758 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.server.call                      : RMI TCP Connection(1)-192.168.56.1: [192.168.56.1] exception: 
+
+javax.management.InstanceNotFoundException: org.springframework.boot:type=Admin,name=SpringApplication
+	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.getMBean(DefaultMBeanServerInterceptor.java:1095) ~[na:1.8.0_202]
+	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.getAttribute(DefaultMBeanServerInterceptor.java:643) ~[na:1.8.0_202]
+	at com.sun.jmx.mbeanserver.JmxMBeanServer.getAttribute(JmxMBeanServer.java:678) ~[na:1.8.0_202]
+	at javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1445) ~[na:1.8.0_202]
+	at javax.management.remote.rmi.RMIConnectionImpl.access$300(RMIConnectionImpl.java:76) ~[na:1.8.0_202]
+	at javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1309) ~[na:1.8.0_202]
+	at javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1401) ~[na:1.8.0_202]
+	at javax.management.remote.rmi.RMIConnectionImpl.getAttribute(RMIConnectionImpl.java:639) ~[na:1.8.0_202]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_202]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_202]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_202]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[na:1.8.0_202]
+	at sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:357) ~[na:1.8.0_202]
+	at sun.rmi.transport.Transport$1.run(Transport.java:200) [na:1.8.0_202]
+	at sun.rmi.transport.Transport$1.run(Transport.java:197) [na:1.8.0_202]
+	at java.security.AccessController.doPrivileged(Native Method) [na:1.8.0_202]
+	at sun.rmi.transport.Transport.serviceCall(Transport.java:196) [na:1.8.0_202]
+	at sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:573) [na:1.8.0_202]
+	at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:834) [na:1.8.0_202]
+	at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:688) [na:1.8.0_202]
+	at java.security.AccessController.doPrivileged(Native Method) [na:1.8.0_202]
+	at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:687) [na:1.8.0_202]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) ~[na:1.8.0_202]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) ~[na:1.8.0_202]
+	at java.lang.Thread.run(Thread.java:748) ~[na:1.8.0_202]
+
+2022-07-20 15:00:03.761 DEBUG 13780 --- [RMI TCP Connection(1)-192.168.56.1] sun.rmi.transport.tcp                    : RMI TCP Connection(1)-192.168.56.1: (port 55330) op = 80
+2022-07-20 15:00:03.777 DEBUG 13780 --- [main] o.apache.catalina.core.StandardContext   : Configuring application event listeners
+2022-07-20 15:00:03.777 DEBUG 13780 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Sending application start events
+2022-07-20 15:00:03.778 DEBUG 13780 --- [main] o.a.catalina.session.StandardManager     : Start: Loading persisted sessions
+2022-07-20 15:00:03.778 DEBUG 13780 --- [main] o.a.catalina.session.StandardManager     : Loading persisted sessions from [SESSIONS.ser]
+2022-07-20 15:00:03.778 DEBUG 13780 --- [main] o.a.catalina.session.StandardManager     : No persisted data file found
+2022-07-20 15:00:03.778 DEBUG 13780 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Starting filters
+2022-07-20 15:00:03.778 DEBUG 13780 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       :  Starting filter 'requestContextFilter'
+2022-07-20 15:00:03.782 DEBUG 13780 --- [main] o.s.b.w.s.f.OrderedRequestContextFilter  : Filter 'requestContextFilter' configured for use
+2022-07-20 15:00:03.782 DEBUG 13780 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       :  Starting filter 'Tomcat WebSocket (JSR356) Filter'
+2022-07-20 15:00:03.782 DEBUG 13780 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       :  Starting filter 'characterEncodingFilter'
+2022-07-20 15:00:03.782 DEBUG 13780 --- [main] s.b.w.s.f.OrderedCharacterEncodingFilter : Filter 'characterEncodingFilter' configured for use
+2022-07-20 15:00:03.783 DEBUG 13780 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       :  Starting filter 'formContentFilter'
+2022-07-20 15:00:03.783 DEBUG 13780 --- [main] o.s.b.w.s.f.OrderedFormContentFilter     : Filter 'formContentFilter' configured for use
+2022-07-20 15:00:03.783 DEBUG 13780 --- [main] o.apache.catalina.core.StandardContext   : Starting completed
+2022-07-20 15:00:03.785 DEBUG 13780 --- [main] org.apache.catalina.mapper.Mapper        : Registered host [localhost]
+2022-07-20 15:00:03.786 DEBUG 13780 --- [main] o.apache.catalina.mapper.MapperListener  : Register Wrapper [dispatcherServlet] in Context [] for service [StandardService[Tomcat]]
+2022-07-20 15:00:03.787 DEBUG 13780 --- [main] o.apache.catalina.mapper.MapperListener  : Register Context [] for service [StandardService[Tomcat]]
+2022-07-20 15:00:03.787 DEBUG 13780 --- [main] o.apache.catalina.mapper.MapperListener  : Register host [localhost] at domain [null] for service [StandardService[Tomcat]]
+2022-07-20 15:00:03.792 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'springBootDemo11LogApplication'
+2022-07-20 15:00:03.793 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'bookController2'
+2022-07-20 15:00:03.795 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.AutoConfigurationPackages'
+2022-07-20 15:00:03.795 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration'
+2022-07-20 15:00:03.796 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration'
+2022-07-20 15:00:03.797 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.context.properties.EnableConfigurationPropertiesRegistrar.methodValidationExcludeFilter'
+2022-07-20 15:00:03.798 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration'
+2022-07-20 15:00:03.798 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration'
+2022-07-20 15:00:03.799 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'taskExecutorBuilder'
+2022-07-20 15:00:03.800 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'spring.task.execution-org.springframework.boot.autoconfigure.task.TaskExecutionProperties'
+2022-07-20 15:00:03.802 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'taskExecutorBuilder' via factory method to bean named 'spring.task.execution-org.springframework.boot.autoconfigure.task.TaskExecutionProperties'
+2022-07-20 15:00:03.803 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration$WhitelabelErrorViewConfiguration'
+2022-07-20 15:00:03.804 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'error'
+2022-07-20 15:00:03.804 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'beanNameViewResolver'
+2022-07-20 15:00:03.806 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration$DefaultErrorViewResolverConfiguration'
+2022-07-20 15:00:03.806 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'spring.web-org.springframework.boot.autoconfigure.web.WebProperties'
+2022-07-20 15:00:03.809 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration$DefaultErrorViewResolverConfiguration' via constructor to bean named 'org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@101952da'
+2022-07-20 15:00:03.809 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration$DefaultErrorViewResolverConfiguration' via constructor to bean named 'spring.web-org.springframework.boot.autoconfigure.web.WebProperties'
+2022-07-20 15:00:03.809 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'conventionErrorViewResolver'
+2022-07-20 15:00:03.811 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'errorAttributes'
+2022-07-20 15:00:03.812 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'basicErrorController'
+2022-07-20 15:00:03.812 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'basicErrorController' via factory method to bean named 'errorAttributes'
+2022-07-20 15:00:03.816 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration$EnableWebMvcConfiguration'
+2022-07-20 15:00:03.819 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration$EnableWebMvcConfiguration' via constructor to bean named 'spring.mvc-org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties'
+2022-07-20 15:00:03.819 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration$EnableWebMvcConfiguration' via constructor to bean named 'spring.web-org.springframework.boot.autoconfigure.web.WebProperties'
+2022-07-20 15:00:03.819 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration$EnableWebMvcConfiguration' via constructor to bean named 'org.springframework.beans.factory.support.DefaultListableBeanFactory@387a8303'
+2022-07-20 15:00:03.830 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration$WebMvcAutoConfigurationAdapter'
+2022-07-20 15:00:03.830 DEBUG 13780 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration$WebMvcAutoConfigurationAdapter' via constructor to bean named 'spring.web-org.springframework.boot.autoconfigure.web.WebProperties'
