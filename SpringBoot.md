@@ -2983,5 +2983,194 @@ spring:
       "test": testDB, testRedis, testMVC
 ```
 
-日志
+## 日志
 
+### 日志基础
+
+- 日志的作用
+
+  - 编程期调试代码
+  - 运营期记录信息
+    - 记录日常运营重要信息（峰值流量、平均响应时长......）
+    - 记录应用报错信息（错误堆栈）
+    - 记录运维过程数据（扩容、宕机、报警......）
+
+- 日志相关操作
+
+  - `private static final Logger logger = LoggerFactory.getLogger(BookController.class)`
+
+  - ```java
+    logger.debug("debug...");
+    logger.info("info...");
+    logger.warn("warn...");
+    logger.error("error...");【error + fatal([理论上的]灾难性的后果：系统处于崩溃级别)】
+    ```
+
+  - 日志级别：`debug < info < warn < error`，会显示`>=`当前级别的日志信息
+
+  - 默认输出的日志都是`info`级别的，如果要调低级别输出`debug
+
+    1. 可以加临时参数：`--debug`【输出调试信息，常用于检查系统运行状况】
+
+    2. 可以在`application.yml`加入：`debug: true`【设置日志级别，`root`表示根节点，即整体应用日志级别】
+
+    3. 可以在`aplication.yml`加入：`logging: level: root: debug`
+
+       甚至可以设置某个包的日志级别：`logging: level: com.kk.controller: debug`
+
+       设置包分组，对某个组进行设置：
+
+       ```yaml
+       logging:
+         group:
+         	ebanK: com.kk.controller,com.kk.service,com.kk.mapper
+         	iservice: com.alibaba
+         level:
+         	root: debug
+         	ebank: warn
+       ```
+
+  - ```java
+    package com.kk.controller;
+    
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
+    import org.springframework.web.bind.annotation.GetMapping;
+    import org.springframework.web.bind.annotation.RequestMapping;
+    import org.springframework.web.bind.annotation.RestController;
+    
+    @RestController
+    @RequestMapping(value = "/books")
+    public class BookController {
+    
+        private static final Logger logger = LoggerFactory.getLogger(BookController.class);
+    
+        @GetMapping
+        public String getBook() {
+            logger.debug("debug...");
+            logger.info("info...");
+            logger.warn("warn...");
+            logger.error("error...");
+            return "SpringBoot Run...";
+        }
+    }
+    ```
+
+    ```yaml
+    server:
+      port: 80
+    logging:
+      level:
+        root: debug
+    ```
+
+    ```yaml
+    server:
+      port: 80
+    logging:
+      group:
+        ebanK: com.kk.controller,com.kk.service,com.kk.mapper
+        iservice: com.alibaba
+      level:
+        com.kk.controller: debug
+        root: debug
+        ebank: debug
+    ```
+
+  - 问题：`private static final Logger logger = LoggerFactory.getLogger(BookController.class);`这句代码需要反反复复不断重复地写，有什么办法可以省掉这个麻烦吗？
+
+    要想所有的类都默认有这个东西，那我们使用继承不就可以了吗？
+
+    父类代码如下：
+
+    ```java
+    package com.kk.controller;
+    
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
+    import org.springframework.stereotype.Component;
+    
+    public class BaseLog {
+        public static Logger logger;
+    
+        public BaseLog() {
+            logger = LoggerFactory.getLogger(this.getClass());
+        }
+    }
+    ```
+
+    子类代码直接使用`logger`：
+
+    ```java
+    package com.kk.controller;
+    
+    import org.springframework.web.bind.annotation.GetMapping;
+    import org.springframework.web.bind.annotation.RequestMapping;
+    import org.springframework.web.bind.annotation.RestController;
+    
+    @RestController
+    @RequestMapping(value = "/books")
+    public class BookController2 extends BaseLog {
+    
+        @GetMapping
+        public String getBook() {
+            logger.debug("debug...");
+            logger.info("info...");
+            logger.warn("warn...");
+            logger.error("error...");
+            return "SpringBoot Run...";
+        }
+    }
+    ```
+
+    第二种方法：直接使用`lombok`给的`@Slf4j`
+
+    添加依赖：
+
+    ```xml
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+    </dependency>
+    ```
+
+    添加`@Slf4j`注解，默认的变量名称为：`log`，其相当于添加了：`private static final Logger log = LoggerFactory.getLogger(BookController2.class);`
+
+    ```java
+    package com.kk.controller;
+    
+    import lombok.extern.slf4j.Slf4j;
+    import org.springframework.web.bind.annotation.GetMapping;
+    import org.springframework.web.bind.annotation.RequestMapping;
+    import org.springframework.web.bind.annotation.RestController;
+    
+    @RestController
+    @RequestMapping(value = "/books")
+    @Slf4j
+    public class BookController2 extends BaseLog {
+    
+        @GetMapping
+        public String getBook() {
+            log.debug("debug...");
+            log.info("info...");
+            log.warn("warn...");
+            log.error("error...");
+            return "SpringBoot Run...";
+        }
+    }
+    ```
+
+
+### 日志输出格式控制
+
+输出的日志就是常见的服务器启动的信息展示，其格式为：**时间[`%date`简写`%d`]** **日志级别[`%clr(%Sp)`]**  **进程`PID`[多进程时非常有效]** **进程名[`%thread`简称`%t`]** **类名[`%class`简称`%c`]** **`%n`表示换行**
+
+【上述设置网上都有】
+
+```yaml
+logging:
+  pattern:
+    console: "%d - %clr(%p) --- [%16t] %clr(%-40.40c){cyan} : %m %n"
+```
+
+### 日志文件
