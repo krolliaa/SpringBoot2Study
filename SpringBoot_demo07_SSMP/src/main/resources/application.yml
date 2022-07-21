@@ -10,6 +10,7 @@ spring:
   devtools:
     restart:
       exclude: static/**,config/application.yml
+      enabled: false
 mybatis-plus:
   global-config:
     db-config:
