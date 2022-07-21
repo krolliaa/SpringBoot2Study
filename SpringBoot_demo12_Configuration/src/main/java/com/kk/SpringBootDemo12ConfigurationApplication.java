@@ -26,5 +26,6 @@ public class SpringBootDemo12ConfigurationApplication {
         System.out.println(servers);
         DruidDataSource druidDataSource = configurableApplicationContext.getBean(DruidDataSource.class);
         System.out.println(druidDataSource.getDriverClassName());
+        System.out.println(druidDataSource.getPassword());
     }
 }

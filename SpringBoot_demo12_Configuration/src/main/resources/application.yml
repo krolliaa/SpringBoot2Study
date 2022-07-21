@@ -1,8 +1,9 @@
 servers:
   ipAddress: 192.168.0.100
-  port: a
+  port: 8888
   timeout: 3
   server-timeout: 100
   data-size: 10
 datasource:
   driverClassName: com.mysql.cj.jdbc.Driver
+  password: 0127
