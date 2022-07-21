@@ -1,2 +1,4 @@
 test:
   prop: testValue
+server:
+  port: 80
