@@ -3199,6 +3199,8 @@ logging:
 
 ## 热部署
 
+### 启动热部署
+
 代码修改完毕立马生效，不必重新启动服务器 ===> 这就需要用到热部署。 ===> `pom.xml`添加`spring-boot-devtools`
 
 ```xml
@@ -3220,6 +3222,8 @@ logging:
 重启和重载是两个过程。第一次启动项目有这两个过程，热部署不会去加载`jar`资源，所以只有重启这一个过程。**热部署仅仅加载当前开发者自定义开发的资源而不加载`jar`资源。**
 
 <hr/>
+
+### 自动热部署
 
 总是要去点击`ctrl + F9`激活热部署非常的麻烦，能否自动修改完毕代码保存后自动激活热部署呢？当然可以。
 
@@ -3252,12 +3256,371 @@ spring:
     exclude: static/**,config/application.yml
 ```
 
+### 禁用热部署
+
+禁用热部署有很多种方式，并且每种方式的级别是不同的，可以通过配置文件关闭热部署：
+
+```yaml
+spring:
+  devtools:
+  	restart:
+      enabled: false
+```
+
+但是这种设置的级别是非常低的，一旦有比它更高的设置比如在`config/application.yml`，在`file/application.yml`甚至是在`file/config/application.yml`中设置了`spring.devtools.restart.enabled=true`就可以将热部署打开了。
+
+所以我们另外介绍一种更高级的方式去关闭热部署 ---> 使用`System.getProperty("", "")`：
+
+```java
+package com.kk;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        System.getProperty("spring.devtools.restart.enabled", "false");
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
 ## 配置高级
+
+### `configurationProperties`
+
+- 可以给自定义类配置属性
+
+  ```java
+  package com.kk.pojo;
+  
+  import lombok.Data;
+  import org.springframework.boot.context.properties.ConfigurationProperties;
+  import org.springframework.stereotype.Component;
+  
+  @Component
+  @Data
+  @ConfigurationProperties(prefix = "servers")
+  public class Servers {
+      private String ipAddress;
+      private String port;
+      private Integer timeout;
+  }
+  ```
+
+  ```yaml
+  servers:
+    ipAddress: 192.168.0.100
+    port: 9527
+    timeout: -1
+  ```
+
+  ```java
+  package com.kk;
+  
+  import com.kk.pojo.Servers;
+  import org.springframework.boot.SpringApplication;
+  import org.springframework.boot.autoconfigure.SpringBootApplication;
+  import org.springframework.boot.context.properties.EnableConfigurationProperties;
+  import org.springframework.context.ConfigurableApplicationContext;
+  
+  @SpringBootApplication
+  @EnableConfigurationProperties(value = {Servers.class})
+  public class SpringBootDemo12ConfigurationApplication {
+      public static void main(String[] args) {
+          ConfigurableApplicationContext configurableApplicationContext = SpringApplication.run(SpringBootDemo12ConfigurationApplication.class, args);
+          Servers servers = configurableApplicationContext.getBean(Servers.class);
+          System.out.println(servers);
+      }
+  }
+  ```
+
+  注意，如果在这里使用了`@EnableConfigurationProperties(value = {Servers.class})`那就无需再在`Servers`类中使用`@Component`注解，否则一个`Spring`容器内将会产生两个`Servers`类，这是不被允许的。
+
+  或者你要么使用`getBean("servers")`获取对象，但是这样你必须在`Servers`类中书写`@Component`。
+
+- 也可以给第三方`Bean`配置属性，跟给自定义类配置属性没什么差别【而自定义类配置属性在学习`yaml`配置文件的时候也已经说过】
+
+  - ```java
+    @Bean
+    @ConfigurationProperties(prefix = "datasource")
+    public DruidDataSource getDataSource() {
+        DruidDataSource druidDataSource = new DruidDataSource();
+        return druidDataSource;
+    }
+    ```
+
+  - ```yaml
+    datasource:
+      driverClassName: com.mysql.cj.jdbc.Driver
+    ```
+
+  - ```java
+    package com.kk;
+    
+    import com.alibaba.druid.pool.DruidDataSource;
+    import com.kk.pojo.Servers;
+    import org.springframework.boot.SpringApplication;
+    import org.springframework.boot.autoconfigure.SpringBootApplication;
+    import org.springframework.boot.context.properties.ConfigurationProperties;
+    import org.springframework.boot.context.properties.EnableConfigurationProperties;
+    import org.springframework.context.ConfigurableApplicationContext;
+    import org.springframework.context.annotation.Bean;
+    
+    @SpringBootApplication
+    @EnableConfigurationProperties(value = {Servers.class})
+    public class SpringBootDemo12ConfigurationApplication {
+    
+        @Bean
+        @ConfigurationProperties(prefix = "datasource")
+        public DruidDataSource getDataSource() {
+            DruidDataSource druidDataSource = new DruidDataSource();
+            return druidDataSource;
+        }
+    
+        public static void main(String[] args) {
+            ConfigurableApplicationContext configurableApplicationContext = SpringApplication.run(SpringBootDemo12ConfigurationApplication.class, args);
+            Servers servers = configurableApplicationContext.getBean(Servers.class);
+            System.out.println(servers);
+            DruidDataSource druidDataSource = configurableApplicationContext.getBean(DruidDataSource.class);
+            System.out.println(druidDataSource.getDriverClassName());
+        }
+    }
+    ```
+
+- **<font color="red">注意在使用`@ConfigurationProperties(prefix = "xxx")`时，其属性`prefix`的值应保持小写。</font>**
+
+  **绑定的前缀名命名规范：仅能使用小写字母、数字、下划线作为合法的字符并且必须是字母开头【按正常的规范写就可以了】**
+
+- 在匹配属性时的配置文件即`application.yml`中，其属性名跟类属性名匹配采用宽松绑定的原则。即你无论怎么写都是可以的，它会忽略大小写、中划线、下划线去匹配，非常的宽松！
+
+  **官方建议的写法是烤肉串模式即：`ip-address`这种格式。**
+
+  这种宽松绑定的方式只在`@ConfigurationProperties`才有效，如果你使用的是`@Value`赋予属性值，则是无效的。
+
+### 常用计量单位[时间+数据]
+
+- 常用计量单位的应用：比如这里的`timeout: -1`表示的是不限制，但是如果`timeout: 2`那这个单位是多少呢？我们现在无法定量。使用`Duration`和`long`表示的单位都是`ms毫秒`，不过`Duration`不仅仅限于毫秒，使用`@DurationUnit(ChronoUnit.HOURS)`等可以更换单位。
+
+  ```java
+  package com.kk.pojo;
+  
+  import lombok.Data;
+  import org.springframework.boot.context.properties.ConfigurationProperties;
+  import org.springframework.boot.convert.DurationUnit;
+  
+  import java.time.Duration;
+  import java.time.temporal.ChronoUnit;
+  
+  @Data
+  @ConfigurationProperties(prefix = "servers")
+  public class Servers {
+      private String ipAddress;
+      private String port;
+      private long timeout;
+      @DurationUnit(ChronoUnit.DAYS)
+      private Duration serverTimeout;
+  }
+  ```
+
+  ```yaml
+  servers:
+    ipAddress: 192.168.0.100
+    port: 9527
+    timeout: 3
+    server-timeout: 100
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+  ```
+
+  此时打印的结果为：`Servers(ipAddress=192.168.0.100, port=9527, timeout=3, serverTimeout=PT2400H)`
+
+  除了上述的时间计量单位，还有数据计量单位：`B KB MB GB TB`等：可以直接在配置文件中配置`10MB 100GB`这样，虽然结果还是会转换为`B`，但是已经不用我们写了
+
+  ```yaml
+  servers:
+    ipAddress: 192.168.0.100
+    port: 9527
+    timeout: 3
+    server-timeout: 100
+    data-size: 10MB
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+  ```
+
+  ```java
+  package com.kk.pojo;
+  
+  import lombok.Data;
+  import org.springframework.boot.context.properties.ConfigurationProperties;
+  import org.springframework.boot.convert.DurationUnit;
+  import org.springframework.util.unit.DataSize;
+  
+  import java.time.Duration;
+  import java.time.temporal.ChronoUnit;
+  
+  @Data
+  @ConfigurationProperties(prefix = "servers")
+  public class Servers {
+      private String ipAddress;
+      private String port;
+      private long timeout;
+      @DurationUnit(ChronoUnit.DAYS)
+      private Duration serverTimeout;
+      private DataSize dataSize;
+  }
+  ```
+
+  输出结果为【注意看最后面的数字单位】：
+
+  ```java
+  Servers(ipAddress=192.168.0.100, port=9527, timeout=3, serverTimeout=PT2400H, dataSize=10485760B)
+  ```
+
+  同时还可以像`@DurationUnit(ChronoUnit.xxx)`那样修改计量单位，不过这里的数字计量单位使用的是：`@DataSizeUnit(DataUnit.B/K/M/G/T)`，如下：【但是最后显示的结果还是`B`，只是不需要我们直接转化了】
+
+  ```java
+  @DataSizeUnit(DataUnit.MEGABYTES)
+  private DataSize dataSize;
+  ```
+
+  ```java
+  Servers(ipAddress=192.168.0.100, port=9527, timeout=3, serverTimeout=PT100H, dataSize=10737418240B)
+  ```
+
+### 数据校验
+
+- 有时候在类文件中是`Integer`但是在配置文件中传递的是一个字符串，那后台铁定是无法传递的了，此时要怎么办呢？如果此时可以做格式校验就好了。
+
+  开启数据校验有助于系统安全，`Java`提供了一组有关数组校验的`API`。 ---> `MVNRepository`搜索`validation`导入依赖：`JSR303`规范。
+
+  然后只需要在要做数据校验的类添加`@Validate`注解即可，然后在各个需要做数据校验的字段添加各种校验，比如：该最大数值不能超过`8888`，则为：`@Max(value = 8888, message = "最大值不能超过8888")`再比如：该最小数值不能小于`6666`，则为：`@Min(value = 6666, message = "最小值不能小于6666")`
+
+  添加`validation`相关依赖：【`SpringBoot`已经整合了`validation-api`所以无需定义版本】
+
+  ```xml
+  <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+  </dependency>
+  ```
+
+  使用：【注意这里的`@Validated`和`@Max`两个注解】
+
+  ```java
+  package com.kk.pojo;
+  
+  import lombok.Data;
+  import org.springframework.boot.context.properties.ConfigurationProperties;
+  import org.springframework.boot.convert.DataSizeUnit;
+  import org.springframework.boot.convert.DurationUnit;
+  import org.springframework.util.unit.DataSize;
+  import org.springframework.util.unit.DataUnit;
+  import org.springframework.validation.annotation.Validated;
+  
+  import javax.validation.constraints.Max;
+  import java.time.Duration;
+  import java.time.temporal.ChronoUnit;
+  
+  @Data
+  @ConfigurationProperties(prefix = "servers")
+  @Validated
+  public class Servers {
+      private String ipAddress;
+      @Max(value = 8888, message = "最大值不能超过 8888")
+      private String port;
+      private long timeout;
+      @DurationUnit(ChronoUnit.HOURS)
+      private Duration serverTimeout;
+      @DataSizeUnit(DataUnit.GIGABYTES)
+      private DataSize dataSize;
+  }
+  ```
+
+  本以为可以了，但是运行程序报错：报错信息显示说虽然`Validation API`已经在类路径了但是没有实现类存在于类路径，需要添加实现类到类路径，比如添加：`Hibernate Validator`校验器。
+
+  ```java
+  Description:
+  
+  The Bean Validation API is on the classpath but no implementation could be found
+  
+  Action:
+  
+  Add an implementation, such as Hibernate Validator, to the classpath
+  ```
+
+  那我们就去`mvnrepository`中去找这个`Hibernate Validator`校验器：找到 ---> `[Hibernate Validator Engine]`，将依赖导入`pom.xml`中去
+
+  ```java
+  <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+  </dependency>
+  ```
+
+  导入完毕我们再去重新运行下这个程序，可以发现校验器已经生效了，我们将`port`的大小设置为：`9999`很明显超过了`8888`，故会报错，并且告诉你要去更新你的`application.yml`配置文件中的配置信息：
+
+  ```java
+  Description:
+  
+  Binding to target org.springframework.boot.context.properties.bind.BindException: Failed to bind properties under 'servers' to com.kk.pojo.Servers failed:
+  
+      Property: servers.port
+      Value: a
+      Origin: class path resource [application.yml] - 3:9
+      Reason: 最大值不能超过 8888
+  
+  
+  Action:
+  
+  Update your application's configuration
+  ```
+
+  可以点击`@Max`然后点击`package javax.validation.constraints;`包中的`constraints`就可以发现，有许许多多的校验器是可供我们使用的。
+
+### 进制数据转换规则
+
+在`application.yaml`配置文件中，会有一些字面值的表达方式，在配置文件中，`int`类型的表示是支持二进制、八进制跟十六进制的。二进制以`0B/b`开头，八进制以`0`开头，十六进制以`0X/x`开头。
+
+**<font color="red">所以如果你的数据库密码`password`属性写的是`0127`这种以`0`开头的，那么最结果将转换为`87`，这就导致了密码不正确的问题，所以遇到这种情况，需要转换为`""`加个引号转换为字符串。</font>**
+
+```java
+boolean: TRUE //TRUE FALSE true false True False 均可
+float: 3.14 //6.8523015e+5支持科学计数法
+int: 123 //支持二进制、八进制、十六进制
+null: ~ //使用 ~ 即可表示 null
+string: HelloWorld //字符串可以直接书写，如果是数字将按照 float 跟 int 类型先判别
+string2: "Hello World" //可以使用双引号包裹特殊字符
+date: 2018-02-18 //日期必须使用yyyy-MM-dd格式
+datetime: 2018-02-18T17:02:31+08:00 //时间和日期之间使用T连接，最后使用+代表时区
+```
+
+```yaml
+datasource:
+  driverClassName: com.mysql.cj.jdbc.Driver
+  password: 0127
+```
+
+```java
+@Test
+void contextLoads() {
+    System.out.println(password);
+}
+```
+
+输出结果为：`87`
 
 ## 测试
 
+
+
 ## 数据层解决方案
 
+
+
 ## 整合第三方技术
+
+
 
 ### 监控
