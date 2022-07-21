@@ -3613,7 +3613,136 @@ void contextLoads() {
 
 ## 测试
 
+### 加载测试专用属性
 
+加载属性有三种方法：
+
+1. 想想就是在`application.yml`配置文件中配置`test: prop: testValue`【仅用于做测试】然后使用`@Value`加载，这个之前就已经见过了
+
+   ```yaml
+   test:
+     prop: testValue
+   ```
+
+   ```java
+   package com.kk;
+   
+   import org.junit.jupiter.api.Test;
+   import org.springframework.beans.factory.annotation.Value;
+   import org.springframework.boot.test.context.SpringBootTest;
+   
+   @SpringBootTest
+   class SpringBootDemo13TestApplicationTests {
+   
+       @Value(value = "${test.prop}")
+       private String testProp;
+   
+       @Test
+       void contextLoads() {
+           System.out.println(testProp);
+       }
+   }
+   ```
+
+2. 在`@SpringBootTest(properties = "test.prop=testValue1")`因为`properties`的级别比`yaml`级别高所以会优先加载`testValue1`
+
+   ```java
+   package com.kk;
+   
+   import org.junit.jupiter.api.Test;
+   import org.springframework.beans.factory.annotation.Value;
+   import org.springframework.boot.test.context.SpringBootTest;
+   
+   @SpringBootTest(properties = {"test.prop=testValue1"})
+   class SpringBootDemo13TestApplicationTests {
+   
+       @Value(value = "${test.prop}")
+       private String testProp;
+   
+       @Test
+       void contextLoads() {
+           System.out.println(testProp);
+       }
+   }
+   ```
+
+3. 在`@SpringBootTest(args = "--test.prop=testValue2")`因为当前`SpringBoot`版本的原因为`2.7.x`临时属性的加载级别最高所以这里会优先加载`properties`的。按照以前的`2.5.x 6.x`的版本，则会优先加载`args`，这里因为版本不同所以会有差别，可以不必太纠结，到时候直接试一试就知道哪个优先级高了。
+
+   ```java
+   package com.kk;
+   
+   import org.junit.jupiter.api.Test;
+   import org.springframework.beans.factory.annotation.Value;
+   import org.springframework.boot.test.context.SpringBootTest;
+   
+   @SpringBootTest(properties = {"test.prop=testValue1"}, args = {"--test.prop=testValue2"})
+   class SpringBootDemo13TestApplicationTests {
+   
+       @Value(value = "${test.prop}")
+       private String testProp;
+   
+       @Test
+       void contextLoads() {
+           System.out.println(testProp);
+       }
+   }
+
+### 加载测试专用配置【类】
+
+测试专用配置类比于`MPConfig`，使用`@Import(value = {MgConfig.class})`就加载了配置类了。举例：配置类如下：【这种做法有利于我们只需要在某个测试类中使用配置时可以用】
+
+这里为了体现如果出现了两个相同返回类型的情况，特意搞了两个`String`类型返回。特此表明在使用配置类时需要跟其名字保持一致，`msg1`就是对象名称。
+
+```java
+package com.kk.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class MgConfig {
+    @Bean
+    public String msg1() {
+        return "bean msg1";
+    }
+
+    @Bean
+    public String msg2() {
+        return "bean msg2";
+    }
+}
+```
+
+导入、使用配置类：【注意这里的`msg1`】
+
+```java
+package com.kk;
+
+import com.kk.config.MgConfig;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+
+@SpringBootTest
+@Import(value = {MgConfig.class})
+public class ConfigTest {
+
+    @Autowired
+    private String msg1;
+
+    @Test
+    void msg() {
+        System.out.println(msg1);
+    }
+}
+```
+
+### `Web`环境模拟测试
+
+### 数据层测试回滚
+
+### 测试用例数据设定
 
 ## 数据层解决方案
 
