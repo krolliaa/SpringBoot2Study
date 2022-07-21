@@ -13,6 +13,7 @@
         <module name="SpringBoot_demo10_PropertiesProfile" />
         <module name="SpringBoot_demo12_Configuration" />
         <module name="SpringBoot_demo07_SSMP" />
+        <module name="SpringBoot_demo13_Test" />
         <module name="SpringBoot_demo08_Config" />
         <module name="SpringBoot_demo03_JUnit" />
         <module name="SpringBoot_demo11_Log" />
@@ -42,6 +43,7 @@
       <module name="SpringBoot_demo10_PropertiesProfile" target="1.8" />
       <module name="SpringBoot_demo11_Log" target="1.8" />
       <module name="SpringBoot_demo12_Configuration" target="1.8" />
+      <module name="SpringBoot_demo13_Test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -61,6 +63,7 @@
       <module name="SpringBoot_demo10_PropertiesProfile" options="-parameters" />
       <module name="SpringBoot_demo11_Log" options="-parameters" />
       <module name="SpringBoot_demo12_Configuration" options="-parameters" />
+      <module name="SpringBoot_demo13_Test" options="-parameters" />
     </option>
   </component>
 </project>
