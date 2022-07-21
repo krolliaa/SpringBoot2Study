@@ -3173,4 +3173,91 @@ logging:
     console: "%d - %clr(%p) --- [%16t] %clr(%-40.40c){cyan} : %m %n"
 ```
 
-### 日志文件
+### 文件日志文件
+
+将日志记录到文件中 ---> 配置文件：
+
+```yaml
+logging:
+  file:
+    name: server.log
+```
+
+要是运行时间过长，岂不是日志文件大小要非常非常大？【`windows`打开`40M`的都麻烦，`4G`根本都打不开】，所以需要份文件记录日志 ---> 滚动记录日志
+
+```yaml
+logging:
+  file:
+    name: server.log
+  logback:
+    rollingpolicy:
+      max-file-size: 3KB
+      file-name-pattern: server.%d{yyyy-MM-dd}.%i.log
+```
+
+# `SpringBoot`开发实用篇
+
+## 热部署
+
+代码修改完毕立马生效，不必重新启动服务器 ===> 这就需要用到热部署。 ===> `pom.xml`添加`spring-boot-devtools`
+
+```xml
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+    <artifacted>spring-boot-devtools</artifacted>
+</dependency>
+```
+
+然后点击`IDEA`最上方`build`再点击`build project`构建项目，此时才可以正常地执行热部署操作。`ctrl + F9` ===> 激活热部署。
+
+【此时就不用再消耗大量地资源去消耗，而是去重载，只加载更改的部分，加载的资源大大的减少了】
+
+理解热部署需要理解两个概念：【程序第一次启动时既有重启也有重载】热部署对应着的就是**重启**这个过程
+
+- 重启`Restart`：自定义开发代码，包含类、页面、配置文件等，加载位置`Restart`类加载器
+- 重载`ReLoad`：`jar`包，加载位置`base`类加载器
+
+重启和重载是两个过程。第一次启动项目有这两个过程，热部署不会去加载`jar`资源，所以只有重启这一个过程。**热部署仅仅加载当前开发者自定义开发的资源而不加载`jar`资源。**
+
+<hr/>
+
+总是要去点击`ctrl + F9`激活热部署非常的麻烦，能否自动修改完毕代码保存后自动激活热部署呢？当然可以。
+
+只需要：
+
+1. `settings ---> compiler ---> 点击 build project automatically`
+
+2. 第二步要不要做取决于`IDEA`的版本，新版本的`IDEA`执行到第一步就可以自动热部署了，老版本的`IDEA`还需要：**`ctrl + shift + alt + /`**打开`Registry`直接输入**`comiler.automake.allow.app.running`**勾选上即可进行自动热部署
+
+   新版本的`IDEA`设置自动热部署稍微有些许麻烦，要勾选三个选项才可进行热部署：
+
+   勾选：
+
+   - `settings ---> Build ---> compiler ---> Build project automatically `
+   - `settings ---> Build ---> compiler ---> Rebuild module on dependency change`
+   - `settings ---> Advanced Settings ---> 最上面的 Allow auto-make to start even if developed...`
+
+此时当`IDEA`失去焦点`5s`之后将进行自动构建项目，为什么要这样设计？
+
+- 如果不这样设计你每修改两个字就自动构建，那不是一件很疯狂的举动吗？所以失去焦点`5s`之后再自动构建这项设计非常地合理。
+
+自动热部署有些文件是不参与的，比如：前端文件，`Meta-INF`目录下的文件都是不参与热部署的。
+
+因为`devtools`是`SpringBoot`中的一个工具，所以如果要排除某些文件的热部署可以在`yaml`配置文件中配置，使用`devtools.restart.exclude`即可排除不参与热部署的文件。
+
+```yaml
+spring: 
+  devtools:
+  restart:
+    exclude: static/**,config/application.yml
+```
+
+## 配置高级
+
+## 测试
+
+## 数据层解决方案
+
+## 整合第三方技术
+
+### 监控
