@@ -3,6 +3,7 @@ package com.kk;
 import com.kk.config.MgConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -15,7 +16,7 @@ class SpringBootDemo13TestApplicationTests {
     private String testProp;
 
     @Autowired
-    private String beanMsg;
+    private String msg1;
 
     @Test
     void contextLoads() {
