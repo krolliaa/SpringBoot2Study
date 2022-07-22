@@ -4061,6 +4061,8 @@ public class ServiceTest {
 }
 ```
 
+### 测试用例设置随机数据
+
 可以发现测试数据是固定的，如何设定随机数据呢？---> 在`application.yml`中设定然后使用那一套`@ConfigurationProperties(prefix = "testcase")`即可。
 
 ```java
@@ -4092,14 +4094,6 @@ public class TestCase {
     private String description;
 }
 ```
-
-
-
-
-
-### 数据层测试事务回滚
-
-### 测试用例设置随机数据
 
 ## 数据层解决方案
 
