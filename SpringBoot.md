@@ -3976,16 +3976,121 @@ public class WebTest {
 }
 ```
 
-### 数据层测试回滚
+### 业务层测试事务回滚
 
-### 测试用例数据设定
+测试环境中的数据不必真实保存到数据库中，但是按照之前的做法，是会保存的。
+
+```java
+package com.kk;
+
+import com.kk.pojo.Book;
+import com.kk.service.BookService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class ServiceTest {
+    @Autowired
+    private BookService bookService;
+
+    @Test
+    void testService() {
+        Book book = new Book();
+        book.setType("SpringBoot");
+        book.setName("SpringBoot");
+        book.setDescription("SpringBoot");
+        bookService.save(book);
+    }
+}
+```
+
+怎么做才能让数据不保存到数据库呢？ ---> 事务回滚。【`@Transactional` + `@Rollback`】默认直接加`@Transactional`后`SpringBoot`就认为你要做事务回滚。
+
+`@Rollback`有两个值，一个`true`一个`false`，可以控制回不回滚。
+
+发现不起作用，原因是这个`sql`是我从一个`github`上复制粘贴过来的，注意看下这里的数据库引擎：
+
+```sql
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for tbl_book
+-- ----------------------------
+DROP TABLE IF EXISTS `tbl_book`;
+CREATE TABLE `tbl_book`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = MyISAM AUTO_INCREMENT = 19 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+```
+
+这里使用的数据库引擎为：`MyISAM`，是不支持事务的，需要将其更改为`INNODB`数据库引擎。然后再进行测试，可以发现事务回滚。
+
+`@Rollback(value = false)`此时不回滚：
+
+```java
+package com.kk;
+
+import com.kk.pojo.Book;
+import com.kk.service.BookService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Transactional
+@Rollback(value = false)
+public class ServiceTest {
+    @Autowired
+    private BookService bookService;
+
+    @Test
+    void testService() 
+        Book book = new Book();
+        book.setType("SpringBoot");
+        book.setName("SpringBoot");
+        book.setDescription("SpringBoot");
+        bookService.save(book);
+    }
+}
+```
+
+### 数据层测试事务回滚
+
+### 测试用例设置随机数据
 
 ## 数据层解决方案
 
+### 内置数据源
 
+### `JDBCTemplate`
+
+### `H2`数据库
 
 ## 整合第三方技术
 
+### `Redis`篇
 
+### `MongoDB`篇
 
-### 监控
+### `Elastic-Search`篇
+
+### `Quratz`篇
+
+### `Task`篇
+
+### `ActiveMQ`篇
+
+### `RabbitMQ`篇
+
+### `RocketMQ`篇
+
+### `Kafka`篇
+
+## 监控
