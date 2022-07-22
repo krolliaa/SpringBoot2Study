@@ -4097,11 +4097,218 @@ public class TestCase {
 
 ## 数据层解决方案
 
-### 内置数据源
+- 当前使用的数据层解决方案：`Druid + MyBatis-Plus + MySql`
+  - 数据源：`Druid`
+  - 持久化：`MyBatis-Plus`
+  - 数据库：`MySql`
 
-### `JDBCTemplate`
+### 内置数据源【默认数据源解决方案】
 
-### `H2`数据库
+内置数据源有三：`HikariCP + Tomcat提供 + Commons DBCP`
+
+是否使用`Druid`数据源，早在引入`Druid`依赖就已经确定下来了。就算你不在`application.yml`中指定`druid./:`，照样用的还是`Druid`数据源
+
+```java
+2022-07-22 11:17:28.184  INFO 5992 --- [           main] c.a.d.s.b.a.DruidDataSourceAutoConfigure : Init DruidDataSource
+2022-07-22 11:17:28.253  INFO 5992 --- [           main] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} inited
+```
+
+```xml
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid-spring-boot-starter</artifactId>
+    <version>1.2.11</version>
+</dependency>
+```
+
+当你把这个依赖去掉时，使用的数据源为`SpringBoot`内嵌的默认数据源`HikariCP`，除此之外`SpringBoot`还提供了`Tomcat`提供的`DataSource`以及`Commons DBCP`两种数据源可供开发者选择：
+
+- `HikariCP`【默认内置数据源对象，官方推荐】
+- `Tomcat`提供的`DataSource`【`HikariCP`不可用并且在`web`环境中】
+- `Commons DBCP`【`HikariCP`和`Tomcat`提供的数据源都不可用】
+
+若想做进一步配置，可以在基础配置之上再做个性化配置：
+
+```yaml
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    hikari:
+      maximum-pool-size: 50
+```
+
+### `JDBCTemplate`【默认持久化解决方案】
+
+要使用`JDBCTemplate`需先将`MyBatis-Plus`依赖去掉。`mybatis-plus-boot-starter`内带了`spring-boot-starter-jdbc`【可以通过`Maven`进行查看】，我们现在要使用的就是`spring-boot-starter-jdbc`。
+
+引入`spring-boot-starter-jdbc`依赖：
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
+```
+
+```java
+package com.kk;
+
+import com.kk.pojo.Book;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+@SpringBootTest
+class SpringBootDemo14SqlApplicationTests {
+
+    @Test
+    void contextLoads(@Autowired JdbcTemplate jdbcTemplate) {
+        String sql = "select * from tbl_book";
+        List<Map<String, Object>> books = jdbcTemplate.queryForList(sql);
+        System.out.println(books);
+    }
+
+    @Test
+    void testList(@Autowired JdbcTemplate jdbcTemplate){
+        //Map 很难用我们有一套更标准的方法
+        String sql = "select * from tbl_book";
+        RowMapper<Book> rowMapper = new RowMapper<Book>() {
+            @Override
+            public Book mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Book book = new Book();
+                book.setId(rs.getInt("id"));
+                book.setName(rs.getString("name"));
+                book.setType(rs.getString("type"));
+                book.setDescription(rs.getString("description"));
+                return book;
+            }
+        };
+        List<Book> bookList = jdbcTemplate.query(sql, rowMapper);
+        System.out.println(bookList);
+    }
+}
+```
+
+### `H2`数据库【默认数据库解决方案】
+
+`SpringBoot`内嵌了三种数据库供开发者选择，用于提高开发者测试效率。【都是拿`Java`程序写的】
+
+- `H2`
+- `HSQL`
+- `Derby`
+
+以`H2`数据库为例引入依赖：
+
+```xml
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <version>2.1.214</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+    <version>2.7.1</version>
+</dependency>
+```
+
+添加`spring-boot-starter-web`依赖，因为要有启动`Tomcat`服务器。设置`H2`数据库需要在`Web`中设置。
+
+设置`H2`相关配置：
+
+```yaml
+spring:
+  h2:
+    console:
+      path: /h2
+      enabled: true
+server:
+  prot: 80
+```
+
+启动服务器，进入网页`localhost/h2`，按照网页显示的内容配置数据源：
+
+```yaml
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:~/test
+    username: sa
+    password: 123456
+    hikari:
+      maximum-pool-size: 50
+```
+
+添加数据库：
+
+```sql
+create table tbl_book;
+alter table tbl_book add column id int;
+alter table tbl_book add column type varchar;
+alter table tbl_book add column name varchar;
+alter table tbl_book add column description varchar;
+insert into tbl_book(id, type, name, description) values(1, 'SpringBoot1', 'SpringBoot2', 'SpringBoot3');
+insert into tbl_book(id, type, name, description) values(2, 'SpringBoot3', 'SpringBoot4', 'SpringBoot5');
+select * from tbl_book;
+```
+
+使用`JdbcTemplate`持久化进行测试：
+
+```java
+package com.kk;
+
+import com.kk.pojo.Book;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+@SpringBootTest
+class SpringBootDemo14SqlApplicationTests {
+
+    @Test
+    void contextLoads(@Autowired JdbcTemplate jdbcTemplate) {
+        String sql = "select * from TBL_BOOK";
+        List<Map<String, Object>> books = jdbcTemplate.queryForList(sql);
+        System.out.println(books);
+    }
+
+    @Test
+    void testList(@Autowired JdbcTemplate jdbcTemplate){
+        //Map 很难用我们有一套更标准的方法
+        String sql = "select * from tbl_book";
+        RowMapper<Book> rowMapper = new RowMapper<Book>() {
+            @Override
+            public Book mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Book book = new Book();
+                book.setId(rs.getInt("id"));
+                book.setName(rs.getString("name"));
+                book.setType(rs.getString("type"));
+                book.setDescription(rs.getString("description"));
+                return book;
+            }
+        };
+        List<Book> bookList = jdbcTemplate.query(sql, rowMapper);
+        System.out.println(bookList);
+    }
+}
+```
 
 ## 整合第三方技术
 
