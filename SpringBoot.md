@@ -4061,6 +4061,42 @@ public class ServiceTest {
 }
 ```
 
+可以发现测试数据是固定的，如何设定随机数据呢？---> 在`application.yml`中设定然后使用那一套`@ConfigurationProperties(prefix = "testcase")`即可。
+
+```java
+testcase:
+  id: ${random.int(10,100)}
+  name: ${random.value}
+  type: ${random.value}}
+  description: ${random.long}
+```
+
+```java
+package com.kk.pojo;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Component
+@ConfigurationProperties(prefix = "testcase")
+public class TestCase {
+    private String id;
+    private String name;
+    private String type;
+    private String description;
+}
+```
+
+
+
+
+
 ### 数据层测试事务回滚
 
 ### 测试用例设置随机数据
