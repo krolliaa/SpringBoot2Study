@@ -1,6 +1,7 @@
 package com.kk;
 
 import com.kk.pojo.Book;
+import com.kk.pojo.TestCase;
 import com.kk.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,5 +23,13 @@ public class ServiceTest {
         book.setName("SpringBoot");
         book.setDescription("SpringBoot");
         bookService.save(book);
+    }
+
+    @Autowired
+    private TestCase testCase;
+
+    @Test
+    void testServiceData() {
+        System.out.println(testCase);
     }
 }
