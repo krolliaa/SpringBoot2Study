@@ -4607,18 +4607,148 @@ Windows: redis-cli -h 192.168.56.1 -p 9527
 
 #### `Elastic-Search`篇
 
+- `ES`是一个分布式的全文搜索引擎。功能非常强大，是亿量级的非关系型数据库，并且速度是毫秒级。
 
+  要想做全文搜索，首先要做的是分词先匹配到`id`然后获取数据 ---> **倒排索引【`ES`核心工作原理】**。每条数据就是一个文档。
 
-### `Quratz`篇
+- 本想在`Linux`安装`ES`结果一直出`bug`，很浪费时间，所以还是改成`Windows`先了，等哪天学习不那么紧张了再来尝试下在`Linux`安装`ES`。
 
-### `Task`篇
+  默认端口为：`9200`，`MonogoDB`默认端口为：`27017`，`Redis`默认端口为：`6379`
 
-### `ActiveMQ`篇
+  启动`elasticsearch.bat`然后浏览`http://localhost:9200/`看到一堆`JSON`数据格式的字符串表明启动成功。
 
-### `RabbitMQ`篇
+- **索引操作 + `IK`分词器安装 + 设置索引创建规则**
 
-### `RocketMQ`篇
+  通过`postman`即可向`ES`发送数据，添加数据等。**`Restful`风格**。
 
-### `Kafka`篇
+  比较特殊的是添加操作使用的是`PUT`而不是`POST`，这是因为要保证它的幂等性。
 
-## 监控
+  ```xml
+  http://localhost:9200/books [PUT DELTE GET]添加
+  ```
+
+  若要使用分词功能需要开启分词器。分词器就在`mapping`中使用，我们可以使用插件来进行分词：
+
+  **将插件放入到`plugins/`目录中，创建`ik`文件夹，然后重启`ES`即可使用分词器。**
+
+  ```json
+  {
+      "books": {
+          "aliases": {},
+          "mappings": {},
+          "settings": {
+              "index": {
+                  "routing": {
+                      "allocation": {
+                          "include": {
+                              "_tier_preference": "data_content"
+                          }
+                      }
+                  },
+                  "number_of_shards": "1",
+                  "provided_name": "books",
+                  "creation_date": "1658572860949",
+                  "number_of_replicas": "1",
+                  "uuid": "qy96z3zjQASHY57RAiXaTg",
+                  "version": {
+                      "created": "7160299"
+                  }
+              }
+          }
+      }
+  }
+  ```
+
+  `Postman`发送请求：
+
+  ```json
+  {
+      "mappings":{
+          //装载属性
+          "properties":{
+              "id":{
+                  //表示 id 是一个关键字
+                  //"index":false 表示不参与查询
+                  "type":"keyword"
+              },
+              "name":{
+                  //告诉ES这个字段提供的是文本信息
+                  "type":"text",
+                  "analyzer":"ik_max_word",
+                  "copy_to":"all"
+              },
+              "type":{
+                	"type":"keyword"  
+              },
+              "description":{
+                  "type":"text",
+                  "analyzer":"ik_max_word",
+                  "copy_to":"all"
+              },
+              //整合 name description ---> all 这个字段是虚拟出来的，不真实存在
+              //主要用于查询
+              "all":{
+                  "type":"text",
+                  "analyzer":"ik_max_word"
+              }
+          }
+      }
+  }
+  ```
+
+  发送`GET`请求：`http://localhost:9200/books`，得到如下结果【需要关闭`Raw-JSON`】：
+
+  ````json
+  {
+      "books": {
+          "aliases": {},
+          "mappings": {
+              "properties": {
+                  "all": {
+                      "type": "text",
+                      "analyzer": "ik_max_word"
+                  },
+                  "description": {
+                      "type": "text",
+                      "copy_to": [
+                          "all"
+                      ],
+                      "analyzer": "ik_max_word"
+                  },
+                  "id": {
+                      "type": "keyword"
+                  },
+                  "name": {
+                      "type": "text",
+                      "copy_to": [
+                          "all"
+                      ],
+                      "analyzer": "ik_max_word"
+                  },
+                  "type": {
+                      "type": "keyword"
+                  }
+              }
+          },
+          "settings": {
+              "index": {
+                  "routing": {
+                      "allocation": {
+                          "include": {
+                              "_tier_preference": "data_content"
+                          }
+                      }
+                  },
+                  "number_of_shards": "1",
+                  "provided_name": "books",
+                  "creation_date": "1658573588593",
+                  "number_of_replicas": "1",
+                  "uuid": "JRixpMzpST-L2yXACe1yJw",
+                  "version": {
+                      "created": "7160299"
+                  }
+              }
+          }
+      }
+  }
+  ````
