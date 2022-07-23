@@ -4312,22 +4312,181 @@ class SpringBootDemo14SqlApplicationTests {
 
 ## 整合第三方技术
 
-### `Redis`篇
+### `NoSQL`解决方案
 
-### `MongoDB`篇
+这里由于不可变因素`Linux`虚拟机的网络只能使用`NAT`地址转换而无法使用桥接，要想成功连接还需要设定下端口转换：
 
-### `Elastic-Search`篇
+```
+TCP 192.168.56.1 22 10.0.2.15 22
+```
 
-### `Quratz`篇
+然后使用`XSHELL`连接：`192.168.56.1:22`即可成功连接。
 
-### `Task`篇
+#### `Redis`篇
 
-### `ActiveMQ`篇
+`Redis`是一款`key-value`存储结构的内存级的`NoSQL`数据库：
 
-### `RabbitMQ`篇
+- 支持多种数据存储格式
+- 支持持久化
+- 支持集群
 
-### `RocketMQ`篇
+`redis`的安装就不多说了[博客都有收藏]，简单介绍下在`Linux`开启`Redis`在`Windows`中使用的命令：
 
-### `Kafka`篇
+首先需要进入到`redis.conf`，修改以下内容：
 
-## 监控
+```java
+protected-mode yes ---> protected-mode no[关闭保护模式]
+bind 127.0.0.1 -::1 ---> #bind 127.0.0.1 -::1[禁用]
+port 6379 ---> 可改可不改，实际生产中必须会改
+daemonize yes ---> daemonize no[开启后台启用]
+
+因为这里的网络是 NAT 地址转换的，所以需要做个端口转换：
+TCP 192.168.56.1 9527 10.02.15 6379
+```
+
+```
+Linux: ./redis-server ../redis.conf
+Windows: redis-cli -h 192.168.56.1 -p 9527
+```
+
+如上操作之后即可成功连接。可以在`Windows set k1 v1`在`Linux get k1`查看。
+
+- `SpringBoot`整合`Redis`
+
+  1. 导入依赖
+  
+     ```xml
+     <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-data-redis</artifactId>
+     </dependency>
+     ```
+  
+  2. 配置`application.yml`
+  
+     ```yaml
+     spring:
+       redis:
+         host: 192.168.56.1
+         port: 9527
+     ```
+  
+  3. 类比于`JdbcTemplate`可以用`RedisTemplate`来操作`Redis`数据库
+  
+     `Redis`里面有很多类型的数据可以存储，所以操作前需要先确定数据类型：`redisTemplate.opsForHash`等等。
+  
+     ```java
+     package com.kk;
+     
+     import org.junit.jupiter.api.Test;
+     import org.springframework.beans.factory.annotation.Autowired;
+     import org.springframework.boot.test.context.SpringBootTest;
+     import org.springframework.data.redis.core.HashOperations;
+     import org.springframework.data.redis.core.RedisTemplate;
+     import org.springframework.data.redis.core.ValueOperations;
+     
+     @SpringBootTest
+     class SpringBootDemo16RedisApplicationTests {
+     
+         @Autowired
+         private RedisTemplate redisTemplate;
+     
+         @Test
+         void contextLoads() {
+     
+         }
+     
+         @Test
+         void set() {
+             //问你准备操作哪种数据类型？
+             //Cluster 集群、Hash、Geo 地理坐标、Value 最普通
+             ValueOperations valueOperations = redisTemplate.opsForValue();
+             valueOperations.set("k2", "v2");
+         }
+     
+         @Test
+         void get() {
+             ValueOperations valueOperations = redisTemplate.opsForValue();
+             Object object = valueOperations.get("k2");
+             System.out.println(object);
+         }
+     
+         @Test
+         void hSet() {
+              HashOperations hashOperations = redisTemplate.opsForHash();
+              hashOperations.put("info", "name", "Tom");
+         }
+     
+         @Test
+         void hGet() {
+             HashOperations hashOperations = redisTemplate.opsForHash();
+             Object object = hashOperations.get("info", "name");
+             System.out.println(object);
+         }
+     }
+     ```
+  
+  4. 在`IDEA`中操作完毕的数据在`Liunx`中并不显示，这是为什么呢？
+  
+     `RedisTemplate<K, V>`通过源码可以发现操作的都是对象，如果想要让数据库也有数据，原`Redis`操作的都是字符串类型，所以需要的需要使用`StringRedisTemplate`，才能在数据库中显示。
+  
+     ```java
+     @Test
+     void stringSet() {
+         ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+         valueOperations.set("stringRedisTemplate", "Yeah");
+     }
+     @Test
+     void stringGet() {
+         ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+         String value = valueOperations.get("stringRedisTemplate");
+         System.out.println(value);
+     }
+     ```
+  
+     当`stringSet()`方法执行完毕之后可以通过`Linux Redis ---> get stringRedisTemplate`看到存在该数据。
+  
+     在`Linux`中更改，然后在`IDEA`中获取，打印：得到更改后的数据，证明是同一个。
+  
+     其实`RedisTemplate`跟`StringRedisTemplate`属于同根同源的，只不过一个操作的是对象，任何引用数据类型，一个是指定需要字符串类型。
+  
+  5. `Redis`有一个传统的操作客户端的技术：`Jedis`
+  
+     `SpringBoot`中默认的操作客户端技术就是：`Lettuce`【生菜】，**为什么有了`Lettuce`还需要使用`Jedis`呢？原因：考虑到系统升级，如果以前一直使用的都是`Jedis`，那最好还是不要换，换了可能会有一些莫名其妙的风险出现。**
+  
+     导入依赖：【并不用写版本号，说明在`SpringBootParent`已经定义了`jedis`】
+  
+     ```xml
+     <dependency>
+         <groupId>redis.clients</groupId>
+         <artifactId>jedis</artifactId>
+     </dependency>
+     ```
+  
+     在`application.yml`中做配置：
+  
+     ```yaml
+     spring:
+       redis:
+         host: 192.168.56.1
+         port: 9527
+         client-type: jedis
+         lettuce:
+           pool:
+             max-active: 16
+         jedis:
+           pool:
+             max-active: 16
+     ```
+  
+     - `lettuce`（默认）和`jedis`的区别【了解】
+       - `Jedis`连接`Redis`服务器是直连模式，当多线程模式下使用`Jedis`会存在线程安全问题，解决方案可以通过配置连接池使每个连接专用，这样整体性能就大受影响【安全 ---> 增加连接数 ---> 影响性能】（万一来连接数非常非常大呢？岂不是很慢？配再多能满足需求吗？）
+       - `lettuce`基于`Netty`框架进行与`Redis`服务器连接，底层设计中采用`StatefulRedisConnection`。`StatefulRedisConnection`自身是是线程安全的，可以保障并发访问安全问题，所以一个连接可以被多线程复用。当然`lettuce`也支持多连接实例一起工作。
+  
+  6. 现在有一个问题：
+  
+     想操作结构化数据，并且需要很快的响应速度。
+  
+     我们知道`MySQL`数据库里面存储的就是结构化数据，但是它的响应速度是比较慢的。而`Redis`存储的是`key-value`数据，无法存储结构化数据，我们只能通过模拟的方式，这样的操作虽然响应速度很快很不方便。
+  
+     **<font color="red">有没有一种东西，它既能操作结构化数据，又能给予较快的响应速度呢？还真有，那就是：`MongoDB`</font>**
