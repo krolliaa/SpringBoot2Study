@@ -4542,3 +4542,83 @@ Windows: redis-cli -h 192.168.56.1 -p 9527
   db.book.find();
   //db.book.update({"name":"SpringBoot"},{$set:{"name":"SpringBoot2"}})
   ```
+
+- `SpringBoot`整合`MongoDB`
+
+  1. 导入依赖：`pom.xml`
+
+     ```xml
+     <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-data-mongodb</artifactId>
+     </dependency>
+     ```
+
+  2. 修改配置：`application.yml`
+
+     ```yaml
+     spring:
+       data:
+         mongodb:
+           #host: 192.168.56.1
+           #port: 27017
+           #database: study
+           uri: mongodb://192.168.56.1:27017/study
+     ```
+
+  3. 测试：
+
+     ```java
+     package com.kk;
+     
+     import com.kk.pojo.Book;
+     import org.junit.jupiter.api.Test;
+     import org.springframework.beans.factory.annotation.Autowired;
+     import org.springframework.boot.test.context.SpringBootTest;
+     import org.springframework.data.mongodb.core.MongoTemplate;
+     
+     import java.util.List;
+     
+     @SpringBootTest
+     class SpringBootDemo17MongoDbApplicationTests {
+     
+         @Autowired
+         private MongoTemplate mongoTemplate;
+     
+         @Test
+         void contextLoads() {
+             Book book = new Book();
+             book.setId(1);
+             book.setName("《深入理解 Java 虚拟机》");
+             book.setType("计算机科学");
+             book.setDescription("作为一位Java程序员，你是否也曾经想深入理解Java虚拟机，但是却被它的复杂和深奥拒之门外？没关系，本书极尽化繁为简之妙，能带领你在轻松中领略Java虚拟机的奥秘。本书是近年来国内出版的唯一一本与Java虚拟机相关的专著，也是唯一一本同时从核心理论和实际运用这两个角度去探讨Java虚拟机的著作，不仅理论分析得透彻，而且书中包含的典型案例和最佳实践也极具现实指导意义。");
+             mongoTemplate.save(book);
+         }
+     
+         @Test
+         void testFind() {
+             List<Book> bookList = mongoTemplate.findAll(Book.class);
+             System.out.println(bookList);
+         }
+     }
+     ```
+
+     **报错：因为之前设置的类型跟我们在这里设置的`int id = 1`冲突了，我们需要先删除掉`Object[xxx]`那一行的数据。**
+
+#### `Elastic-Search`篇
+
+
+
+### `Quratz`篇
+
+### `Task`篇
+
+### `ActiveMQ`篇
+
+### `RabbitMQ`篇
+
+### `RocketMQ`篇
+
+### `Kafka`篇
+
+## 监控
