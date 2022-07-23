@@ -11,6 +11,7 @@
         <module name="SpringBoot_demo05_MyBatisPlus" />
         <module name="SpringBoot_demo04_MyBatis" />
         <module name="SpringBoot_demo10_PropertiesProfile" />
+        <module name="SpringBoot_demo17_MongoDB" />
         <module name="SpringBoot_demo12_Configuration" />
         <module name="SpringBoot_demo07_SSMP" />
         <module name="SpringBoot_demo13_Test" />
@@ -48,6 +49,7 @@
       <module name="SpringBoot_demo13_Test" target="1.8" />
       <module name="SpringBoot_demo14_SQL" target="1.8" />
       <module name="SpringBoot_demo16_Redis" target="1.8" />
+      <module name="SpringBoot_demo17_MongoDB" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -70,6 +72,7 @@
       <module name="SpringBoot_demo13_Test" options="-parameters" />
       <module name="SpringBoot_demo14_SQL" options="-parameters" />
       <module name="SpringBoot_demo16_Redis" options="-parameters" />
+      <module name="SpringBoot_demo17_MongoDB" options="-parameters" />
     </option>
   </component>
 </project>
