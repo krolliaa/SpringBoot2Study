@@ -4490,3 +4490,55 @@ Windows: redis-cli -h 192.168.56.1 -p 9527
      我们知道`MySQL`数据库里面存储的就是结构化数据，但是它的响应速度是比较慢的。而`Redis`存储的是`key-value`数据，无法存储结构化数据，我们只能通过模拟的方式，这样的操作虽然响应速度很快很不方便。
   
      **<font color="red">有没有一种东西，它既能操作结构化数据，又能给予较快的响应速度呢？还真有，那就是：`MongoDB`</font>**
+
+#### `MongoDB`篇
+
+- `MongoDB`是一个开源、高性能、无模式的文档型数据库。是`NoSQL`中的一种。是最像关系型数据库的非关系型数据库。【可以操作结构化数据的同时以最快的响应速度响应】
+
+- 应用场景：【总的来说就是适用于存储临时村塾，修改频度较高的数据】
+
+  - 淘宝用户数据【存储位置：数据库 + 特征：永久性存储，修改频度极低】
+  - 游戏装备数据/道具（有图片有数据【不适合存储在`Redis`】 ===> 需要响应速度快）【存储位置：`Mongodb` 特征：永久性存储和临时性存储相结合、修改频度较高】
+  - 直播数据、打赏数据、粉丝数据【存储位置：`Redis Mongodb` 特征：临时性存储，修改频度非常高】
+  - 物联网数据【存储位置：`Mongodb` + 特征：临时存储，修改频度飞速】
+
+- 在这里简单说下在`Linux`中安装`MongoDB`的过程：
+
+  - 解压然后修改名称，创建`data conf`目录
+
+  - 进入到`conf`目录，创建`mongodb.conf`文件，内容为：
+
+    ```shell
+    port=27017
+    bind_ip=0.0.0.0
+    dbpath=/usr/local/app/mongodb/data
+    logpath=/usr/local/app/mongodb/log
+    fork=true
+    ```
+
+  - 配置环境变量
+
+    ```shell
+    vim /etc/profile
+     
+    #文件最后添加此配置（第一种）
+    export MONGODB_HOME=/usr/local/app/mongodb
+    export PATH=$PATH:${MONGODB_HOME}/bin
+    ```
+
+  - 启动`mongodb`：`/usr/local/app/mongodb/bin/mongodbd --config=/usr/local/app/mongodb/conf/mongodb.conf`
+
+  - 然后在`windows`中使用`studio 3T`连接`192.168.56.1 27017`即可
+
+- `Mongodb`的文档很像`JSON`但是不是`JSON`，在`Studio 3T`练习完成`MongoDB CRUD`基础操作
+
+  ```shell
+  db = db.getSiblingDB("study");
+  //db.getCollection("book").find({});
+  //db.book.insert({"name":"SpringBoot","type":"SpringBoot"})
+  //db.book.insert({"name":"SpringBoot"});
+  //db.book.find({"name":"SpringBoot"});
+  //db.book.remove({"type":"SpringBoot"});
+  db.book.find();
+  //db.book.update({"name":"SpringBoot"},{$set:{"name":"SpringBoot2"}})
+  ```
