@@ -5258,6 +5258,8 @@ public class MsgServiceImpl implements MsgService {
 
 然后使用`Post`方式访问：`http://localhost:8080/books?telephone=13888888888&code=138888`获取到`true`。证明缓存生效。
 
+#### `Simple`篇
+
 - `SpringBoot`针对缓存提出的解决方案【也有其它很优秀的缓存方案，这里学习的是`SpringBoot`自带的缓存技术】：
 
   - **开启缓存**
@@ -5538,6 +5540,132 @@ public class MsgServiceImpl implements MsgService {
      ```
 
      此时当我们再通过`PostMan`测试，可以发现测试通过。
+
+#### `EhCache`篇
+
+1. 导入依赖：【版本可不用写】
+
+   ```xml
+   <dependency>
+       <groupId>net.sf.ehcache</groupId>
+       <artifactId>ehcache</artifactId>
+       <version>2.10.9.2</version>
+   </dependency>
+   ```
+
+2. 【修改配置】启用`ehcache`缓存：
+
+   ```yaml
+   spring:
+     cache:
+       type: ehcache
+   # spring.cache.type 是可修改的
+   ```
+
+3. 对于`SpringBoot`来说`ehcache`是体系外的技术，它有它自己的一套配置，所以需要导入`ehcache`配置文件才可以使用`ehcache`
+
+   导入`ehcache`配置文件：
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
+            updateCheck="false">
+       <diskStore path="D:\ehcache" />
+   
+       <!--默认缓存策略 -->
+       <!-- external：是否永久存在，设置为true则不会被清除，此时与timeout冲突，通常设置为false-->
+       <!-- diskPersistent：是否启用磁盘持久化-->
+       <!-- maxElementsInMemory：最大缓存数量-->
+       <!-- overflowToDisk：超过最大缓存数量是否持久化到磁盘-->
+       <!-- timeToIdleSeconds：最大不活动间隔，设置过长缓存容易溢出，设置过短无效果，可用于记录时效性数据，例如验证码-->
+       <!-- timeToLiveSeconds：最大存活时间-->
+       <!-- memoryStoreEvictionPolicy：缓存清除策略-->
+       <defaultCache
+           eternal="false"
+           diskPersistent="false"
+           maxElementsInMemory="1000"
+           overflowToDisk="false"
+           timeToIdleSeconds="60"
+           timeToLiveSeconds="60"
+           memoryStoreEvictionPolicy="LRU" />
+   </ehcache>
+   ```
+
+4. 然后其余的代码都不用动，运行，报错，报错信息为：
+
+   ```java
+   java.lang.IllegalArgumentException: Cannot find cache named 'cacheSpace' for Builder[public java.lang.String com.kk.service.impl.SimCardServiceImpl.sendCode(java.lang.String)] caches=[cacheSpace] | key='#telephone' | keyGenerator='' | cacheManager='' | cacheResolver='' | condition='' | unless=''
+   	at org.springframework.cache.interceptor.AbstractCacheResolver.resolveCaches(AbstractCacheResolver.java:92) ~[spring-context-5.3.22.jar:5.3.22]
+   ```
+
+   这是因为使用`ehcache`可以，但是它是不知道缓存空间名称是`cacheSpace`【这个是我们自定义的】，我们需要在`ehcache.xml`配置文件中告诉`ehcache`，缓存空间名称是`cacheSpace`
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
+            updateCheck="false">
+       <diskStore path="D:\ehcache" />
+   
+       <!--默认缓存策略 -->
+       <!-- external：是否永久存在，设置为true则不会被清除，此时与timeout冲突，通常设置为false-->
+       <!-- diskPersistent：是否启用磁盘持久化-->
+       <!-- maxElementsInMemory：最大缓存数量-->
+       <!-- overflowToDisk：超过最大缓存数量是否持久化到磁盘-->
+       <!-- timeToIdleSeconds：最大不活动间隔，设置过长缓存容易溢出，设置过短无效果，可用于记录时效性数据，例如验证码-->
+       <!-- timeToLiveSeconds：最大存活时间-->
+       <!-- memoryStoreEvictionPolicy：缓存清除策略-->
+       <defaultCache
+               eternal="false"
+               diskPersistent="false"
+               maxElementsInMemory="1000"
+               overflowToDisk="false"
+               timeToIdleSeconds="60"
+               timeToLiveSeconds="60"
+               memoryStoreEvictionPolicy="LRU" />
+       <Cache
+               name="cacheSpace"
+               eternal="false"
+               diskPersistent="false"
+               maxElementsInMemory="1000"
+               overflowToDisk="false"
+               timeToIdleSeconds="60"
+               timeToLiveSeconds="60"
+               memoryStoreEvictionPolicy="LRU" />
+   </ehcache>
+   ```
+
+5. 此时我们再次运行服务，观察结果，测试通过
+
+6. 在这里就可以感受到`SpringBoot`整合的好处了，我们只需要导入依赖，修改配置，添加并且修改相关的`ehcache.xml`配置文件就可以使用`ehcache`缓存技术了，代码都不需要变化！不得不再次感叹`SpringBoot`简直太强大了！
+
+7. 注意配置文件中的：`timeToIdleSeconds`和`timeToLiveSeconds`设置的是缓存过期时间，单位是`second`秒，比如我们现在设置为`10`，然后再进行测试，`10s`后验证码【即缓存中的内容】将失效。
+
+   ```xml
+   <Cache
+           name="cacheSpace"
+           eternal="false"
+           diskPersistent="false"
+           maxElementsInMemory="1000"
+           overflowToDisk="false"
+           timeToIdleSeconds="10"
+           timeToLiveSeconds="10"
+           memoryStoreEvictionPolicy="LRU" />
+   ```
+
+   `10s`过后直接报错：
+
+   ```json
+   {
+       "timestamp": "2022-07-24T15:55:45.567+00:00",
+       "status": 500,
+       "error": "Internal Server Error",
+       "path": "/sms"
+   }
+   ```
+
+8. `SpringBoot`整合`ehcache`缓存技术整合完毕
 
 ### 任务解决方案
 
