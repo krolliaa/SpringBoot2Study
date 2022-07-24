@@ -4954,7 +4954,197 @@ Windows: redis-cli -h 192.168.56.1 -p 9527
         }
         ```
 
-     4. 
+     4. 添加文档【使用分词器】：
+
+        注意：在此之前需要删除上一次创建的`books`索引，否则会报错。（同名索引只能有一个）
+
+        ```java
+        @Test
+        void testESIndexByIk() throws IOException {
+            CreateIndexRequest createIndexRequest = new CreateIndexRequest("books");
+            String json = "{\n" +
+                    "    \"mappings\":{\n" +
+                    "        \"properties\":{\n" +
+                    "            \"id\":{\n" +
+                    "                \"type\":\"keyword\"\n" +
+                    "            },\n" +
+                    "            \"name\":{\n" +
+                    "                \"type\":\"text\",\n" +
+                    "                \"analyzer\":\"ik_max_word\",\n" +
+                    "                \"copy_to\":\"all\"\n" +
+                    "            },\n" +
+                    "            \"type\":{\n" +
+                    "              \t\"type\":\"keyword\"  \n" +
+                    "            },\n" +
+                    "            \"description\":{\n" +
+                    "                \"type\":\"text\",\n" +
+                    "                \"analyzer\":\"ik_max_word\",\n" +
+                    "                \"copy_to\":\"all\"\n" +
+                    "            },\n" +
+                    "            \"all\":{\n" +
+                    "                \"type\":\"text\",\n" +
+                    "                \"analyzer\":\"ik_max_word\"\n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}";
+            createIndexRequest.source(json, XContentType.JSON);
+            restHighLevelClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+        }
+        ```
+
+        使用`PostMan`查看：【创建成功】
+
+        ```json
+        {
+            "books": {
+                "aliases": {},
+                "mappings": {
+                    "properties": {
+                        "all": {
+                            "type": "text",
+                            "analyzer": "ik_max_word"
+                        },
+                        "description": {
+                            "type": "text",
+                            "copy_to": [
+                                "all"
+                            ],
+                            "analyzer": "ik_max_word"
+                        },
+                        "id": {
+                            "type": "keyword"
+                        },
+                        "name": {
+                            "type": "text",
+                            "copy_to": [
+                                "all"
+                            ],
+                            "analyzer": "ik_max_word"
+                        },
+                        "type": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                "settings": {
+                    "index": {
+                        "routing": {
+                            "allocation": {
+                                "include": {
+                                    "_tier_preference": "data_content"
+                                }
+                            }
+                        },
+                        "number_of_shards": "1",
+                        "provided_name": "books",
+                        "creation_date": "1658635116262",
+                        "number_of_replicas": "1",
+                        "uuid": "aWGjN2lUSByTBDZVtM-nsQ",
+                        "version": {
+                            "created": "7160299"
+                        }
+                    }
+                }
+            }
+        }
+        ```
+
+        创建文档：
+
+        `PostMan`查询文档使用：`http://localhost:9200/_doc/{id}`
+
+        查询全部内容：`http://localhost:9200/_search`
+
+        将对象转换为`JSON`格式的数据需要使用到`fastjson`，这里导入依赖：
+
+        ```xml
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.79</version>
+        </dependency>
+        ```
+
+        创建文档：
+
+        ```java
+        @Test
+        void myCreateDocument() throws Exception {
+            HttpHost httpHost = HttpHost.create("http://localhost:9200");
+            RestClientBuilder restClientBuilder = RestClient.builder(httpHost);
+            restHighLevelClient = new RestHighLevelClient(restClientBuilder);
+            Book book = bookMapper.selectById(1);
+            IndexRequest indexRequest = new IndexRequest("books").id(String.valueOf(book.getId()));
+            String json = JSON.toJSONString(book);
+            indexRequest.source(json, XContentType.JSON);
+            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+            restHighLevelClient.close();
+        }
+        ```
+
+        使用`PostMan`查询文档：`http://localhost:9200/_doc/1`
+
+        ```json
+        {
+            "_index": "books",
+            "_type": "_doc",
+            "_id": "1",
+            "_version": 1,
+            "_seq_no": 0,
+            "_primary_term": 1,
+            "found": true,
+            "_source": {
+                "description": "Java学习经典,殿堂级著作！赢得了全球程序员的广泛赞誉。",
+                "id": 1,
+                "name": "Java编程思想（第4版）",
+                "type": "计算机理论"
+            }
+        }
+        ```
+
+        查询到`id=1`的`book`说明查询成功！
+
+        这只能添加单条文档，如何批量添加呢？总不能添加一个文档就创建一个`RestHighLevelClient`对象吧！`RestHighLevelClient`创建了批处理的对象，用于批量添加的`BulkRequest`。
+
+        只需要将单个`IndexRequest`添加进`BulkRequest`中即可。
+
+        ```java
+        @Test
+        void myBulkCreateDocument() throws IOException {
+            HttpHost httpHost = HttpHost.create("http://localhost:9200");
+            RestClientBuilder restClientBuilder = RestClient.builder(httpHost);
+            restHighLevelClient = new RestHighLevelClient(restClientBuilder);
+            List<Book> bookList = bookMapper.selectList(null);
+            BulkRequest bulkRequest = new BulkRequest();
+            for(Book book : bookList) {
+                IndexRequest indexRequest = new IndexRequest("books").id(String.valueOf(book.getId()));
+                String json = JSON.toJSONString(book);
+                indexRequest.source(json, XContentType.JSON);
+                bulkRequest.add(indexRequest);
+            }
+            restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+            restHighLevelClient.close();
+        }
+        ```
+
+        `Java`程序查询`ES`中的文档：
+
+        1. 按`id`查询：`http://localhost:9200/_doc/1`
+
+           ```java
+           
+           ```
+
+        2. 查询全部：`http://localhost:9200/_search`
+
+           ```java
+           
+           ```
+
+        3. 条件查询：
+
+           ```java
 
 ### `Quratz`篇
 
