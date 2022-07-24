@@ -5166,6 +5166,104 @@ Windows: redis-cli -h 192.168.56.1 -p 9527
         }
         ```
 
+### 缓存解决方案
+
+长期大量的访问数据库，这样数据库是防不住的。总是会有崩掉的风险，因为总有一些数据是经常被访问的，所以就想：能不能找一块空间用来存储这些总是被访问的数据，这样就可以缓解数据库被大量长期访问的压力了。我们将这称之为**缓存**。
+
+- 缓存就是：一种介于数据永久存储介质与数据应用之间的数据临时存储介质
+- 使用缓存可以有效的减少低速数据读取过程的次数【例如磁盘`IO`】，提高系统性能（从内存读肯定比从磁盘读要快）
+- 如有必要还可以做二级缓存多级缓存，缓存不仅仅只能缓解数据库的，还可以提供一种临时的存储空间，比如：手机验证码验证信息。
+
+通过`HashMap`模拟数据库缓存【仅仅只是一个例子】：
+
+```java
+package com.kk.service.impl;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.kk.mapper.BookMapper;
+import com.kk.pojo.Book;
+import com.kk.service.BookService;
+import org.springframework.stereotype.Service;
+
+import java.io.Serializable;
+import java.util.HashMap;
+
+@Service
+public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements BookService {
+
+    private HashMap<Object, Book> hashMap = new HashMap();
+
+    @Override
+    public Book getById(Serializable id) {
+        if (hashMap.get(id) == null) {
+            Book book = super.getById(id);
+            hashMap.put(id, book);
+        }
+        return hashMap.get(id);
+    }
+}
+```
+
+启动服务器然后访问接口`http://localhost:8080/books/1`：
+
+可以发现第一次访问时访问了数据库，但是第二次再访问的时候不再访问数据库，而是直接从内存中保存在`HashMap`中取数据：这种从缓存中取数据的方式大大提高了效率，尤其是在大量访问量的时候尤其明显。
+
+![](https://img-blog.csdnimg.cn/0fbadfd3c4e44fe9895c09ba5a8b41dd.png)
+
+![](https://img-blog.csdnimg.cn/ba188cb59fd54cd195fcec1b289ee059.png)
+
+通过`HashMap`模拟临时缓存【仅仅只是一个例子 ---> 验证码】：
+
+```java
+package com.kk.service;
+
+public interface MsgService {
+    //获取验证码
+    public abstract String getCode(String telephone);
+    //校验验证码
+    public abstract Boolean checkCode(String telephone, String code);
+}
+```
+
+```java
+package com.kk.service.impl;
+
+import com.kk.service.MsgService;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+
+@Service
+public class MsgServiceImpl implements MsgService {
+
+    private HashMap<String, String> hashMap = new HashMap();
+
+    @Override
+    public String getCode(String telephone) {
+        String code = telephone.substring(0, 6);
+        if (hashMap.get(telephone) == null) {
+            hashMap.put(telephone, code);
+        }
+        return hashMap.get(telephone);
+    }
+
+    @Override
+    public Boolean checkCode(String telephone, String code) {
+        return code.equals(hashMap.get(telephone));
+    }
+}
+```
+
+使用`PostMan`访问接口获取验证码：`http://localhost:8080/books?telephone=13888888888`得到`138888`。
+
+然后使用`Post`方式访问：`http://localhost:8080/books?telephone=13888888888&code=138888`获取到`true`。证明缓存生效。
+
+### 任务解决方案
+
+### 邮件解决方案
+
+### 消息解决方案
+
 ### `Quratz`篇
 
 

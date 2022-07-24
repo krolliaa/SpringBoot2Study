@@ -34,5 +34,6 @@
     <file url="file://$PROJECT_DIR$/SpringBoot_demo16_Redis/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/SpringBoot_demo17_MongoDB/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/SpringBoot_demo18_ElasticSearch/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SpringBoot_demo19_Cache/src/main/java" charset="UTF-8" />
   </component>
 </project>
