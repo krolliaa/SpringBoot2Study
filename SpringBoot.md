@@ -5305,6 +5305,240 @@ public class MsgServiceImpl implements MsgService {
      }
      ```
 
+- `SpringBoot`使用的这套缓存技术是`Simple`，当然如果想换一种缓存技术实现缓存也是可以的。并且`SpringBoot`对其它缓存技术进行了整合，统一了接口【对原始代码没有影响】，方便缓存技术的开发与管理。
+
+  常用的缓存技术方案：`Ehcache Redis Memecached`
+
+- 缓存使用案例：手机验证码
+
+  1. 制作`SimCard`手机验证码类
+
+     ```java
+     package com.kk.pojo;
+     
+     import lombok.AllArgsConstructor;
+     import lombok.Data;
+     import lombok.NoArgsConstructor;
+     
+     @Data
+     @NoArgsConstructor
+     @AllArgsConstructor
+     public class SimCard {
+         private String telephone;
+         private String code;
+     }
+     ```
+
+  2. 制作`SimCardService`服务层类
+
+     ```java
+     package com.kk.service;
+     
+     import com.kk.pojo.SimCard;
+     
+     public interface SimCardService {
+         public abstract String sendCode(String telephone);
+         public abstract Boolean checkCode(SimCard simCard);
+     }
+     ```
+
+     实现类【暂定】：
+
+     ```java
+     package com.kk.service.impl;
+     
+     import com.kk.pojo.SimCard;
+     import com.kk.service.SimCardService;
+     
+     public class SimCardServiceImpl implements SimCardService {
+         @Override
+         public String sendCode(String telephone) {
+             return null;
+         }
+     
+         @Override
+         public Boolean checkCode(SimCard simCard) {
+             return null;
+         }
+     }
+     ```
+
+  3. 制作`SimCardController`表现层类
+
+     ```java
+     package com.kk.controller;
+     
+     import com.kk.pojo.SimCard;
+     import com.kk.service.SimCardService;
+     import com.kk.util.CodeUtil;
+     import com.sun.org.apache.bcel.internal.classfile.Code;
+     import org.springframework.beans.factory.annotation.Autowired;
+     import org.springframework.web.bind.annotation.GetMapping;
+     import org.springframework.web.bind.annotation.PostMapping;
+     import org.springframework.web.bind.annotation.RequestMapping;
+     import org.springframework.web.bind.annotation.RestController;
+     
+     @RestController
+     @RequestMapping(value = "/sms")
+     public class SimCardController {
+     
+         @Autowired
+         private SimCardService simCardService;
+     
+     
+         @GetMapping
+         public String getCode(String telephone) {
+             return simCardService.sendCode(telephone);
+         }
+     
+         @PostMapping
+         public Boolean checkCode(SimCard simCard) {
+             return simCardService.checkCode(simCard);
+         }
+     }
+     ```
+
+  4. 制作验证码：
+
+     ```java
+     package com.kk.util;
+     
+     public class CodeUtil {
+         public static String getCode(String telephone) {
+             long password = 286574;
+             long currentTime = System.currentTimeMillis();
+             long hash = telephone.hashCode();
+             long code = Math.abs(((hash ^ password) ^ currentTime) % 1000000);
+             String[] values = {"000000", "00000", "0000", "000", "00", "0", ""};
+             String stringCode = code + "";
+             stringCode = values[stringCode.length()] + stringCode;
+             return stringCode;
+         }
+     }
+     ```
+
+  5. 完成`SimCardSercviceImpl`服务层功能：【`@CachePut(value = "cacheSpace", key = "#telephone")`将数据放入缓存空间中】
+
+     ```java
+     package com.kk.service.impl;
+     
+     import com.kk.pojo.SimCard;
+     import com.kk.service.SimCardService;
+     import com.kk.util.CodeUtil;
+     import org.springframework.cache.annotation.CachePut;
+     import org.springframework.stereotype.Service;
+     
+     @Service
+     public class SimCardServiceImpl implements SimCardService {
+         @Override
+         @CachePut(value = "cacheSpace", key = "#telephone")
+         public String sendCode(String telephone) {
+             return CodeUtil.getCode(telephone);
+         }
+     
+         @Override
+         public Boolean checkCode(SimCard simCard) {
+             return null;
+         }
+     }
+     ```
+
+     验证验证码，从缓存中取数据：
+
+     ```java
+     package com.kk.service.impl;
+     
+     import com.kk.pojo.SimCard;
+     import com.kk.service.SimCardService;
+     import com.kk.util.CodeUtil;
+     import org.springframework.cache.annotation.CachePut;
+     import org.springframework.cache.annotation.Cacheable;
+     import org.springframework.stereotype.Service;
+     
+     @Service
+     public class SimCardServiceImpl implements SimCardService {
+         @Override
+         @CachePut(value = "cacheSpace", key = "#telephone")
+         public String sendCode(String telephone) {
+             return CodeUtil.getCode(telephone);
+         }
+     
+         @Override
+         @Cacheable(value = "cacheSpace", key = "#telephone")
+         public Boolean checkCode(SimCard simCard) {
+             return null;
+         }
+     }
+     ```
+
+     现在要想一个问题：我们的数据是从哪里来的？
+
+     数据是存储在对象中的对不对，而这个对象都是`Spring`容器帮我们管理的。而容器中的对象在初始化容器的时候就已经产生了，我们能做的就是修改里面的数据，缓存也是如此，缓存中的数据是放在容器中的对象里头的。所以我们需要修改一下工具类，产生验证码我们采用对象的模式，获取验证码我们也采用验证码的模式，用容器来管理。
+
+     改造工具类`CodeUtil`：添加`@Component`注解，去除掉方法中的`static`静态方法，改为实例方法，这样容器才能管理
+
+     ```java
+     package com.kk.util;
+     
+     import org.springframework.cache.annotation.Cacheable;
+     import org.springframework.stereotype.Component;
+     
+     @Component
+     public class CodeUtil {
+         public String generateCode(String telephone) {
+             long password = 286574;
+             long currentTime = System.currentTimeMillis();
+             long hash = telephone.hashCode();
+             long code = Math.abs(((hash ^ password) ^ currentTime) % 1000000);
+             String[] values = {"000000", "00000", "0000", "000", "00", "0", ""};
+             String stringCode = code + "";
+             stringCode = values[stringCode.length()] + stringCode;
+             return stringCode;
+         }
+     
+         @Cacheable(value = "cacheSpace", key = "#telephone")
+         public String getCode(String telephone) {
+             return null;
+         }
+     }
+     ```
+
+     `Service`中的代码相应地也要做出变化了，现在我们明白了，我们在`Service`中的代码`@CachePut(value = "cacheSpace", key = "#telephone")`是往`SPring`容器里头存放缓存，是容器来管理这个缓存，从`CodeUtil`这个对象中取，所以要在`CodeUtil`中获取缓存中的内容：这就是为什么`@Cacheable(value = "cacheSpace", key = "#telephone")`注解要放在`CodeUtil`类里头了。
+
+     下面是`Service`的代码：
+
+     ```java
+     package com.kk.service.impl;
+     
+     import com.kk.pojo.SimCard;
+     import com.kk.service.SimCardService;
+     import com.kk.util.CodeUtil;
+     import org.springframework.beans.factory.annotation.Autowired;
+     import org.springframework.cache.annotation.CachePut;
+     import org.springframework.stereotype.Service;
+     
+     @Service
+     public class SimCardServiceImpl implements SimCardService {
+     
+         @Autowired
+         private CodeUtil codeUtil;
+     
+         @Override
+         @CachePut(value = "cacheSpace", key = "#telephone")
+         public String sendCode(String telephone) {
+             return codeUtil.generateCode(telephone);
+         }
+     
+         @Override
+         public Boolean checkCode(SimCard simCard) {
+             String code = codeUtil.getCode(simCard.getTelephone());
+             return code.equals(simCard.getCode());
+         }
+     }
+     ```
+
+     此时当我们再通过`PostMan`测试，可以发现测试通过。
+
 ### 任务解决方案
 
 ### 邮件解决方案
