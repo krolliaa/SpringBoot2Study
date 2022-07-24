@@ -5258,6 +5258,53 @@ public class MsgServiceImpl implements MsgService {
 
 然后使用`Post`方式访问：`http://localhost:8080/books?telephone=13888888888&code=138888`获取到`true`。证明缓存生效。
 
+- `SpringBoot`针对缓存提出的解决方案【也有其它很优秀的缓存方案，这里学习的是`SpringBoot`自带的缓存技术】：
+
+  - **开启缓存**
+  - **设置进入缓存的数据**
+  - **设置读取缓存的数据**
+
+  1. 导入依赖：
+
+     ```xml
+     <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-cache</artifactId>
+     </dependency>
+     ```
+
+  2. 启动缓存：【在`引导类`启动】`@EnableCaching`
+
+     ```java
+     package com.kk;
+     
+     import org.springframework.boot.SpringApplication;
+     import org.springframework.boot.autoconfigure.SpringBootApplication;
+     import org.springframework.cache.annotation.EnableCaching;
+     
+     @SpringBootApplication
+     @EnableCaching
+     public class SpringBootDemo19CacheApplication {
+         public static void main(String[] args) {
+             SpringApplication.run(SpringBootDemo19CacheApplication.class, args);
+         }
+     }
+     ```
+
+  3. 使用缓存：`@Cacheable`
+
+     我们将`BookServiceImpl`中之前自定义的缓存都给注释掉，然后在要加入缓存的地方使用注解`@Cacheable(value = "cacheSpace", key = "#id")`
+
+     这个`value = "cacheSpace"`是自定义的，你可以使用任何你想使用的。这个值的意思是将数据缓存到名为`cacheSpace`的空间中。
+
+     ```java
+     @Override
+     @Cacheable(value = "cacheSpace", key = "#id")
+     public Book getById(Serializable id) {
+         return super.getById(id);
+     }
+     ```
+
 ### 任务解决方案
 
 ### 邮件解决方案
