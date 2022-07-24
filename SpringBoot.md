@@ -5130,21 +5130,41 @@ Windows: redis-cli -h 192.168.56.1 -p 9527
 
         `Java`程序查询`ES`中的文档：
 
-        1. 按`id`查询：`http://localhost:9200/_doc/1`
+        按`id`查询以及按条件查询：`http://localhost:9200/_doc/1`
 
-           ```java
-           
-           ```
+        ```java
+        @Test
+        void mySelectById() throws IOException {
+            GetRequest getRequest = new GetRequest("books", "10");
+            GetResponse getResponse = restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
+            String json = getResponse.getSourceAsString();
+            System.out.println(json);
+        }
+        ```
 
-        2. 查询全部：`http://localhost:9200/_search`
-
-           ```java
-           
-           ```
-
-        3. 条件查询：
-
-           ```java
+        ```java
+        @Test
+        void mySelectById() throws IOException {
+            GetRequest getRequest = new GetRequest("books", "10");
+            GetResponse getResponse = restHighLevelClient.get(getRequest, RequestOptions.DEFAULT);
+            String json = getResponse.getSourceAsString();
+            System.out.println(json);
+        }
+        @Test
+        void mySelect() throws IOException {
+            SearchRequest searchRequest = new SearchRequest("books");
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.termQuery("all", "java"));
+            searchRequest.source(searchSourceBuilder);
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+            SearchHits searchHits = searchResponse.getHits();
+            for (SearchHit searchHit : searchHits) {
+                String json = searchHit.getSourceAsString();
+                Book book = JSON.parseObject(json, Book.class);
+                System.out.println(book);
+            }
+        }
+        ```
 
 ### `Quratz`篇
 
