@@ -4924,6 +4924,38 @@ Windows: redis-cli -h 192.168.56.1 -p 9527
         }
         ```
 
+        测试完使用`PostMan`即可查看是否测试成功：
+
+        ```java
+        {
+            "books": {
+                "aliases": {},
+                "mappings": {},
+                "settings": {
+                    "index": {
+                        "routing": {
+                            "allocation": {
+                                "include": {
+                                    "_tier_preference": "data_content"
+                                }
+                            }
+                        },
+                        "number_of_shards": "1",
+                        "provided_name": "books",
+                        "creation_date": "1658631998622",
+                        "number_of_replicas": "1",
+                        "uuid": "yu-fK1cwSyWANAOzJEe-hw",
+                        "version": {
+                            "created": "7160299"
+                        }
+                    }
+                }
+            }
+        }
+        ```
+
+     4. 
+
 ### `Quratz`篇
 
 
