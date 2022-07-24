@@ -4752,3 +4752,201 @@ Windows: redis-cli -h 192.168.56.1 -p 9527
       }
   }
   ````
+
+- **`ES`文档操作：增删查改**
+
+  1. 导入依赖
+
+     ```xml
+     <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+         <version>2.7.2</version>
+     </dependency>
+     ```
+
+  2. 修改配置
+
+     ```yaml
+     spring:
+       elasticsearch:
+         uris: http://localhost:9200
+     ```
+
+  3. 使用`ElasticSearchRestTemplate`操作`ES`
+
+     > 插播：这里`Maven`在清理了缓存之后没有出现提示了，只需要在`settings ---> Maven ---> Repository`点击`update`更新一下即可。
+
+     ```java
+     package com.kk;
+     
+     import com.kk.pojo.Book;
+     import org.junit.jupiter.api.Test;
+     import org.springframework.beans.factory.annotation.Autowired;
+     import org.springframework.boot.test.context.SpringBootTest;
+     import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+     
+     @SpringBootTest
+     class SpringBootDemo18ElasticSearchApplicationTests {
+     
+         @Autowired
+         private ElasticsearchRestTemplate elasticSearchRestTemplate;
+     
+         @Test
+         void contextLoads() {
+             Book book = new Book();
+             book.setId(1);
+             book.setName("《深入理解 Java 虚拟机》");
+             book.setType("计算机科学");
+             book.setDescription("作为一位Java程序员，你是否也曾经想深入理解Java虚拟机，但是却被它的复杂和深奥拒之门外？没关系，本书极尽化繁为简之妙，能带领你在轻松中领略Java虚拟机的奥秘。本书是近年来国内出版的唯一一本与Java虚拟机相关的专著，也是唯一一本同时从核心理论和实际运用这两个角度去探讨Java虚拟机的著作，不仅理论分析得透彻，而且书中包含的典型案例和最佳实践也极具现实指导意义。");
+             elasticSearchRestTemplate.save(book);
+         }
+     
+     }
+     ```
+
+     但是这里使用不了，报错，报错信息为：意思就是说`Spring`容器中没有该类型的数据，这让我很怀疑...难道在这短短的时间内，`SpringBoot`跟`ES`的改版导致无法使用`ElasticSearchRestTemplate`吗？
+
+     ```java
+     org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'com.kk.SpringBootDemo18ElasticSearchApplicationTests': Unsatisfied dependency expressed through field 'elasticsearchRestTemplate'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: 
+     ```
+
+     不过确实，`SpringBoot`版本升级的速度跟`ES`升级的速度对应不上，一般我们也不使用`ElasticSearchRestTemplate`而是使用`RestHighLevelClient`。具体使用方法请看下边：
+
+     【顺带一提的是：在`ES7.15`版本之后，`ES`官方将它的高级客户端`RestHighLevelClient`标记为弃用状态，同时推出了全新的`Java API`客户端`ElasticSearch Java API Client`】
+
+     1. 需要将给`ElasticSearchRestTeamplte`设置的所有信息都先注释掉，包括依赖、配置信息还有代码【代码可以保留】
+
+     2. 导入`ElaticSearch-Rest-High-Level-Client`依赖：
+
+        这里的系统`version`是要写的，这个依赖引入的是原生的`API`，`SpringBoot`并没有将其放入到容器中，所以需要自己去实现该类。该类已经被弃用了。
+
+        ```xml
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>7.17.5</version>
+        </dependency>
+        ```
+
+     3. 手动创建：
+
+        ```java
+        RestHighLevelClient restHighLevelClient = new RestHighLevelClient();
+        ```
+
+        点开源码，发现创建`RestHighLevelClient`需要一个`RestClientBuilder`，那就给它一个：
+
+        ```java
+        RestClientBuilder restClientBuilder = RestClient.builder(httpHost);
+        ```
+
+        然后发现需要传递一个`HttpHost`：于是尝试传递【写代码总是会遇到不会的，需要不断地去尝试才可以完成一个程序】
+
+        ```java
+        HttpHost httpHost = HttpHost.create("http://localhost:9200");
+        ```
+
+        合起来就是：
+
+        ```java
+        @BeforeEach
+        void setUp() {
+            //创建 RestHighLevelClientBuilder
+            HttpHost httpHost = HttpHost.create("http://localhost:9200");
+            RestClientBuilder restClientBuilder = RestClient.builder(httpHost);
+            restHighLevelClient = new RestHighLevelClient(restClientBuilder);
+        }
+        ```
+
+        然后就是做一些客户端的操作：
+
+        ```java
+        restHighLevelClient.indices().create();
+        ```
+
+        发现`create()`方法需要传递`CreateIndexRequest`还有`RequestOptions`，那就新建一个`CreateIndexRequest`：
+
+        ```java
+        //创建索引【客户端操作】
+        CreateIndexRequest createIndexRequest = new CreateIndexRequest("books");
+        restHighLevelClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+        ```
+
+        因为是手动创建的并且是写到`ES`中的，所以`RestHighLevelClient`隶属于`I/O`流，结尾需要手动关闭流。
+
+        ```java
+        restHighLevelClient.close();
+        ```
+
+        因为每次测试前都会开流关流，代码看起来非常的冗余，我们可以使用`SpringBootTest`提供的`setUp`还有`termDown`来实现开头和结尾必须实现的代码。所以总的代码合成起来就是：
+
+        ```java
+        package com.kk;
+        
+        import com.kk.pojo.Book;
+        import org.apache.http.HttpHost;
+        import org.elasticsearch.client.*;
+        import org.elasticsearch.client.indices.CreateIndexRequest;
+        import org.junit.jupiter.api.AfterEach;
+        import org.junit.jupiter.api.BeforeEach;
+        import org.junit.jupiter.api.Test;
+        import org.springframework.boot.test.context.SpringBootTest;
+        
+        import java.io.IOException;
+        
+        @SpringBootTest
+        class SpringBootDemo18ElasticSearchApplicationTests {
+        
+            private RestHighLevelClient restHighLevelClient;
+        
+            @BeforeEach
+            void setUp() {
+                //创建 RestHighLevelClientBuilder
+                HttpHost httpHost = HttpHost.create("http://localhost:9200");
+                RestClientBuilder restClientBuilder = RestClient.builder(httpHost);
+                restHighLevelClient = new RestHighLevelClient(restClientBuilder);
+            }
+        
+            @AfterEach
+            void tearDown() throws IOException {
+                //因为是手动创建的需要关闭客户端
+                restHighLevelClient.close();
+            }
+        
+            @Test
+            void testESRestHighLevel() throws IOException {
+                //创建索引【客户端操作】
+                CreateIndexRequest createIndexRequest = new CreateIndexRequest("books");
+                restHighLevelClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+        
+            }
+        }
+        ```
+
+### `Quratz`篇
+
+
+
+### `Task`篇
+
+
+
+### `ActiveMQ`篇
+
+
+
+### `RabbitMQ`篇
+
+
+
+### `RocketMQ`篇
+
+
+
+### `Kafka`篇
+
+
+
+## 监控
+
