@@ -24,3 +24,10 @@ spring:
   redis:
     host: 192.168.56.1
     port: 9527
+memcached:
+  # memcached服务器地址
+  servers: 192.168.56.1:11211
+  # 设置连接池的数量
+  poolSize: 10
+  # 设置默认操作超时
+  opTimeout: 3000

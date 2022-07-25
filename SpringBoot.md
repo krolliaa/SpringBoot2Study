@@ -5740,6 +5740,155 @@ public class MsgServiceImpl implements MsgService {
          cache-null-values: false
    ```
 
+#### `Memcached`篇
+
+`memcached`是一个在国内非常流行的缓存技术，请注意它并不是`SpringBoot`内置的缓存技术，既然不是内置的缓存技术，它必然跟前面学习的整合`Simple Ehcache Redis`有点区别。
+
+1. 下载`memcached`之前需要安装`libevent`
+
+   这里注意一点`./configure --prefix=/usr/local/libevent`，不要跟源码放在一块，否则后面`make install`时会报错
+
+2. 下载安装`memcached`
+
+   运行：`memcached -p 11211 -m 64M -u root -d`，如果是在`windows`安装则需要在管理员权限的`cmd`中才可以安装成功
+
+3. `memcached`客户端选择：
+
+   - `Memcached Client for Java`：最早期的客户端，稳定可靠，用户群广，但是效率低
+   - `SpyMemcached`：效率更高，并发处理较不好
+   - `Xmemcached`：并发处理更好
+
+   要用就用最好的：`Xmemcached`，由于`SpringBoot`没有整合`memcached`所以需要采用硬编码的方式实现客户端初始化管理。
+
+4. 从`mvnrepository`导入坐标，可以现在`pom.xml`看有无`Xmemcached`，事实上是没有的
+
+   ```xml
+   <dependency>
+       <groupId>com.googlecode.xmemcached</groupId>
+       <artifactId>xmemcached</artifactId>
+       <version>2.4.7</version>
+   </dependency>
+   ```
+
+5. 硬编码`MemcachedClient`，将其交给容器管理
+
+   ```java
+   package com.kk.config;
+   
+   import net.rubyeye.xmemcached.MemcachedClient;
+   import net.rubyeye.xmemcached.MemcachedClientBuilder;
+   import net.rubyeye.xmemcached.XMemcachedClientBuilder;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   
+   import java.io.IOException;
+   
+   @Configuration
+   public class MyMemcachedClient {
+       @Bean
+       public MemcachedClient getMemcachedClient() throws IOException {
+           MemcachedClientBuilder memcachedClientBuilder = new XMemcachedClientBuilder("localhost:11211");
+           MemcachedClient memcachedClient = memcachedClientBuilder.build();
+           return memcachedClient;
+       }
+   }
+   ```
+
+6. 使用`memcachedClient`添加缓存，使用缓存即可【将前面学习使用的`Simple Ehcache Redis`的代码注释掉】`set get`更加自主，灵活性更高。
+
+   获取验证码：**这里的过期时间是以秒为单位的**
+
+   ```java
+   @Override
+   public String sendCode(String telephone) throws InterruptedException, TimeoutException, MemcachedException {
+       //获取验证码
+       String code = codeUtil.generateCode(telephone);
+       memcachedClient.set("cacheSpace::" + telephone, 10, code);
+       return code;
+   }
+   ```
+
+   验证验证码：
+
+   ```java
+   @Override
+   public Boolean checkCode(SimCard simCard) throws InterruptedException, TimeoutException, MemcachedException {
+       //从缓存中提取验证码
+       String code = memcachedClient.get("cacheSpace::" + simCard.getTelephone()).toString();
+       System.out.println(code);
+       //跟前端用户传递的验证码作比较
+       return simCard.getCode().equals(code);
+   }
+   ```
+
+7. 到这里`SpringBoot`整合`memcached`就算是完成了，但是我们还可以再进行优化一下，比如在`MemcachedClient`程序中，我们的`new XMemcachedClientBuilder("localhost:11211");`是以硬编码的方式写的，而且我们做一些配置的时候都需要硬编码的方式去修改，通常更灵活的做法就是加配置，从配置文件中取数据，这个我们之前也做过，现在来优化一下代码：
+
+   在`yaml`配置文件中自定义配置信息：
+
+   ```yaml
+   memcached:
+     # memcached服务器地址
+     servers: 192.168.56.1:11211
+     # 设置连接池的数量
+     poolSize: 10
+     # 设置默认操作超时
+     opTimeout: 3000
+   ```
+
+   创建`MemcachedYaml`配置相关对象：
+
+   ```java
+   package com.kk.pojo;
+   
+   import lombok.AllArgsConstructor;
+   import lombok.Data;
+   import lombok.NoArgsConstructor;
+   import org.springframework.boot.context.properties.ConfigurationProperties;
+   
+   @Data
+   @AllArgsConstructor
+   @NoArgsConstructor
+   @ConfigurationProperties(prefix = "memcached")
+   public class MemcachedYaml {
+       private String servers;
+       private int poolSize;
+       private long opTimeout;
+   }
+   ```
+
+   启动类添加：`@EnableConfigurationProperties`或者在`MemcachedYaml`中添加`@Component`两者都行，看个人喜好选择。
+
+   然后使用这个配置对象：
+
+   ```java
+   package com.kk.config;
+   
+   import com.kk.pojo.MemcachedYaml;
+   import net.rubyeye.xmemcached.MemcachedClient;
+   import net.rubyeye.xmemcached.MemcachedClientBuilder;
+   import net.rubyeye.xmemcached.XMemcachedClientBuilder;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   
+   import java.io.IOException;
+   
+   @Configuration
+   public class MyMemcachedClient {
+   
+       @Autowired
+       private MemcachedYaml memcachedYaml;
+   
+       @Bean
+       public MemcachedClient getMemcachedClient() throws IOException {
+           MemcachedClientBuilder memcachedClientBuilder = new XMemcachedClientBuilder(memcachedYaml.getServers());
+           memcachedClientBuilder.setOpTimeout(memcachedYaml.getOpTimeout());
+           memcachedClientBuilder.setConnectionPoolSize(memcachedYaml.getPoolSize());
+           MemcachedClient memcachedClient = memcachedClientBuilder.build();
+           return memcachedClient;
+       }
+   }
+
 ### 任务解决方案
 
 ### 邮件解决方案
