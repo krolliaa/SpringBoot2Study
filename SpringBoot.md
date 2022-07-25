@@ -5744,6 +5744,8 @@ public class MsgServiceImpl implements MsgService {
 
 `memcached`是一个在国内非常流行的缓存技术，请注意它并不是`SpringBoot`内置的缓存技术，既然不是内置的缓存技术，它必然跟前面学习的整合`Simple Ehcache Redis`有点区别。
 
+**<font color="red">`Memcached`的默认端口为：`11211`</font>**
+
 1. 下载`memcached`之前需要安装`libevent`
 
    这里注意一点`./configure --prefix=/usr/local/libevent`，不要跟源码放在一块，否则后面`make install`时会报错
@@ -5888,6 +5890,121 @@ public class MsgServiceImpl implements MsgService {
            return memcachedClient;
        }
    }
+   ```
+
+有些人总觉得这些缓存技术做的都不好，包括`memcached`，于是他们自己做了一个缓存技术：`jetcache`【阿里巴巴开发】，在`Spring cache`的基础之上全新打造并且指出`Spring cache`的各种问题，直指要害。
+
+#### `Jetcache`篇
+
+问题：
+
+1. **缓存过期时间配置松散：**比如`ehcache`的缓存过期时间是在`ehcache.xml`中配置的，而`redis`的缓存过期时间在`application.yml`中配置，再比如说`memcache`则是在程序代码中配置的。这样的配置操作实在是过于松散了，哪哪都可以配置，非常乱。
+2. **服务器地址被固定了：**服务器地址不是本地的就是远程的，无法一同实现即共享又能实现访问速度飞快的问题，能不能即可以用本地访问又可以远程访问
+3. 等等...
+
+`Jetcache`对`SpringCache`进行了封装，在原有功能基础上实现了多级缓存、缓存统计、自动刷新、异步调用、数据报表等功能。
+
+`Jetcache`自身不是缓存，而是整合了其它的缓存技术，底层其实就是框架。目前`Jetcache`只整合了四种缓存技术：【本地跟远程可以四选二即本地和缓存同时存在，也可以单独使用本地或者远程缓存】
+
+- 本地缓存
+  - `LinkedHashMap`
+  - `Caffeine`
+- 远程缓存
+  - `Redis`
+  - `Tair`
+
+1. 搭建基础环境：`SpringBoot_demo20_Jetcache`，引入依赖：`mysql mybatis-plus lombok druid`等。
+
+2. 引入依赖：【这里的版本号是有讲究的，高版本的`SpringBoot`需要用到高版本的`jetcache`否则会出错】
+
+   ```java
+   <dependency>
+       <groupId>com.alicp.jetcache</groupId>
+       <artifactId>jetcache-starter-redis</artifactId>
+       <version>2.6.7</version>
+   </dependency>
+   ```
+
+3. 修改配置文件，告诉`JetCache`要使用的远程缓存为`Redis`
+
+   这里的`default`其实就是配置块的名称，你可以设置其它的，比如这里再加一个`sms`名称
+
+   ```java
+   jetcache:
+     remote:
+       default:
+         type: redis
+         host: 192.168.56.1
+         port: 9527
+         poolConfig:
+           maxTotal: 50
+       sms:
+         type: redis
+         host: 192.168.56.1
+         port: 9527
+         poolConfig:
+           maxTotal: 50
+   ```
+
+4. 开启`JetCache`缓存：往引导类中添加`@EnableCreateCacheAnnotation`
+
+   ```java
+   package com.kk;
+   
+   import com.alicp.jetcache.anno.config.EnableCreateCacheAnnotation;
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.autoconfigure.SpringBootApplication;
+   
+   @SpringBootApplication
+   @EnableCreateCacheAnnotation
+   public class SpringBootDemo20JetcacheApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(SpringBootDemo20JetcacheApplication.class, args);
+       }
+   }
+   ```
+
+5. 使用`JetCache`缓存
+
+   ```java
+   package com.kk.service.impl;
+   
+   import com.alicp.jetcache.Cache;
+   import com.alicp.jetcache.anno.CreateCache;
+   import com.kk.pojo.SimCard;
+   import com.kk.service.SimCardService;
+   import com.kk.util.CodeUtil;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.stereotype.Service;
+   
+   import java.util.concurrent.TimeUnit;
+   
+   
+   @Service
+   public class SimCardServiceImpl implements SimCardService {
+   
+       @Autowired
+       private CodeUtil codeUtil;
+   
+       @CreateCache(area = "sms", name = "jetCache", expire = 10, timeUnit = TimeUnit.SECONDS)
+       private Cache<String, String> jetCache;
+   
+       @Override
+       public String sendCode(String telephone) {
+           String code = codeUtil.generateCode(telephone);
+           jetCache.put(telephone, code);
+           return code;
+       }
+   
+       @Override
+       public Boolean checkCode(SimCard simCard) {
+           String code = jetCache.get("sms_jetCache" + simCard.getTelephone());
+           return simCard.getCode().equals(code);
+       }
+   }
+   ```
+
+   
 
 ### 任务解决方案
 

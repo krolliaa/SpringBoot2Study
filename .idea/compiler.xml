@@ -19,6 +19,7 @@
         <module name="SpringBoot_demo14_SQL" />
         <module name="SpringBoot_demo03_JUnit" />
         <module name="SpringBoot_demo16_Redis" />
+        <module name="SpringBoot_demo20_Jetcache" />
         <module name="SpringBoot_demo11_Log" />
         <module name="SpringBoot_demo18_ElasticSearch" />
         <module name="SpringBoot_demo01_01" />
@@ -54,6 +55,7 @@
       <module name="SpringBoot_demo17_MongoDB" target="1.8" />
       <module name="SpringBoot_demo18_ElasticSearch" target="1.8" />
       <module name="SpringBoot_demo19_Cache" target="1.8" />
+      <module name="SpringBoot_demo20_Jetcache" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -79,6 +81,7 @@
       <module name="SpringBoot_demo17_MongoDB" options="-parameters" />
       <module name="SpringBoot_demo18_ElasticSearch" options="-parameters" />
       <module name="SpringBoot_demo19_Cache" options="-parameters" />
+      <module name="SpringBoot_demo20_Jetcache" options="-parameters" />
     </option>
   </component>
 </project>
