@@ -5667,6 +5667,29 @@ public class MsgServiceImpl implements MsgService {
 
 8. `SpringBoot`整合`ehcache`缓存技术整合完毕
 
+#### 数据淘汰策略【补充】
+
+在`ehcache.xml`中可以看到`memoryStoreEvictionPolicy=“LRU”`的字样，这就是跟数据淘汰策略相关配置。
+
+影响数据淘汰的相关配置：检测容易丢失数据
+
+- `volatile-lru`：**挑选最近最少使用的数据淘汰**
+- `volatile-lfu`：**挑选最近使用次数最少的数据淘汰**
+- `volatile-ttl`：**挑选将要过期的数据淘汰**
+- `volatile-random`：**任意选择数据淘汰**
+
+关于`LRU`和`LFU`，请看下面这张图片：
+
+![](https://img-blog.csdnimg.cn/a8f0e65252844082aca7ec2eba5a4b20.png)
+
+这是一个`9s`的时间段，最底下的`9s 5s 7s 8s`代表的是在`9s 5s 7s 8s`这个时间点分别访问了`name age addr gender`，上面蓝色的数字代表的是在`9s`总的这一段时间内，`name`总共被访问了`2`次，`age`总共被访问了`4`次，而`addr`总共被访问了`2`次，`gender`总共被访问了`1`次。
+
+- 所谓的`LRU`：就是淘汰这段时间内最远没有被访问的数据，比如这里的`name`我们在第`9s`的时候刚访问过，而`age`在第`5s`被访问过此后再没有被访问。这就是离得最远的没有被访问的数据，所以按照`LRU`数据淘汰策略，`age`将被淘汰。
+
+- 所谓的`LFU`：就是淘汰这段时间访问次数最少的数据，比如这里的`gender`访问次数为`1`次，是所有数据在这段时间内访问次数最少的数据，所以按照`LFU`数据淘汰策略，`gender`将被淘汰。
+
+#### `Redis`篇
+
 ### 任务解决方案
 
 ### 邮件解决方案
