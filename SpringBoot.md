@@ -5690,6 +5690,56 @@ public class MsgServiceImpl implements MsgService {
 
 #### `Redis`篇
 
+1. 引入`redis`依赖
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-data-redis</artifactId>
+   </dependency>
+   ```
+
+2. 修改配置
+
+   ```yaml
+   spring:
+     cache:
+       type: redis
+     redis:
+       host: 192.168.56.1
+       port: 9527
+   ```
+
+3. 在`Linux`中启动`redis`服务器：`./redis-server ../redis.conf`
+
+4. 使用`Postman`进行测试，测试顺利，验证通过，在`redis`客户端可以看到`cacheSpace::1367890000`这么一个`key`说明进行了缓存
+
+5. 可以给`redis`中设置缓存过期时间，在`application.yaml`中配置即可（配置`10s`）
+
+   ```yaml
+   spring:
+     cache:
+       redis:
+         time-to-live: 10s
+   ```
+
+6. `use-key-prefix`可以设置是否添加前缀，默认为`true`
+
+   `key-prefix`可以自定义前缀【前提是：`use-key-prefix`为`true`】
+
+   `cache-null-values`表示是否可以缓存`null`默认为`false`
+
+   ```yaml
+   spring:
+     cache:
+       type: redis
+       redis:
+         time-to-live: 10s
+         use-key-prefix: true
+         key-prefix: sms_
+         cache-null-values: false
+   ```
+
 ### 任务解决方案
 
 ### 邮件解决方案

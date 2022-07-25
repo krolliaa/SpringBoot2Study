@@ -15,4 +15,12 @@ spring:
       username: root
       password: 123456
   cache:
-    type: ehcache
+    type: redis
+    redis:
+      time-to-live: 10s
+      use-key-prefix: true
+      key-prefix: sms_
+      cache-null-values: false
+  redis:
+    host: 192.168.56.1
+    port: 9527
