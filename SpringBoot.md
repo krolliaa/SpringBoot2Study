@@ -6033,6 +6033,176 @@ public class MsgServiceImpl implements MsgService {
    //CacheType.Remote
    ```
 
+9. 开启方法缓存：【可以添加个注解就可以直接使用了】
+
+   在引导类中添加：`@EnableMethodCache(basePackages="com.kk")`
+
+   ```java
+   package com.kk;
+   
+   import com.alicp.jetcache.anno.config.EnableCreateCacheAnnotation;
+   import com.alicp.jetcache.anno.config.EnableMethodCache;
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.autoconfigure.SpringBootApplication;
+   
+   @SpringBootApplication
+   @EnableCreateCacheAnnotation
+   @EnableMethodCache(basePackages = "com.kk")
+   public class SpringBootDemo20JetcacheApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(SpringBootDemo20JetcacheApplication.class, args);
+       }
+   }
+   ```
+
+10. 在`BookServiceImpl`中使用【这个地方需要使用到缓存】：
+
+    - 在`get`方法中添加注解`@Cached(name="book", key="id", expired=3600, timeUnit=TimeUnit.seconds)`【默认使用远程缓存方案】
+
+      ```java
+      @GetMapping("{id}")
+      @Cached(name = "book_", key = "#id", expire = 3600, timeUnit = TimeUnit.SECONDS, cacheType = CacheType.REMOTE)
+      public Book get(@PathVariable Integer id) {
+          return bookService.getById(id);
+      }
+      
+      @PutMapping
+      @CacheUpdate(name = "book_", key = "#book.id", value = "#book")
+      public boolean update(@RequestBody Book book) {
+          return bookService.update(book);
+      }
+      
+      @DeleteMapping("{id}")
+      @CacheInvalidate(name = "book_", key = "#id")
+      public boolean delete(@PathVariable Integer id) {
+          return bookService.delete(id);
+      }
+      ```
+
+      - 报错：`NullPointerException`，因为`Redis`中没有配置`keyConvertor`
+
+      - 解决上述，但是又报错：`NoSerializableException`无序列化异常，因为`Redis`中无法直接存储对象，所以需要序列化，取数据的时候反序列化即可
+
+        - 在`pojo.Book`中实现`Serializable`接口，实现可序列化
+
+          ```java
+          package com.kk.pojo;
+          
+          import lombok.AllArgsConstructor;
+          import lombok.Data;
+          import lombok.NoArgsConstructor;
+          
+          import java.io.Serializable;
+          
+          @Data
+          @NoArgsConstructor
+          @AllArgsConstructor
+          public class Book implements Serializable {
+              private Integer id;
+              private String name;
+              private String type;
+              private String description;
+          }
+          ```
+
+        - 配置文件添加：`valueEncode:java + valueDecode:java`
+
+          ```yaml
+          jetcache:
+            valueEncode: java
+            valueDecode: java
+            local:
+              default:
+                type: linkedhashmap
+                keyConvertor: fastjson
+            remote:
+              default:
+                type: redis
+                host: 192.168.56.1
+                port: 9527
+                keyConvertor: fastjson
+                poolConfig:
+                  maxTotal: 50
+              sms:
+                type: redis
+                host: 192.168.56.1
+                port: 9527
+                poolConfig:
+                  maxTotal: 50
+
+      - 要想使用本地缓存方案可用：`cacheType=CacheType.LOCAL`
+
+    - 当数据库发生更新时相应的缓存也需要发生变化：
+
+      `@CacheUpdate(name="book_", key="#book.id", value="#book")`
+
+    - 当数据库发生删除时相应的缓存也需要无效化：
+
+      `@CacheInvalidate(name="book_", key="#id")`
+
+    - 除了上述操作，`JetCache`还提供了一项操作：`@CacheRefresh(refresh="")`可以设置刷新时间，时间一到从数据库中获取数据【慎用】
+
+      **`refresh`中单位为：秒**
+
+      ```java
+      package com.kk.controller;
+      
+      import com.alicp.jetcache.anno.*;
+      import com.kk.pojo.Book;
+      import com.kk.service.BookService;
+      import org.springframework.beans.factory.annotation.Autowired;
+      import org.springframework.web.bind.annotation.*;
+      
+      import java.util.List;
+      import java.util.concurrent.TimeUnit;
+      
+      @RestController
+      @RequestMapping(value = "/books")
+      public class BookController {
+      
+          @Autowired
+          private BookService bookService;
+      
+          @GetMapping("{id}")
+          @Cached(name = "book_", key = "#id", expire = 3600, timeUnit = TimeUnit.SECONDS, cacheType = CacheType.REMOTE)
+          @CacheRefresh(refresh = 1)
+          public Book get(@PathVariable Integer id) {
+              return bookService.getById(id);
+          }
+      
+          @PostMapping
+          public boolean save(@RequestBody Book book) {
+              return bookService.save(book);
+          }
+      
+          @PutMapping
+          @CacheUpdate(name = "book_", key = "#book.id", value = "#book")
+          public boolean update(@RequestBody Book book) {
+              return bookService.update(book);
+          }
+      
+          @DeleteMapping("{id}")
+          @CacheInvalidate(name = "book_", key = "#id")
+          public boolean delete(@PathVariable Integer id) {
+              return bookService.delete(id);
+          }
+      
+          @GetMapping
+          public List<Book> getAll() {
+              return bookService.getAll();
+          }
+      }
+      ```
+
+11. 除此之外：`JetCache`还可以统计数据查看 ---> `application.yaml`中配置
+
+    ```yaml
+    jetcache:
+      statIntervalMinutes: 1
+    ```
+
+    ![](https://img-blog.csdnimg.cn/d7ff9027bec94edeab2d3137cc37aee3.png)
+
 ### 任务解决方案
 
 ### 邮件解决方案

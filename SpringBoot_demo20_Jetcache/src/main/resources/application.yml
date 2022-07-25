@@ -15,6 +15,9 @@ spring:
       username: root
       password: 123456
 jetcache:
+  statIntervalMinutes: 1
+  valueEncode: java
+  valueDecode: java
   local:
     default:
       type: linkedhashmap
@@ -24,6 +27,7 @@ jetcache:
       type: redis
       host: 192.168.56.1
       port: 9527
+      keyConvertor: fastjson
       poolConfig:
         maxTotal: 50
     sms:
