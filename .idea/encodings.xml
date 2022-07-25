@@ -36,5 +36,6 @@
     <file url="file://$PROJECT_DIR$/SpringBoot_demo18_ElasticSearch/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/SpringBoot_demo19_Cache/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/SpringBoot_demo20_Jetcache/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SpringBoot_demo21_J2cache/src/main/java" charset="UTF-8" />
   </component>
 </project>

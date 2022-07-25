@@ -6203,6 +6203,139 @@ public class MsgServiceImpl implements MsgService {
 
     ![](https://img-blog.csdnimg.cn/d7ff9027bec94edeab2d3137cc37aee3.png)
 
+#### `J2Cache`篇
+
+`JetCache`经过学习我们知道，它的本地缓存解决方案只支持：`Caffeine LinkedHashMap`而远程只支持`Redis Tair`，品种实在是少得可怜，现在我就是想本地用`memcached`远程使用`redis`这种需求，可以解决吗？答案是可以的：那就是使用`J2Cache`。
+
+`J2Cache`不是什么缓存技术，其本质其实是一个缓存整合框架，可以提供缓存的整合方案，使各种缓存搭配使用，自身不提供缓存功能。其整合技术是基于`ehcache + redis`进行整合。
+
+1. 导入依赖【两个】：如若需要整合`ehcahce`则需要导入`ehcache`坐标
+
+   ```xml
+   <dependency>
+       <groupId>net.oschina.j2cache</groupId>
+       <artifactId>j2cache-core</artifactId>
+       <version>2.8.5-release</version>
+   </dependency>
+   <dependency>
+       <groupId>net.oschina.j2cache</groupId>
+       <artifactId>j2cache-spring-boot2-starter</artifactId>
+       <version>2.8.0-release</version>
+   </dependency>
+   <dependency>
+       <groupId>net.sf.ehcache</groupId>
+       <artifactId>ehcache</artifactId>
+   </dependency>
+   ```
+
+2. 修改配置【`j2cache`有自己的配置文件，需要导入到`SpringBoot`】
+
+   ```yaml
+   server:
+     port: 80
+   j2cache:
+     config-location: j2cache.properties
+   ```
+
+3. 配置文件在`j2cache-core`核心包内，可以通过`ctrl + 1`在`IDEA`中查找，将`j2cache.properties`复制过来。但是其配置文件过于繁琐，我们可以自定义简写一个：
+
+   ```xml
+   # 配置1级缓存
+   j2cache.L1.provider_class = ehcache
+   ehcache.configXml = ehcache.xml
+   
+   # 配置1级缓存数据到2级缓存的广播方式：可以使用redis提供的消息订阅模式，也可以使用jgroups多播实现
+   j2cache.broadcast = net.oschina.j2cache.cache.support.redis.SpringRedisPubSubPolicy
+   
+   # 配置2级缓存
+   j2cache.l2-cache-open = false
+   j2cache.L2.provider_class = net.oschina.j2cache.cache.support.redis.SpringRedisProvider
+   j2cache.L2.config_section = redis
+   redis.hosts = 192.168.56.1:9527
+   
+   redis.mode = single
+   
+   redis.namespace = j2cache
+   ```
+
+4. 配置`ehcache.xml`
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
+            updateCheck="false">
+       <diskStore path="D:\ehcache" />
+   
+       <!--默认缓存策略 -->
+       <!-- external：是否永久存在，设置为true则不会被清除，此时与timeout冲突，通常设置为false-->
+       <!-- diskPersistent：是否启用磁盘持久化-->
+       <!-- maxElementsInMemory：最大缓存数量-->
+       <!-- overflowToDisk：超过最大缓存数量是否持久化到磁盘-->
+       <!-- timeToIdleSeconds：最大不活动间隔，设置过长缓存容易溢出，设置过短无效果，可用于记录时效性数据，例如验证码-->
+       <!-- timeToLiveSeconds：最大存活时间-->
+       <!-- memoryStoreEvictionPolicy：缓存清除策略-->
+       <defaultCache
+               eternal="false"
+               diskPersistent="false"
+               maxElementsInMemory="1000"
+               overflowToDisk="false"
+               timeToIdleSeconds="60"
+               timeToLiveSeconds="60"
+               memoryStoreEvictionPolicy="LRU" />
+       <Cache
+               name="cacheSpace"
+               eternal="false"
+               diskPersistent="false"
+               maxElementsInMemory="1000"
+               overflowToDisk="false"
+               timeToIdleSeconds="10"
+               timeToLiveSeconds="10"
+               memoryStoreEvictionPolicy="LRU" />
+   </ehcache>
+   ```
+
+5. 使用`j2cache`整合方案
+
+   ```java
+   package com.kk.service.impl;
+   
+   import com.kk.pojo.SimCard;
+   import com.kk.service.SimCardService;
+   import com.kk.util.CodeUtil;
+   import net.oschina.j2cache.CacheChannel;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.stereotype.Service;
+   
+   @Service
+   public class SimCardServiceImpl implements SimCardService {
+   
+       @Autowired
+       private CodeUtil codeUtil;
+   
+       @Autowired
+       private CacheChannel cacheChannel;
+   
+       @Override
+       public String sendCode(String telephone) {
+           //获取验证码
+           String code = codeUtil.generateCode(telephone);
+           cacheChannel.set("sms", telephone, code);
+           return code;
+       }
+   
+       @Override
+       public Boolean checkCode(SimCard simCard) {
+           //从缓存中提取验证码
+           String code = cacheChannel.get("sms", simCard.getTelephone()).asString();
+           //跟前端用户传递的验证码作比较
+           return simCard.getCode().equals(code);
+       }
+   }
+   ```
+
+   
+
 ### 任务解决方案
 
 ### 邮件解决方案
