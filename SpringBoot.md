@@ -6334,15 +6334,120 @@ public class MsgServiceImpl implements MsgService {
    }
    ```
 
-   
-
 ### 任务解决方案
+
+- 定时任务是企业级应用中的常见操作
+
+  - 年度报表
+  - 缓存统计报告
+  - ... ... ...
+
+- `Java`中有自带的定时任务的`API`：
+
+  ```java
+  public static void main(String[] args) {
+      Timer timer = new Timer();
+      TimerTask timerTask = new TimerTask() {
+          @Override
+          public void run() {
+              System.out.println("Timer Task Running...");
+          }
+      };
+      //从当前时间点开始每隔两秒运行一次
+      timer.schedule(timerTask, 0, 2000);
+  }
+  ```
+
+- 为了提高定时任务做的更高效一些，有些人就搞出了`Quartz`框架，这是当前市面上流行的定时任务框架`Quartz`，而且`Spring`将其整合之后发现不是很难做而且速度也不是特别快，所以自己又搞出了`Spring Quartz`。
+
+#### `Quartz`篇
+
+- 相关概念
+  - 工作`job`：用于定义具体执行的工作
+  - 工作明细`jobDetail`：用于描述定时工作相关信息
+  - 触发器`Trigger`：用于描述触发工作的规则，通常使用`cron`表达式定义调度规则【时间点那些】
+  - 调度器`Scheduler`：描述了工作明细与触发器的对应关系
+
+1. 导入依赖：
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-quartz</artifactId>
+       <version>2.7.2</version>
+   </dependency>
+   ```
+
+2. 创建具体执行的工作：
+
+   ```java
+   package com.kk.quartz;
+   
+   import org.quartz.JobExecutionContext;
+   import org.quartz.JobExecutionException;
+   import org.springframework.scheduling.quartz.QuartzJobBean;
+   
+   public class MyQuartzJob extends QuartzJobBean {
+       @Override
+       protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+           System.out.println("Quartz Job Running...");
+       }
+   }
+   ```
+
+3. 添加工作明细`JobDetail`：
+
+   ```java
+   @Bean
+   public JobDetail jobDetail() {
+       //storeDurably 是否做持久化
+       return JobBuilder.newJob(MyQuartzJob.class).storeDurably().build();
+   }
+   ```
+
+4. 添加触发器`Trigger`：
+
+   ```java
+   @Bean
+   public Trigger trigger() {
+       CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule("0/15/30/45 * * * * ?");
+       return TriggerBuilder.newTrigger().forJob(jobDetail()).withSchedule(cronScheduleBuilder).build();
+   }
+   ```
+
+5. 整个配置类的代码如下：
+
+   ```java
+   package com.kk.config;
+   
+   import com.kk.quartz.MyQuartzJob;
+   import org.quartz.*;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   
+   @Configuration
+   public class MyQuartz {
+       @Bean
+       public JobDetail jobDetail() {
+           //storeDurably 是否做持久化
+           return JobBuilder.newJob(MyQuartzJob.class).storeDurably().build();
+       }
+   
+       @Bean
+       public Trigger trigger() {
+           CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule("0/15/30/45 * * * * ?");
+           return TriggerBuilder.newTrigger().forJob(jobDetail()).withSchedule(cronScheduleBuilder).build();
+       }
+   }
+   ```
+
+6. 启动项目，可以在控制台观察到每隔`15s`就会打印出：`Quartz Job Running...`
 
 ### 邮件解决方案
 
 ### 消息解决方案
 
-### `Quratz`篇
+### 
 
 
 

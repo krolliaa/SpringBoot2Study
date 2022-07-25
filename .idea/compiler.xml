@@ -9,28 +9,29 @@
         <outputRelativeToContentRoot value="true" />
         <module name="SpringBoot_demo09_YamlProfile" />
         <module name="SpringBoot_demo05_MyBatisPlus" />
-        <module name="SpringBoot_demo04_MyBatis" />
-        <module name="SpringBoot_demo10_PropertiesProfile" />
-        <module name="SpringBoot_demo21_J2cache" />
         <module name="SpringBoot_demo17_MongoDB" />
-        <module name="SpringBoot_demo12_Configuration" />
         <module name="SpringBoot_demo07_SSMP" />
-        <module name="SpringBoot_demo13_Test" />
         <module name="SpringBoot_demo08_Config" />
         <module name="SpringBoot_demo14_SQL" />
         <module name="SpringBoot_demo03_JUnit" />
+        <module name="SpringBoot_demo02_BaseConfiguration" />
+        <module name="SpringBoot_demo19_Cache" />
+        <module name="SpringBoot_demo10_Profile" />
+        <module name="SpringBoot_demo04_MyBatis" />
+        <module name="SpringBoot_demo10_PropertiesProfile" />
+        <module name="SpringBoot_demo21_J2cache" />
+        <module name="SpringBoot_demo12_Configuration" />
+        <module name="SpringBoot_demo13_Test" />
         <module name="SpringBoot_demo16_Redis" />
         <module name="SpringBoot_demo20_Jetcache" />
+        <module name="SpringBoot_demo22_Task" />
         <module name="SpringBoot_demo11_Log" />
         <module name="SpringBoot_demo18_ElasticSearch" />
         <module name="SpringBoot_demo01_01" />
         <module name="SpringBoot_demo01_02" />
-        <module name="SpringBoot_demo02_BaseConfiguration" />
         <module name="SpringBoot_demo06_Druid" />
         <module name="SpringBoot_demo01_03" />
-        <module name="SpringBoot_demo19_Cache" />
         <module name="SpringBoot_demo01_04" />
-        <module name="SpringBoot_demo10_Profile" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -58,6 +59,7 @@
       <module name="SpringBoot_demo19_Cache" target="1.8" />
       <module name="SpringBoot_demo20_Jetcache" target="1.8" />
       <module name="SpringBoot_demo21_J2cache" target="1.8" />
+      <module name="SpringBoot_demo22_Task" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -85,6 +87,7 @@
       <module name="SpringBoot_demo19_Cache" options="-parameters" />
       <module name="SpringBoot_demo20_Jetcache" options="-parameters" />
       <module name="SpringBoot_demo21_J2cache" options="-parameters" />
+      <module name="SpringBoot_demo22_Task" options="-parameters" />
     </option>
   </component>
 </project>
