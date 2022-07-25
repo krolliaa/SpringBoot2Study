@@ -15,6 +15,10 @@ spring:
       username: root
       password: 123456
 jetcache:
+  local:
+    default:
+      type: linkedhashmap
+      keyConvertor: fastjson
   remote:
     default:
       type: redis

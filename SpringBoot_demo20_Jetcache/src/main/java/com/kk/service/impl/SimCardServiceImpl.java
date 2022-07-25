@@ -1,6 +1,7 @@
 package com.kk.service.impl;
 
 import com.alicp.jetcache.Cache;
+import com.alicp.jetcache.anno.CacheType;
 import com.alicp.jetcache.anno.CreateCache;
 import com.kk.pojo.SimCard;
 import com.kk.service.SimCardService;
@@ -17,7 +18,7 @@ public class SimCardServiceImpl implements SimCardService {
     @Autowired
     private CodeUtil codeUtil;
 
-    @CreateCache(name = "jetCache", expire = 3600, timeUnit = TimeUnit.SECONDS)
+    @CreateCache(name = "jetCache", expire = 3600, timeUnit = TimeUnit.SECONDS, cacheType = CacheType.BOTH)
     private Cache<String, String> jetCache;
 
     @Override

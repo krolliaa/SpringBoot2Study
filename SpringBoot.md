@@ -6004,7 +6004,34 @@ public class MsgServiceImpl implements MsgService {
    }
    ```
 
-   
+6. 添加本地缓存解决方案 ---> 修改配置
+
+   ```yaml
+   jetcache:
+     local:
+       default:
+         type: linkedhashmap
+         #必配：keyConvertor ---> 对象的比对量非常大，所以需要转换为 String ---> fastjson
+         keyConvertor: fastjson
+   ```
+
+7. 引入`fastjson`依赖：
+
+   ```xml
+   <dependency>
+       <groupId>com.alibaba</groupId>
+       <artifactId>fastjson</artifactId>
+       <version>1.2.79</version>
+   </dependency>
+   ```
+
+8. 可以指定本地还是远程缓存方案，默认为：`CacheType.Remote`
+
+   ```java
+   @CreateCache(name = "jetCache", expire = 3600, timeUnit = TimeUnit.SECONDS, cacheType = CacheType.BOTH)
+   //CacheType.Local
+   //CacheType.Remote
+   ```
 
 ### 任务解决方案
 
