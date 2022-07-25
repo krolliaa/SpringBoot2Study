@@ -6443,6 +6443,57 @@ public class MsgServiceImpl implements MsgService {
 
 6. 启动项目，可以在控制台观察到每隔`15s`就会打印出：`Quartz Job Running...`
 
+#### `Task`篇
+
+上述整合`Quartz`写的代码实在是太繁琐了，`Task`油然而生，每多一个就要多一个触发器多一个工作明细。`Spring`觉得这件事情非常简单：
+
+1. 在引导类添加注解`@EnableScheduling`开启定时任务功能
+
+   ```java
+   package com.kk;
+   
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.autoconfigure.SpringBootApplication;
+   import org.springframework.scheduling.annotation.EnableScheduling;
+   
+   @SpringBootApplication
+   @EnableScheduling
+   public class SpringBootDemo22TaskApplication {
+   
+       public static void main(String[] args) {
+           SpringApplication.run(SpringBootDemo22TaskApplication.class, args);
+       }
+   }
+   ```
+
+2. 然后创建一个`Bean`类，在具体执行的定时任务方法添加`@Schedule(0/1 * * * * ？)`即可
+
+   ```java
+   package com.kk.task;
+   
+   import org.springframework.scheduling.annotation.Scheduled;
+   import org.springframework.stereotype.Component;
+   
+   @Component
+   public class MyTask {
+       @Scheduled(cron = "0/1 * * * * ?")
+       public void printTask() {
+           System.out.println("Task Running...");
+       }
+   }
+
+【:>震惊...这么简单那还要`Quartz`干啥...】
+
+3. 可以给`Task`做配置：
+
+   ```yaml
+   spring:
+     task:
+       scheduling:
+         #添加线程前缀 ---> 便于线程太多容易分辨
+         thread-name-prefix: ssm_
+   ```
+
 ### 邮件解决方案
 
 ### 消息解决方案
