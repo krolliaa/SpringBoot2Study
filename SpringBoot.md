@@ -7092,6 +7092,185 @@ public class MsgServiceImpl implements MsgService {
 
     可以观察到，此时`directQueue1`队列因为有了两个监听器，所以会轮询地执行不同地操作。
 
+- `SpringBoot`整合`RabbitMQ`之`Topic`主题模式
+
+  1. 引入依赖
+
+  2. 修改配置
+
+  3. 创建队列、交换机、绑定队列和交换机
+
+     ```java
+     package com.kk.service.impl.rabbitmq.topic;
+     
+     import org.springframework.amqp.core.Binding;
+     import org.springframework.amqp.core.BindingBuilder;
+     import org.springframework.amqp.core.Queue;
+     import org.springframework.amqp.core.TopicExchange;
+     import org.springframework.context.annotation.Bean;
+     import org.springframework.context.annotation.Configuration;
+     
+     @Configuration
+     public class RabbitMQTopicConfiguration {
+         @Bean
+         public Queue getTopicQueue1() {
+             return new Queue("topicQueue1");
+         }
+     
+         @Bean
+         public Queue getTopicQueue2() {
+             return new Queue("topicQueue2");
+         }
+     
+         @Bean
+         public TopicExchange getTopicExchange() {
+             return new TopicExchange("topicExchange");
+         }
+     
+         @Bean
+         public Binding topicQueueBindTopicExchange1() {
+             return BindingBuilder.bind(getTopicQueue1()).to(getTopicExchange()).with("topic1");
+         }
+     
+         @Bean
+         public Binding topicQueueBindTopicExchange2() {
+             return BindingBuilder.bind(getTopicQueue2()).to(getTopicExchange()).with("topic2");
+         }
+     }
+     ```
+
+  4. 创建监听器
+
+     ```java
+     package com.kk.service.impl.rabbitmq.topic;
+     
+     import org.springframework.amqp.rabbit.annotation.RabbitListener;
+     import org.springframework.stereotype.Component;
+     
+     @Component
+     public class RabbitMQTopicListener1 {
+         @RabbitListener(queues = {"topicQueue1"})
+         public void topicListener(String id) {
+             System.out.println("【Topic 消息队列】 1 One Listener 已完成短信发送业务，id = " + id);
+         }
+     }
+     ```
+
+  5. 使用`AmqpTemplate`发送消息
+
+     ```java
+     package com.kk.service.impl.rabbitmq.topic;
+     
+     import com.kk.service.MessageService;
+     import org.springframework.amqp.core.AmqpTemplate;
+     import org.springframework.beans.factory.annotation.Autowired;
+     import org.springframework.stereotype.Service;
+     
+     @Service
+     public class RabbitMqMessageServiceImpl implements MessageService {
+         @Autowired
+         private AmqpTemplate amqpTemplate;
+     
+         @Override
+         public void sendMessage(String id) {
+             System.out.println("待发送短信的订单已纳入处理队列：" + id);
+             //指定交换机、路由、要传递的值
+             amqpTemplate.convertAndSend("topicExchange", "topic1", id);
+         }
+     
+         @Override
+         public String doMessage() {
+             return "发送短信完毕";
+         }
+     }
+     ```
+
+  6. 代码跟直连模式下的代码没什么差别，那么主题模式的消息队列跟直连模式的消息队列有什么不同呢？事实上，主题模式的消息队列比直连模式的消息队列强大很多。
+
+     我们在代码中有两个队列：一个是`topicQueue1`另外一个是`topicQueue2`，并且绑定到了同一个交换机上形成了两个`RoutingKey`，一个是`topic1`，一个是`topic2`。
+
+     强大就强大在`RoutingKey`上，它可以通过`*`跟`#`去匹配字符：
+
+     `*`：可以匹配任意一个单词，且必须要匹配上
+
+     `#`：可以匹配任意字符
+
+     如果两个`RoutingKey`在使用时都匹配上了，那么消息会发送给这个两个消息队列。但是在直连模式中，你在定义的配置类中标志的`RoutingKey`是什么，你在使用的时候就要一一对应上，否则无效。
+
+     这就是主题模式的强大之处。
+
+     代码如下：【记得在测试代码的时候要在管理页面中删除队列，否则可能会产生一些问题】
+
+     这是配置类中的代码：
+
+     ```java
+      @Bean
+      public Binding topicQueueBindTopicExchange1() {
+          return BindingBuilder.bind(getTopicQueue1()).to(getTopicExchange()).with("topic.*.ids");
+      }
+      @Bean
+      public Binding topicQueueBindTopicExchange2() {
+          return BindingBuilder.bind(getTopicQueue2()).to(getTopicExchange()).with("topic.order.*");
+      }
+     ```
+
+     这是`AmqpTemplate`使用的代码：注意观察这里的`convertAndSend`的第二个参数`topic_order_ids`，这个参数值既匹配上了第一个队列跟交换机的绑定，也匹配上了第二个队列跟交换机的绑定。所以消息会发送到这两个消息队列中，这是直连模式下所没有的功能。
+
+     ```java
+     package com.kk.service.impl.rabbitmq.topic;
+     
+     import com.kk.service.MessageService;
+     import org.springframework.amqp.core.AmqpTemplate;
+     import org.springframework.beans.factory.annotation.Autowired;
+     import org.springframework.stereotype.Service;
+     
+     @Service
+     public class RabbitMqMessageServiceImpl implements MessageService {
+         @Autowired
+         private AmqpTemplate amqpTemplate;
+     
+         @Override
+         public void sendMessage(String id) {
+             System.out.println("待发送短信的订单已纳入处理队列：" + id);
+             //指定交换机、路由、要传递的值
+             amqpTemplate.convertAndSend("topicExchange", "topic.order.ids", id);
+         }
+     
+         @Override
+         public String doMessage() {
+             return "发送短信完毕";
+         }
+     }
+     ```
+
+  7. 然后修改下监听器，去监听两个消息队列
+
+     ```java
+     package com.kk.service.impl.rabbitmq.topic;
+     
+     import org.springframework.amqp.rabbit.annotation.RabbitListener;
+     import org.springframework.stereotype.Component;
+     
+     @Component
+     public class RabbitMQTopicListener1 {
+         @RabbitListener(queues = {"topicQueue1"})
+         public void topicListener1(String id) {
+             System.out.println("【Topic 消息队列 --- 1】 1 One Listener 已完成短信发送业务，id = " + id);
+         }
+     
+         @RabbitListener(queues = {"topicQueue2"})
+         public void topicListener2(String id) {
+             System.out.println("【Topic 消息队列 --- 2】 1 One Listener 已完成短信发送业务，id = " + id);
+         }
+     }
+     ```
+
+  8. 重启服务器观察效果
+
+     ![](https://img-blog.csdnimg.cn/718a6f6e7d18449580dd26a1e0ce000a.png)
+
+     可以观察到，因为在`AmqpTemplate`中使用的`Routingkey`参数为`topic.order.ids`，匹配上了配置类中的两个绑定：`topic.*.ids`以及`topic.order.*`，所以`RabbitMQ`交换机会往两个消息队列塞消息。
+
 #### `RocketMQ`篇
 
 #### `Kafka`篇
