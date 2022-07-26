@@ -6496,31 +6496,82 @@ public class MsgServiceImpl implements MsgService {
 
 ### 邮件解决方案
 
+#### `JavaMail`篇
+
+- `SMTP`：简单邮件传输协议，用于**发送**电子邮件的传输协议
+- `POP3`：用于**接收**电子邮件的标准协议
+- `IMAP`：互联网消息协议，是`POP3`的替代协议【会做邮件状态的双向同步】
+
+1. 引入依赖
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-mail</artifactId>
+       <version>2.7.2</version>
+   </dependency>
+   ```
+
+2. 修改配置
+
+   ```yaml
+   spring: 
+     mail: 
+       #邮件供应商 ---> smtp 发送 ---> pop3 接收 up imap
+       #需要在邮件供应商的系统中开启 smtp pop3
+       host: smtp.163.com
+       username: xxx
+       password: xxx
+   ```
+
+3. 发送邮件 ---> 使用`JavaMailSender`
+
+   简单邮件`SimpleMailMessage`内容需要包括：发件人、收件人、标题、正文 ---> 定义四个变量即可
+
+   如果给`from`加上`(xxx)`字样则收件人收到的发件人信息会显示`xxx`而不会显示邮箱账号。
+
+   ```java
+   package com.kk.service.impl;
+   
+   import com.kk.service.SendMailService;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.mail.SimpleMailMessage;
+   import org.springframework.mail.javamail.JavaMailSender;
+   import org.springframework.stereotype.Service;
+   
+   @Service
+   public class SendMailServiceImpl implements SendMailService {
+   
+       @Autowired
+       private JavaMailSender javaMailSender;
+   
+       private String from = "xxx@xx.com";
+       private String to = "xxx@xx.com";
+       private String subject = "测试邮件标题";
+       private String content = "测试邮件内容";
+   
+   
+       @Override
+       public void sendMail() {
+           SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+           simpleMailMessage.setFrom(from + "(AAA)");
+           simpleMailMessage.setTo(to);
+           simpleMailMessage.setSubject(subject);
+           simpleMailMessage.setText(content);
+           javaMailSender.send(simpleMailMessage);
+       }
+   }
+   ```
+
 ### 消息解决方案
 
-### 
+#### `ActiveMQ`篇
 
+#### `RabbitMQ`篇
 
+#### `RocketMQ`篇
 
-### `Task`篇
-
-
-
-### `ActiveMQ`篇
-
-
-
-### `RabbitMQ`篇
-
-
-
-### `RocketMQ`篇
-
-
-
-### `Kafka`篇
-
-
+#### `Kafka`篇
 
 ## 监控
 

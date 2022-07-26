@@ -22,6 +22,7 @@
         <module name="SpringBoot_demo21_J2cache" />
         <module name="SpringBoot_demo12_Configuration" />
         <module name="SpringBoot_demo13_Test" />
+        <module name="SpringBoot_demo23_JavaMail" />
         <module name="SpringBoot_demo16_Redis" />
         <module name="SpringBoot_demo20_Jetcache" />
         <module name="SpringBoot_demo22_Task" />
@@ -60,6 +61,7 @@
       <module name="SpringBoot_demo20_Jetcache" target="1.8" />
       <module name="SpringBoot_demo21_J2cache" target="1.8" />
       <module name="SpringBoot_demo22_Task" target="1.8" />
+      <module name="SpringBoot_demo23_JavaMail" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -88,6 +90,7 @@
       <module name="SpringBoot_demo20_Jetcache" options="-parameters" />
       <module name="SpringBoot_demo21_J2cache" options="-parameters" />
       <module name="SpringBoot_demo22_Task" options="-parameters" />
+      <module name="SpringBoot_demo23_JavaMail" options="-parameters" />
     </option>
   </component>
 </project>
