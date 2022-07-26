@@ -6599,6 +6599,159 @@ public class MsgServiceImpl implements MsgService {
 
 ### 消息解决方案
 
+【消息发送方 ---> 生产者，消息接收方 ---> 消费者】从烽火台开始说起，消息分为发送方跟接收方，通常我们将发送方称为消息生产者，接收方称为消息消费者。
+
+【同步消息、异步消息】除此之外，消息可以分为同步消息和异步消息，同步消息是生产者发送消息之后必须等到消费者消费以后才可以做进一步地处理，而异步消息则是生产者发送消息之后不必等消费者消费消息即可干自己想要干的事情。
+
+在编程世界中也有存在着消息这种东东：
+
+在单体服务器的世界里，客户端向服务器发送请求，这是再正常不过的世界。但是如果此时有很多很多的请求同时向服务器发送请求，则服务端的压力会变得非常非常大，要是崩溃了可不行，于是就把这些请求通通转发走，服务端充当一个中转站。
+
+为了接收信息，出现了**消息队列**这么一种东西，它负责将信息统统转换为特定的消息格式，并分配给各个不同的子业务系统。缓解此前服务器端压力太大的问题。
+
+![](https://img-blog.csdnimg.cn/3d58b0cfb3ef422aacbe3450600ee21b.png)
+
+- 企业级应用中广泛使用的三种异步消息传递技术
+  - `JMS[Java Message Service]`：一个规范，等同于`JDBC`规范，提供了与消息服务相关的`API`接口
+    - 消息模型：
+      - `peer-2-peer`点对点模型，消息发送到一个消息队列，该队列保存消息，只能被一个消费者消息或超时没被消息
+      - `publish-subscribe`**发布订阅模型**：生产者生产消息可以被多个消费者消费，生产者和消费者完全独立，不需要感知对方的存在
+    - 实现了`JMS`规范的技术：`ActiveMQ Redis HornetMQ RabbitMQ RocketMQ【没有完全遵守 JMS 规范】`
+  - `AMQP`：`JMS`只适用于`Java`，但是有些系统并不是纯然只有`Java`这门语言开发，于是有人就搞出了`AMQP`协议，规范了网络交换的数据格式，兼容`JMS`。我`python`写的生产者可以被`Java`写的消费者消费。听起来就很酷。
+    - 具有跨平台性，服务器供应商，生产者，消费者可以使用不同语言来实现
+    - 为了解决跨平台性，`AMQP`协议规定所有的消息种类统统都规定为字节数组`byte[]`
+    - 实现了`AMQP`协议的技术：`RabbitMQ RocketMQ StromMQ`
+  - `MQTT`：消息队列遥测传输技术，专门为小设备设计，是`IOT`生态系统中主要成分之一。
+  
+- 订单短信的消息案例创建：
+
+  为什么专门挑选发送短信这个业务为例子呢？因为发送短信发完了，并不需要等到短信发送成功业务才继续往下执行，这就很明显是一个异步消息的业务。所以可以使用消息队列来帮助完成。所以才选定发送短信的业务为例子。【发送短信也是模拟的】
+
+  创建`OrderService`业务层：
+
+  ```java
+  package com.kk.service;
+  
+  public interface OrderService {
+      //这里传递的只有订单 id 一个值，只是一个模拟，实际上订单内容肯定不止 id 一个
+      public abstract void order(String id);
+  }
+  ```
+
+  ```java
+  package com.kk.service.impl;
+  
+  import com.kk.service.MessageService;
+  import com.kk.service.OrderService;
+  import org.springframework.beans.factory.annotation.Autowired;
+  import org.springframework.stereotype.Service;
+  
+  @Service
+  public class OrderServiceImpl implements OrderService {
+  
+      @Autowired
+      private MessageService messageService;
+  
+      @Override
+      public void order(String id) {
+          System.out.println("订单处理开始：" + id);
+          messageService.sendMessage(id);
+          System.out.println("订单处理完毕：" + id);
+      }
+  }
+  ```
+
+  创建`MessageService`业务层：
+
+  ```java
+  package com.kk.service;
+  
+  public interface MessageService {
+      //要发送短信的订单纳入队列
+      public abstract void sendMessage(String id);
+      //处理短信
+      public abstract String doMessage();
+  }
+  
+  ```
+
+  ```java
+  package com.kk.service.impl;
+  
+  import com.kk.service.MessageService;
+  import org.springframework.stereotype.Service;
+  
+  import java.util.ArrayList;
+  
+  @Service
+  public class MessageServiceImpl implements MessageService {
+  
+      private ArrayList<String> arrayList = new ArrayList<>();
+  
+      @Override
+      public void sendMessage(String id) {
+          arrayList.add(id);
+          System.out.println("待发送短信的订单已纳入处理队列：" + id);
+      }
+  
+      @Override
+      public String doMessage() {
+          return "发送短信完毕： " + arrayList.remove(0);
+      }
+  }
+  ```
+
+  `OrderController`表现层：
+
+  ```java
+  package com.kk.controller;
+  
+  import com.kk.service.OrderService;
+  import org.springframework.beans.factory.annotation.Autowired;
+  import org.springframework.web.bind.annotation.PathVariable;
+  import org.springframework.web.bind.annotation.PostMapping;
+  import org.springframework.web.bind.annotation.RequestMapping;
+  import org.springframework.web.bind.annotation.RestController;
+  
+  @RestController
+  @RequestMapping(value = "/order")
+  public class OrderController {
+  
+      @Autowired
+      private OrderService orderService;
+  
+      @PostMapping("/{id}")
+      public void sendOrder(@PathVariable String id) {
+          orderService.order(id);
+      }
+  }
+  ```
+
+  `MessageController`表现层：
+
+  ```java
+  package com.kk.controller;
+  
+  import com.kk.service.MessageService;
+  import org.springframework.beans.factory.annotation.Autowired;
+  import org.springframework.web.bind.annotation.PostMapping;
+  import org.springframework.web.bind.annotation.RequestMapping;
+  import org.springframework.web.bind.annotation.RestController;
+  
+  @RestController
+  @RequestMapping(value = "/message")
+  public class MessageController {
+  
+      @Autowired
+      private MessageService messageService;
+  
+      @PostMapping
+      public String doMessage() {
+          return messageService.doMessage();
+      }
+  }
+  ```
+
 #### `ActiveMQ`篇
 
 #### `RabbitMQ`篇
