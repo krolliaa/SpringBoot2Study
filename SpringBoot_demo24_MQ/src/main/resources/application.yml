@@ -7,3 +7,6 @@ spring:
     template:
       default-destination: destination_application_id
     pub-sub-domain: true
+  rabbitmq:
+    host: localhost
+    prot: 5672

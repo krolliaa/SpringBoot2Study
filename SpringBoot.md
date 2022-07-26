@@ -6926,6 +6926,172 @@ public class MsgServiceImpl implements MsgService {
 
 #### `RabbitMQ`篇
 
+1. `RabbitMQ`是`Erlang`语言编写的，所以首先需要安装`Erlang`环境，安装完毕需要重启计算机才能生效，然后配置环境变量：`ERLANG_HOME`以及`PATH`
+
+2. 安装`RabbitMQ`，进入到`cmd`使用`rabbitmq.bat start`启动，如果需要管理界面，还需要启动`rabbitmq-plugins.bat enable xxx`启动插件，默认管理的用户名跟密码均为：`guest`【需在管理权权限下启动】
+
+   `RabbitMQ`默认的服务端口为：`5672`，后台管理`web`端口为：`15672`
+
+   ![](https://img-blog.csdnimg.cn/73921277eaaf4d43858b7030fba49360.png)
+
+3. `RabbitMQ`有好几种消息模型
+
+4. 引入依赖：
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-amqp</artifactId>
+       <version>2.7.2</version>
+   </dependency>
+   ```
+
+5. 修改配置：
+
+   ```yaml
+   spring:
+     rabbitmq:
+       host: localhost
+       port: 5672
+   ```
+
+6. 创建包：`rabbitmq/direct【直连模式】 + rabbitmq/topic`
+
+7. 创建队列、交换机，并且绑定队列到交换机上形成路由
+
+   ```java
+   package com.kk.service.impl.rabbitmq.direct;
+   
+   import org.springframework.amqp.core.Binding;
+   import org.springframework.amqp.core.BindingBuilder;
+   import org.springframework.amqp.core.DirectExchange;
+   import org.springframework.amqp.core.Queue;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   
+   @Configuration
+   public class RabbitMQConfiguration {
+       @Bean
+       //交给容器管理交换机对象，交换机负责绑定管理队列，并将消息推送到队列中
+       public DirectExchange getDirectExchange() {
+           return new DirectExchange("directExchange");
+       }
+   
+       @Bean
+       //创建队列1
+       public Queue getDirectQueue1() {
+           return new Queue("directQueue1");
+       }
+   
+       @Bean
+       //创建队列2
+       public Queue getDirectQueue2() {
+           return new Queue("directQueue2");
+       }
+   
+       @Bean
+       //交换机绑定队列1 ---> 交换机+队列 ---> 绑定形成路由
+       public Binding bindingDirectQueue1() {
+           return BindingBuilder.bind(getDirectQueue1()).to(getDirectExchange()).with("direct1");
+       }
+   
+       @Bean
+       //交换机绑定队列2 ---> 交换机+队列 ---> 绑定形成路由
+       public Binding bindingDirectQueue2() {
+           return BindingBuilder.bind(getDirectQueue2()).to(getDirectExchange()).with("direct2");
+       }
+   }
+   ```
+
+8. 使用`AmqpTemplate`转换并发送消息
+
+   ```java
+   package com.kk.service.impl.rabbitmq.direct;
+   
+   import com.kk.service.MessageService;
+   import org.springframework.amqp.core.AmqpTemplate;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.jms.core.JmsMessagingTemplate;
+   import org.springframework.stereotype.Service;
+   
+   @Service
+   public class RabbitMqMessageServiceImpl implements MessageService {
+       @Autowired
+       private AmqpTemplate amqpTemplate;
+   
+       @Override
+       public void sendMessage(String id) {
+           System.out.println("待发送短信的订单已纳入处理队列：" + id);
+           //指定交换机、路由、要传递的值
+           amqpTemplate.convertAndSend("directExchange", "direct1", id);
+       }
+   
+       @Override
+       public String doMessage() {
+           return "发送短信完毕";
+       }
+   }
+   ```
+
+9. 监听器，消费者监听消息并自动消费
+
+   ```java
+   package com.kk.service.impl.rabbitmq.direct;
+   
+   import org.springframework.amqp.rabbit.annotation.RabbitListener;
+   import org.springframework.jms.annotation.JmsListener;
+   import org.springframework.messaging.handler.annotation.SendTo;
+   import org.springframework.stereotype.Component;
+   
+   @Component
+   public class RabbitMQMessageListener {
+       @RabbitListener(queues = {"directQueue1"})
+       //监听哪个消息队列需要给出
+       public void rabbitMQReceive(String id) {
+           System.out.println("消息队列 1 已完成短信发送业务，id = " + id);
+       }
+   }
+   ```
+
+10. 启动服务器测试接口验证代码是否正确。
+
+11. 测试完毕，程序正常运行，现在添加第二个监听器监听同一个队列，观察结果：
+
+    ```java
+    package com.kk.service.impl.rabbitmq.direct;
+    
+    import org.springframework.amqp.rabbit.annotation.RabbitListener;
+    import org.springframework.jms.annotation.JmsListener;
+    import org.springframework.messaging.handler.annotation.SendTo;
+    import org.springframework.stereotype.Component;
+    
+    @Component
+    public class RabbitMQMessageListener1 {
+        @RabbitListener(queues = {"directQueue1"})
+        //监听哪个消息队列需要给出
+        public void rabbitMQReceive1(String id) {
+            System.out.println("消息队列 1 One Listener 已完成短信发送业务，id = " + id);
+        }
+    }
+    ```
+
+    ```java
+    package com.kk.service.impl.rabbitmq.direct;
+    
+    import org.springframework.amqp.rabbit.annotation.RabbitListener;
+    import org.springframework.stereotype.Component;
+    
+    @Component
+    public class RabbitMQMessageListener2 {
+        @RabbitListener(queues = {"directQueue1"})
+        public void rabbitMQReceive2(String id) {
+            System.out.println("消息队列 1 Two Listener 已完成短信发送业务，id = " + id);
+        }
+    }
+    ```
+
+    可以观察到，此时`directQueue1`队列因为有了两个监听器，所以会轮询地执行不同地操作。
+
 #### `RocketMQ`篇
 
 #### `Kafka`篇

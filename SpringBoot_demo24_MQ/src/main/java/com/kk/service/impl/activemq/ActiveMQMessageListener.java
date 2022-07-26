@@ -4,7 +4,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class ActiveMQMessageListener {
     @JmsListener(destination = "destination_id")
     @SendTo(value = "destination_send_to")
