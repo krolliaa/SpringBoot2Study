@@ -6595,6 +6595,8 @@ public class MsgServiceImpl implements MsgService {
    }
    ```
 
+`SpringBoot`邮件解决方案到此完成 ---> `JavaMailSender`
+
 ### 消息解决方案
 
 #### `ActiveMQ`篇
