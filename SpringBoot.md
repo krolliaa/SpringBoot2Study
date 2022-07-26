@@ -6754,6 +6754,176 @@ public class MsgServiceImpl implements MsgService {
 
 #### `ActiveMQ`篇
 
+1. 下载、安装`ActiveMQ`，这里的网络实在太差劲了所以先在`Windows`版本做 ---> 进入`win64`即可，然后访问：`http://localhost:8161`即可，`8161`是后台管理端口，`61616`是服务端口。
+
+2. 引入依赖
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-activemq</artifactId>
+       <version>2.7.2</version>
+   </dependency>
+   ```
+
+3. 修改配置
+
+   ```java
+   server:
+     port: 80
+   spring:
+     activemq:
+       broker-url: tcp://localhost:61616
+   ```
+
+4. `ActiveMQ`符合`JMS`规范所以直接使用`JmsMessagingTemplate`即可，存储时先转换为消息格式再发送到`ActiveMQ`，消费时需要先接收再转换为消息格式。
+
+   ```java
+   package com.kk.service.impl.activemq;
+   
+   import com.kk.service.MessageService;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.jms.core.JmsMessagingTemplate;
+   import org.springframework.stereotype.Service;
+   
+   import java.util.ArrayList;
+   
+   @Service
+   public class ActiveMqMessageServiceImpl implements MessageService {
+       @Autowired
+       private JmsMessagingTemplate jmsMessagingTemplate;
+   
+       @Override
+       public void sendMessage(String id) {
+           jmsMessagingTemplate.convertAndSend(id);
+           System.out.println("待发送短信的订单已纳入处理队列：" + id);
+       }
+   
+       @Override
+       public String doMessage() {
+           return "发送短信完毕： " + jmsMessagingTemplate.receiveAndConvert(String.class);
+       }
+   }
+   ```
+
+5. 报错：好家伙，这是因为你没有告诉`ActiveMQ`具体要存放到哪个位置，你要么在`application.yml`配置文件中配置，要么在代码中以硬编码的方式告诉`ActiveMQ`
+
+   ```java
+   java.lang.IllegalStateException: No 'defaultDestination' or 'defaultDestinationName'
+   ```
+
+   先来看以硬编码的方式告诉：无论存储都要告诉`ActiveMQ`
+
+   ```java
+   package com.kk.service.impl.activemq;
+   
+   import com.kk.service.MessageService;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.jms.core.JmsMessagingTemplate;
+   import org.springframework.stereotype.Service;
+   
+   import java.util.ArrayList;
+   
+   @Service
+   public class ActiveMqMessageServiceImpl implements MessageService {
+       @Autowired
+       private JmsMessagingTemplate jmsMessagingTemplate;
+   
+       @Override
+       public void sendMessage(String id) {
+           jmsMessagingTemplate.convertAndSend("destination_id", id);
+           System.out.println("待发送短信的订单已纳入处理队列：" + id);
+       }
+   
+       @Override
+       public String doMessage() {
+           return "发送短信完毕： " + jmsMessagingTemplate.receiveAndConvert("destination_id", String.class);
+       }
+   }
+   ```
+
+   重启服务器，测试通过。
+
+   第二种方式就是在`application.yml`配置文件中配置：
+
+   ```yaml
+   server:
+     port: 80
+   spring:
+     activemq:
+       broker-url: tcp://localhost:61616
+     jms:
+       template:
+         default-destination: destination_application_id
+   ```
+
+   取消硬编码的`destination`，重启服务器，测试通过。
+
+6. 目前我们是手动的生产、消费，按理说我们应该生产多少个，消费者自动去监听消费。这个在`AactiveMQ`中也是可以实现的。
+
+   为了方便修改，更加直观，将`destination`改为硬编码的方式。
+
+   创建`ActiveMQMessageListener`：该类就是用于监听生产者生产的消息的
+
+   ```java
+   package com.kk.service.impl.activemq;
+   
+   import org.springframework.jms.annotation.JmsListener;
+   import org.springframework.stereotype.Component;
+   
+   @Component
+   public class ActiveMQMessageListener {
+       @JmsListener(destination = "destination_id")
+       public void listenAndReceiveMessage(String id) {
+           System.out.println("自动监听并消费消息：" + id);
+       }
+   }
+   ```
+
+   此时再重启服务器，然后发送订单：`http://localhost/order/8`则会发现在控制台中自动消费了生产的消息。
+
+7. 如果该消息在`destination_id`处理完毕之后想交给另外一个`destination`从而造成一个流水线的方式可以使用`@SendTo(destination = "")`注解，代码如下：
+
+   ```java
+   package com.kk.service.impl.activemq;
+   
+   import org.springframework.jms.annotation.JmsListener;
+   import org.springframework.messaging.handler.annotation.SendTo;
+   import org.springframework.stereotype.Component;
+   
+   @Component
+   public class ActiveMQMessageListener {
+       @JmsListener(destination = "destination_id")
+       @SendTo(value = "destination_send_to")
+       public String listenAndReceiveMessage(String id) {
+           System.out.println("自动监听并消费消息：" + id);
+           return "new" + id;
+       }
+   
+       @JmsListener(destination = "destination_send_to")
+       public void listenAndReceiveMessage2(String newId) {
+           System.out.println(newId);
+       }
+   }
+   ```
+
+8. 当前模式还是点对点的模式，如果想更改为发布订阅模式，可以在`application.yml`中进行配置，将`pub-sub-domain`更改为`true`即可：
+
+   ```yaml
+   server:
+     port: 80
+   spring:
+     activemq:
+       #ActiveMQ服务器端口
+       broker-url: tcp://localhost:61616
+     jms:
+       template:
+         default-destination: destination_application_id
+       pub-sub-domain: true
+   ```
+
+`SpringBoot`整合`ActiveMQ`完成。
+
 #### `RabbitMQ`篇
 
 #### `RocketMQ`篇

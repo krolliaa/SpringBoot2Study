@@ -1,11 +1,11 @@
-package com.kk.service.impl;
+package com.kk.service.impl.base;
 
 import com.kk.service.MessageService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
-@Service
+//@Service
 public class MessageServiceImpl implements MessageService {
 
     private ArrayList<String> arrayList = new ArrayList<>();

@@ -1,0 +1,9 @@
+server:
+  port: 80
+spring:
+  activemq:
+    broker-url: tcp://localhost:61616
+  jms:
+    template:
+      default-destination: destination_application_id
+    pub-sub-domain: true
