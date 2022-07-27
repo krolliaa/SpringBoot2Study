@@ -9,10 +9,12 @@
         <outputRelativeToContentRoot value="true" />
         <module name="SpringBoot_demo09_YamlProfile" />
         <module name="SpringBoot_demo05_MyBatisPlus" />
+        <module name="SpringBoot_demo25_SpringBootAdminServer" />
         <module name="SpringBoot_demo17_MongoDB" />
         <module name="SpringBoot_demo07_SSMP" />
         <module name="SpringBoot_demo08_Config" />
         <module name="SpringBoot_demo14_SQL" />
+        <module name="SpringBoot_demo25_SpringBootAdminClient" />
         <module name="SpringBoot_demo03_JUnit" />
         <module name="SpringBoot_demo02_BaseConfiguration" />
         <module name="SpringBoot_demo19_Cache" />
@@ -64,6 +66,8 @@
       <module name="SpringBoot_demo22_Task" target="1.8" />
       <module name="SpringBoot_demo23_JavaMail" target="1.8" />
       <module name="SpringBoot_demo24_MQ" target="1.8" />
+      <module name="SpringBoot_demo25_SpringBootAdminClient" target="1.8" />
+      <module name="SpringBoot_demo25_SpringBootAdminServer" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -94,6 +98,8 @@
       <module name="SpringBoot_demo22_Task" options="-parameters" />
       <module name="SpringBoot_demo23_JavaMail" options="-parameters" />
       <module name="SpringBoot_demo24_MQ" options="-parameters" />
+      <module name="SpringBoot_demo25_SpringBootAdminClient" options="-parameters" />
+      <module name="SpringBoot_demo25_SpringBootAdminServer" options="-parameters" />
     </option>
   </component>
 </project>

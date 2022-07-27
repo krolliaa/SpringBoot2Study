@@ -7542,3 +7542,141 @@ spring:
 
 ## 监控
 
+#### 监控的意义
+
+【有助于快速定位服务，防止服务器崩溃】
+
+- 监控服务状态是否宕机
+- 监控服务运行指标（内存、虚拟机、线程、请求等）
+- 监控日志
+- 管理服务（服务下线）
+
+#### 监控的实施
+
+一般应用都不会是单体服务器这种架构的，都是多个服务器的，所以我们打造一个服务器用于专门做监控服务器，**主动去获取哪些可以被监控的服务器并且监控的内容为被监控服务器允许被监控服务器监控的**。
+
+【主动获取掌握可控性，尊重主动上报追求自由性】
+
+- **监控服务器主动获取信息**
+
+  把所有的服务器对应的信息都放在同一个服务器中，该服务器专门提供日志信息。是主动去索取呢？还是被动的接收呢？当然是主动的好呀，更加可控方便，万一我想要最新的信息还要等它们吗？所以最好还是主动获取的好。
+
+- **被监控服务器主动上报要求被监控，同时告诉哪些东西可以被监控**
+
+  可以做一个配置，需要被监控的程序主动上报我需要被谁谁谁监控，这样做的目的是保护安全，要不然谁都可以来监控我那还得了。并且需要配置哪些东西开放给监控服务器监控。
+
+#### 可视化监控平台
+
+这种监控服务器自己打造是何等的麻烦，有人已经把这项工作做好了，我们直接拿来用即可 ---> `SpringBootAdmin`[非官方开发]
+
+1. 添加依赖
+
+   ```xml
+   <dependency>
+       <groupId>de.codecentric</groupId>
+       <artifactId>spring-boot-admin-starter-server</artifactId>
+       <version>2.7.2</version>
+   </dependency>
+   
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-web</artifactId>
+   </dependency>
+   ```
+
+2. 修改服务端配置：端口
+
+   ```java
+   server:
+     port: 8080
+   ```
+
+3. 引导类服务端添加：`@EnableAdminServer`【*****非常重要】
+
+   ```java
+   package com.kk;
+   
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.autoconfigure.SpringBootApplication;
+   
+   @SpringBootApplication
+   @EnableAdminServer
+   public class SpringBootDemo25SpringBootAdminServerApplication {
+   
+       public static void main(String[] args) {
+           SpringApplication.run(SpringBootDemo25SpringBootAdminServerApplication.class, args);
+       }
+   
+   }
+   ```
+
+4. 开启服务，输入`localhost:8080`即可
+
+5. 启动某个被监控的应用 ---> 创建新的项目`client` ---> 勾选`ops ---> SpringBootAdmin Client`【版本同样需要跟`SpringBoot`版本保持一致】
+
+   ```xml
+   <dependency>
+       <groupId>de.codecentric</groupId>
+       <artifactId>spring-boot-admin-starter-client</artifactId>
+       <version>2.7.2</version>
+   </dependency>
+   ```
+
+6. 修改客户端配置：
+
+   - `spring.boot.admin.client.url=http://localhost:8080`【告诉需要被哪个服务器监控】
+   - 配置`server.port`
+   - 给监控服务器看什么监控服务器才看得到：`management.endpoint.health.show-details=always【默认为 never】` ---> 开方健康指标
+   - `management.endpoints.web.exposure.include="*"`【默认为`health`】 ---> 开放所有`endpoint`
+
+   ```yaml
+   spring:
+     boot:
+       admin:
+         client:
+           url: http://localhost:8080
+   management:
+     endpoint:
+       health:
+         show-details: always
+     endpoints:
+       web:
+         exposure:
+           # 默认为 health
+           include: "*"
+   server:
+     port: 80
+   ```
+
+   启动服务器...
+
+7. 还可以给之前做的`SpringBoot_demo07_SSMP`加上`SpringBootAdmin Client`客户端
+
+   ```xml
+   <dependency>
+       <groupId>de.codecentric</groupId>
+       <artifactId>spring-boot-admin-starter-client</artifactId>
+       <version>2.7.2</version>
+   </dependency>
+   ```
+
+   ```yaml
+   spring:
+     boot:
+       admin:
+         client:
+           url: localhost:8080
+   management:
+     endpoint:
+       health:
+         show-details: always
+     endpoints:
+       web:
+         exposure:
+           # 默认为 health
+           include: "*"
+   ```
+
+   启动服务器...
+
+8. 重启`SpringBootAdmin Server`监控服务器
