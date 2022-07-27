@@ -7363,7 +7363,7 @@ public class MsgServiceImpl implements MsgService {
    }
    ```
 
-10. 上述发送的是同步消息，需要发送异步消息
+10. 上述发送的是同步消息，可以发送异步消息
 
     ```java
     @Override
@@ -7384,6 +7384,136 @@ public class MsgServiceImpl implements MsgService {
     ```
 
 #### `Kafka`篇
+
+`Kafka`并不是专门做消息中间件的的，但是它拥有这个功能，有很多公司也在用这个功能。
+
+启动`kafka`需要先启动`zookeeper`，`zookeeper`充当着命名服务器的作用。注册中心`Zookeeper`的端口为：`2181`而`Kafka`的端口为：`9092` 【`windows`系统`3.x`存在`bug`，建议使用`2.x`】
+
+1. 启动注册中心
+
+   ```powershell
+   zookeeper-server-start.bat ../../config/zookeeper.properties
+   ```
+
+2. 启动`Kafka`
+
+   ```powershell
+   kafka-server-start.bat ../../config/server.properties
+   ```
+
+3. 创建`Topic`：
+
+   ```powershell
+   kafka-topics-bat --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic kk
+   ```
+
+4. 查看`Topic`：
+
+   ```powershell
+   kafka-topics.bat --zookeeper 127.0.0.1:2181 --list
+   ```
+
+5. 删除`Topic`：
+
+   ```powershell
+   kafka-topics.bat --delete --zookeeper 127.0.0.1:2181 --topic kk
+   ```
+
+6. 生产者功能测试：
+
+   ```powershell
+   kafka-console-producer.bat --bootstrap-server localhost:9092 --topic kk
+   ```
+
+7. 消费者功能测试：
+
+   ```powershell
+   kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic kk --from-beginning
+   ```
+
+8. 引入依赖 ---> 可以在`SpringBoot-Parent`中找到
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.kafka</groupId>
+       <artifactId>spring-kafka</artifactId>
+       <version>${spring-kafka.version}</version>
+   </dependency>
+   ```
+
+9. 修改配置
+
+   ```yaml
+   #告诉连接地址
+   spring:
+     kafka:
+       bootstrap-servers: localhost:9092
+   ```
+
+10. 首先需要按照第`3`步创建一个`Topic`
+
+    ```powershell
+    kafka-topics.bat --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic kk
+    Created topic kk.
+    ```
+
+11. 创建`KafkaMessageServiceImpl`生产者
+
+    ```java
+    package com.kk.service.impl.kafka;
+    
+    import com.kk.service.MessageService;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.kafka.core.KafkaTemplate;
+    
+    public class KafkaMessageServiceImpl implements MessageService {
+    
+        @Autowired
+        private KafkaTemplate<String, String> kafkaTemplate;
+    
+        @Override
+        public void sendMessage(String id) {
+            System.out.println("订单" + id + "已纳入 Kafka 消息队列");
+            //发送
+            kafkaTemplate.send("kk", id);
+        }
+    
+        @Override
+        public String doMessage() {
+            return null;
+        }
+    }
+    ```
+
+12. 创建自动监听消息的消费者
+
+    ```java
+    package com.kk.service.impl.kafka;
+    
+    import org.apache.kafka.clients.consumer.ConsumerRecord;
+    import org.springframework.kafka.annotation.KafkaListener;
+    import org.springframework.stereotype.Component;
+    
+    @Component
+    public class KafkaMessageServiceListener {
+        @KafkaListener(topics = {"kk"})
+        public void onMessage(ConsumerRecord<String, String> consumerRecord) {
+            System.out.println("Kafka 处理订单完：" + consumerRecord);
+        }
+    }
+    ```
+
+13. 报错，需要在配置文件中配置`group_id`
+
+    ```yaml
+    spring:
+      kafka:
+      consumer:
+        bootstrap-servers: localhost:9092
+        group-id: order
+    ```
+
+14. 如果没有添加进`topic`或者无法消费，可以重启`Zookeeper`和`Kafka`
 
 ## 监控
 

@@ -7,7 +7,7 @@ import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
+//@Service
 public class RocketMQMessageServiceImpl implements MessageService {
 
     @Autowired

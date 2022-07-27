@@ -10,7 +10,11 @@ spring:
   rabbitmq:
     host: localhost
     prot: 5672
-rocketmq:
-  name-server: localhost:9876
-  producer:
-    group: group_rocketmq
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: order
+#rocketmq:
+#  name-server: localhost:9876
+#  producer:
+#    group: group_rocketmq
