@@ -7515,5 +7515,30 @@ public class MsgServiceImpl implements MsgService {
 
 14. 如果没有添加进`topic`或者无法消费，可以重启`Zookeeper`和`Kafka`
 
+注：最好是注释掉`RocketMQ`中的配置文件，避免造成`bug`：
+
+```yaml
+server:
+  port: 80
+spring:
+  activemq:
+    broker-url: tcp://localhost:61616
+  jms:
+    template:
+      default-destination: destination_application_id
+    pub-sub-domain: true
+  rabbitmq:
+    host: localhost
+    prot: 5672
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: order
+#rocketmq:
+#  name-server: localhost:9876
+#  producer:
+#    group: group_rocketmq
+```
+
 ## 监控
 
