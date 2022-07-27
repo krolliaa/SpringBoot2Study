@@ -3,7 +3,7 @@ package com.kk.service.impl.rabbitmq.direct;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class RabbitMQMessageListener2 {
     @RabbitListener(queues = {"directQueue1"})
     public void rabbitMQReceive2(String id) {

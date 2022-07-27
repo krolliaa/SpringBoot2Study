@@ -3,7 +3,7 @@ package com.kk.service.impl.rabbitmq.topic;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class RabbitMQTopicListener1 {
     @RabbitListener(queues = {"topicQueue1"})
     public void topicListener1(String id) {

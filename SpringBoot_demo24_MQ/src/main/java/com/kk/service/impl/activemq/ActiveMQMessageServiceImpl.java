@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
 //@Service
-public class ActiveMqMessageServiceImpl implements MessageService {
+public class ActiveMQMessageServiceImpl implements MessageService {
     @Autowired
     private JmsMessagingTemplate jmsMessagingTemplate;
 

@@ -5,7 +5,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class RabbitMQMessageListener1 {
     @RabbitListener(queues = {"directQueue1"})
     //监听哪个消息队列需要给出

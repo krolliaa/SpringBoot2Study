@@ -7273,6 +7273,116 @@ public class MsgServiceImpl implements MsgService {
 
 #### `RocketMQ`篇
 
+1. 下载安装`RocketMQ`，配置环境变量：`ROCKETMQ_HOME PATH NAMESRV_ADDR[建议，不配的时候每次打开都需要手动写很麻烦]127.0.0.1:9876`
+
+   默认端口为：9876 ---> 业务服务器`broker` ---> 生产者/消费者连接 ---> 连接`Name-Server`命名服务器
+
+   所以如果不设置环境变量每次打开都需要设置：`SET NAMESRV_ADDR LOCALHOST:9876`
+
+   启动测试，运行`mqnamesrv.cmd + mqbroker.cmd`，然后使用`tools.cmd`打开案例`jar`使用
+
+2. 测试生产者：`tools.cmd org.apache.rocketmq.example.quickstart.Producer`
+
+3. 测试消费者：`tools.cmd org.apache.rocketmq.example.quickstart.Consumer`
+
+4. 引入依赖：
+
+   之前学习过`RabbitMQ`的时候可以发现在`spring-boot-starter-amqp`中只有`RabbitMQ`，也就是说`SpringBoot`没有将`RocketMQ`整合进来，只能到`mvnrepository`中去找：
+
+   ```xml
+   <dependency>
+       <groupId>org.apache.rocketmq</groupId>
+       <artifactId>rocketmq-spring-boot-starter</artifactId>
+       <version>2.2.2</version>
+   </dependency>
+   ```
+
+5. 将之前的消息队列关闭包括：`@Configuration + @Service`
+
+6. 修改配置：
+
+   ```yaml
+   rocketmq:
+     name-server: localhost:9876
+   ```
+
+7. 创建程序
+
+   `RokcetMQMessageServiceImpl`：【第一版】
+
+   ```java
+   package com.kk.service.impl.rocketmq;
+   
+   import com.kk.service.MessageService;
+   import org.apache.rocketmq.spring.core.RocketMQTemplate;
+   import org.springframework.beans.factory.annotation.Autowired;
+   
+   public class RocketMQMessageServiceImpl implements MessageService {
+   
+       @Autowired
+       private RocketMQTemplate rocketMQTemplate;
+   
+   
+       @Override
+       public void sendMessage(String id) {
+           System.out.println("待发送短信的订单已纳入处理队列（rocketmq）：" + id);
+           rocketMQTemplate.convertAndSend("[RocketMQ] order_id" + id);
+       }
+   
+       @Override
+       public String doMessage() {
+           return null;
+       }
+   }
+   ```
+
+8. 报错，因为在使用`RocketMQ`时需要先给生产者分组才可以使用 ---> 修改配置：
+
+   ```yaml
+   rocketmq:
+     name-server: localhost:9876
+     producer:
+       group: group_rocketmq
+   ```
+
+9. 编写监听器，让消费者自动消费
+
+   ```java
+   package com.kk.service.impl.rocketmq;
+   
+   import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+   import org.springframework.stereotype.Component;
+   
+   @Component
+   @RocketMQMessageListener(topic = "order_id", consumerGroup = "group_rocketmq")
+   public class RocketMQListener implements org.apache.rocketmq.spring.core.RocketMQListener<String> {
+       @Override
+       public void onMessage(String id) {
+           System.out.println("自动监听并消费消息：完成短信发送 ---> " + id);
+       }
+   }
+   ```
+
+10. 上述发送的是同步消息，需要发送异步消息
+
+    ```java
+    @Override
+    public void sendMessage(String id) {
+        System.out.println("待发送短信的订单已纳入处理队列（rocketmq）：" + id);
+        //rocketMQTemplate.convertAndSend("order_id", id);
+        rocketMQTemplate.asyncSend("order_id", id, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                System.out.println("消息发送成功！");
+            }
+            @Override
+            public void onException(Throwable throwable) {
+                System.out.println("消息发送失败！");
+            }
+        });
+    }
+    ```
+
 #### `Kafka`篇
 
 ## 监控
