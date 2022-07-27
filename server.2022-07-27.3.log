@@ -1,0 +1,101 @@
+2022-07-27 12:42:38.529 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'errorPageCustomizer'
+2022-07-27 12:42:38.530 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration'
+2022-07-27 12:42:38.531 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration' via constructor to bean named 'server-org.springframework.boot.autoconfigure.web.ServerProperties'
+2022-07-27 12:42:38.532 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'dispatcherServletRegistration'
+2022-07-27 12:42:38.532 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration$DispatcherServletRegistrationConfiguration'
+2022-07-27 12:42:38.533 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'dispatcherServlet'
+2022-07-27 12:42:38.533 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration$DispatcherServletConfiguration'
+2022-07-27 12:42:38.534 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'spring.mvc-org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties'
+2022-07-27 12:42:38.537 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'dispatcherServlet' via factory method to bean named 'spring.mvc-org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties'
+2022-07-27 12:42:38.545 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'dispatcherServletRegistration' via factory method to bean named 'dispatcherServlet'
+2022-07-27 12:42:38.545 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'dispatcherServletRegistration' via factory method to bean named 'spring.mvc-org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties'
+2022-07-27 12:42:38.546 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'multipartConfigElement'
+2022-07-27 12:42:38.547 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration'
+2022-07-27 12:42:38.547 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'spring.servlet.multipart-org.springframework.boot.autoconfigure.web.servlet.MultipartProperties'
+2022-07-27 12:42:38.549 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration' via constructor to bean named 'spring.servlet.multipart-org.springframework.boot.autoconfigure.web.servlet.MultipartProperties'
+2022-07-27 12:42:38.553 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Autowiring by type from bean name 'errorPageCustomizer' via factory method to bean named 'dispatcherServletRegistration'
+2022-07-27 12:42:38.561 DEBUG 14808 --- [main] o.apache.tomcat.util.compat.Jre9Compat   : Class not found so assuming code is running on a pre-Java 9 JVM
+
+java.lang.ClassNotFoundException: java.lang.reflect.InaccessibleObjectException
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382) ~[na:1.8.0_202]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424) ~[na:1.8.0_202]
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349) ~[na:1.8.0_202]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357) ~[na:1.8.0_202]
+	at java.lang.Class.forName0(Native Method) ~[na:1.8.0_202]
+	at java.lang.Class.forName(Class.java:264) ~[na:1.8.0_202]
+	at org.apache.tomcat.util.compat.Jre9Compat.<clinit>(Jre9Compat.java:83) ~[tomcat-embed-core-9.0.64.jar:9.0.64]
+	at org.apache.tomcat.util.compat.JreCompat.<clinit>(JreCompat.java:72) [tomcat-embed-core-9.0.64.jar:9.0.64]
+	at org.apache.catalina.startup.Tomcat.<clinit>(Tomcat.java:1304) [tomcat-embed-core-9.0.64.jar:9.0.64]
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getWebServer(TomcatServletWebServerFactory.java:194) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.createWebServer(ServletWebServerApplicationContext.java:184) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:162) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:577) [spring-context-5.3.21.jar:5.3.21]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:147) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:734) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:408) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:308) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1306) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1295) [spring-boot-2.7.1.jar:2.7.1]
+	at com.kk.SpringBootDemo11LogApplication.main(SpringBootDemo11LogApplication.java:9) [classes/:na]
+
+2022-07-27 12:42:38.562 DEBUG 14808 --- [main] o.apache.tomcat.util.compat.Jre16Compat  : Class not found so assuming code is running on a pre-Java 16 JVM
+
+java.lang.ClassNotFoundException: java.net.UnixDomainSocketAddress
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382) ~[na:1.8.0_202]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424) ~[na:1.8.0_202]
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349) ~[na:1.8.0_202]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357) ~[na:1.8.0_202]
+	at java.lang.Class.forName0(Native Method) ~[na:1.8.0_202]
+	at java.lang.Class.forName(Class.java:264) ~[na:1.8.0_202]
+	at org.apache.tomcat.util.compat.Jre16Compat.<clinit>(Jre16Compat.java:47) ~[tomcat-embed-core-9.0.64.jar:9.0.64]
+	at org.apache.tomcat.util.compat.JreCompat.<clinit>(JreCompat.java:72) [tomcat-embed-core-9.0.64.jar:9.0.64]
+	at org.apache.catalina.startup.Tomcat.<clinit>(Tomcat.java:1304) [tomcat-embed-core-9.0.64.jar:9.0.64]
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getWebServer(TomcatServletWebServerFactory.java:194) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.createWebServer(ServletWebServerApplicationContext.java:184) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:162) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:577) [spring-context-5.3.21.jar:5.3.21]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:147) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:734) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:408) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:308) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1306) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1295) [spring-boot-2.7.1.jar:2.7.1]
+	at com.kk.SpringBootDemo11LogApplication.main(SpringBootDemo11LogApplication.java:9) [classes/:na]
+
+2022-07-27 12:42:38.562 DEBUG 14808 --- [main] o.apache.tomcat.util.compat.Jre19Compat  : Class not found so assuming code is running on a pre-Java 19 JVM
+
+java.lang.ClassNotFoundException: java.lang.WrongThreadException
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382) ~[na:1.8.0_202]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424) ~[na:1.8.0_202]
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349) ~[na:1.8.0_202]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357) ~[na:1.8.0_202]
+	at java.lang.Class.forName0(Native Method) ~[na:1.8.0_202]
+	at java.lang.Class.forName(Class.java:264) ~[na:1.8.0_202]
+	at org.apache.tomcat.util.compat.Jre19Compat.<clinit>(Jre19Compat.java:37) ~[tomcat-embed-core-9.0.64.jar:9.0.64]
+	at org.apache.tomcat.util.compat.JreCompat.<clinit>(JreCompat.java:72) [tomcat-embed-core-9.0.64.jar:9.0.64]
+	at org.apache.catalina.startup.Tomcat.<clinit>(Tomcat.java:1304) [tomcat-embed-core-9.0.64.jar:9.0.64]
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getWebServer(TomcatServletWebServerFactory.java:194) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.createWebServer(ServletWebServerApplicationContext.java:184) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:162) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:577) [spring-context-5.3.21.jar:5.3.21]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:147) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:734) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:408) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:308) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1306) [spring-boot-2.7.1.jar:2.7.1]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1295) [spring-boot-2.7.1.jar:2.7.1]
+	at com.kk.SpringBootDemo11LogApplication.main(SpringBootDemo11LogApplication.java:9) [classes/:na]
+
+2022-07-27 12:42:38.591 DEBUG 14808 --- [main] o.apache.tomcat.util.IntrospectionUtils  : IntrospectionUtils: setProperty(class org.apache.coyote.http11.Http11NioProtocol port=80)
+2022-07-27 12:42:38.598 DEBUG 14808 --- [main] o.apache.tomcat.util.IntrospectionUtils  : IntrospectionUtils: setProperty(class org.apache.coyote.http11.Http11NioProtocol bindOnInit=false)
+2022-07-27 12:42:38.599 DEBUG 14808 --- [main] o.apache.tomcat.util.IntrospectionUtils  : IntrospectionUtils: setProperty(class org.apache.tomcat.util.net.NioEndpoint bindOnInit=false)
+2022-07-27 12:42:38.602 DEBUG 14808 --- [main] o.apache.tomcat.util.IntrospectionUtils  : IntrospectionUtils: setProperty(class org.apache.coyote.http11.Http11NioProtocol maxPostSize=2097152)
+2022-07-27 12:42:38.602 DEBUG 14808 --- [main] o.apache.tomcat.util.IntrospectionUtils  : IntrospectionUtils: setProperty(class org.apache.tomcat.util.net.NioEndpoint maxPostSize=2097152)
+2022-07-27 12:42:38.615 DEBUG 14808 --- [main] org.apache.catalina.core.ContainerBase   : Add child StandardHost[localhost] StandardEngine[Tomcat]
+2022-07-27 12:42:38.616 DEBUG 14808 --- [main] .s.b.w.e.t.TomcatServletWebServerFactory : Code archive: D:\Maven\repository\org\springframework\boot\spring-boot\2.7.1\spring-boot-2.7.1.jar
+2022-07-27 12:42:38.616 DEBUG 14808 --- [main] .s.b.w.e.t.TomcatServletWebServerFactory : Code archive: D:\Maven\repository\org\springframework\boot\spring-boot\2.7.1\spring-boot-2.7.1.jar
+2022-07-27 12:42:38.616 DEBUG 14808 --- [main] .s.b.w.e.t.TomcatServletWebServerFactory : None of the document roots [src/main/webapp, public, static] point to a directory and will be ignored.
+2022-07-27 12:42:38.632 DEBUG 14808 --- [main] org.apache.catalina.core.ContainerBase   : Add child TomcatEmbeddedContext[] StandardEngine[Tomcat].StandardHost[localhost]
+2022-07-27 12:42:38.642  INFO 14808 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 80 (http)
+2022-07-27 12:42:38.650 DEBUG 14808 --- [main] o.apache.tomcat.util.IntrospectionUtils  : IntrospectionUtils: setProperty(class org.apache.coyote.http11.Http11NioProtocol parseBodyMethods=POST)
+2022-07-27 12:42:38.651 DEBUG 14808 --- [main] o.apache.tomcat.util.IntrospectionUtils  : IntrospectionUtils: setProperty(class org.apache.tomcat.util.net.NioEndpoint parseBodyMethods=POST)

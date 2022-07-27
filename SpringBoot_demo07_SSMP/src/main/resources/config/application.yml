@@ -9,8 +9,17 @@ management:
   endpoint:
     health:
       show-details: always
+    info:
+      enabled: true
   endpoints:
     web:
       exposure:
         # 默认为 health
         include: "*"
+    enabled-by-default: true
+  info:
+    env:
+      enabled: true
+info:
+  project: @project.artifactId@
+  author: name

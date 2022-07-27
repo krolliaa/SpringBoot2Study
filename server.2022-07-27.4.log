@@ -1,0 +1,32 @@
+2022-07-27 12:42:38.651  INFO 14808 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-07-27 12:42:38.653  INFO 14808 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2022-07-27 12:42:38.657 DEBUG 14808 --- [main] o.apache.catalina.core.StandardContext   : Starting ROOT
+2022-07-27 12:42:38.666 DEBUG 14808 --- [main] o.apache.catalina.core.StandardContext   : Configuring default Resources
+2022-07-27 12:42:38.701 DEBUG 14808 --- [main] o.apache.catalina.core.StandardContext   : Processing standard container startup
+2022-07-27 12:42:38.701 DEBUG 14808 --- [main] org.apache.catalina.loader.WebappLoader  : Starting this Loader
+2022-07-27 12:42:38.755 DEBUG 14808 --- [main] o.a.c.authenticator.AuthenticatorBase    : No SingleSignOn Valve is present
+2022-07-27 12:42:38.756 DEBUG 14808 --- [main] o.apache.catalina.core.StandardContext   : No manager found. Checking if cluster manager should be used. Cluster configured: [false], Application distributable: [false]
+2022-07-27 12:42:38.759 DEBUG 14808 --- [main] o.apache.catalina.core.StandardContext   : Configured a manager of class [org.apache.catalina.session.StandardManager]
+2022-07-27 12:42:38.771  INFO 14808 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-07-27 12:42:38.772 DEBUG 14808 --- [main] w.s.c.ServletWebServerApplicationContext : Published root WebApplicationContext as ServletContext attribute with name [org.springframework.web.context.WebApplicationContext.ROOT]
+2022-07-27 12:42:38.772  INFO 14808 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 722 ms
+2022-07-27 12:42:38.774 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'requestContextFilter'
+2022-07-27 12:42:38.776 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'formContentFilter'
+2022-07-27 12:42:38.776 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration'
+2022-07-27 12:42:38.779 DEBUG 14808 --- [main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'characterEncodingFilter'
+2022-07-27 12:42:38.784 DEBUG 14808 --- [main] o.s.b.w.s.ServletContextInitializerBeans : Mapping filters: characterEncodingFilter urls=[/*] order=-2147483648, formContentFilter urls=[/*] order=-9900, requestContextFilter urls=[/*] order=-105
+2022-07-27 12:42:38.784 DEBUG 14808 --- [main] o.s.b.w.s.ServletContextInitializerBeans : Mapping servlets: dispatcherServlet urls=[/]
+2022-07-27 12:42:38.786 DEBUG 14808 --- [main] org.apache.catalina.core.ContainerBase   : Add child StandardWrapper[dispatcherServlet] StandardEngine[Tomcat].StandardHost[localhost].TomcatEmbeddedContext[]
+2022-07-27 12:42:38.797 DEBUG 14808 --- [main] o.apache.catalina.core.StandardContext   : Configuring application event listeners
+2022-07-27 12:42:38.797 DEBUG 14808 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Sending application start events
+2022-07-27 12:42:38.798 DEBUG 14808 --- [main] o.a.catalina.session.StandardManager     : Start: Loading persisted sessions
+2022-07-27 12:42:38.799 DEBUG 14808 --- [main] o.a.catalina.session.StandardManager     : Loading persisted sessions from [SESSIONS.ser]
+2022-07-27 12:42:38.799 DEBUG 14808 --- [main] o.a.catalina.session.StandardManager     : No persisted data file found
+2022-07-27 12:42:38.799 DEBUG 14808 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Starting filters
+2022-07-27 12:42:38.799 DEBUG 14808 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       :  Starting filter 'requestContextFilter'
+2022-07-27 12:42:38.801 DEBUG 14808 --- [main] o.s.b.w.s.f.OrderedRequestContextFilter  : Filter 'requestContextFilter' configured for use
+2022-07-27 12:42:38.802 DEBUG 14808 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       :  Starting filter 'Tomcat WebSocket (JSR356) Filter'
+2022-07-27 12:42:38.802 DEBUG 14808 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       :  Starting filter 'characterEncodingFilter'
+2022-07-27 12:42:38.802 DEBUG 14808 --- [main] s.b.w.s.f.OrderedCharacterEncodingFilter : Filter 'characterEncodingFilter' configured for use
+2022-07-27 12:42:38.802 DEBUG 14808 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       :  Starting filter 'formContentFilter'
+2022-07-27 12:42:38.802 DEBUG 14808 --- [main] o.s.b.w.s.f.OrderedFormContentFilter     : Filter 'formContentFilter' configured for use

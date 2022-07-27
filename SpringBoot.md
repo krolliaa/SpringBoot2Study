@@ -7680,3 +7680,219 @@ spring:
    启动服务器...
 
 8. 重启`SpringBootAdmin Server`监控服务器
+
+#### 监控原理
+
+有个问题很好奇，这些数据是怎么传给`Web`端的，原来是因为`Actuator`的存在，通过访问`/actuator`就可以获取到信息，如果访问`/actuator/health`就获取`health`信息，如果访问`/actuator/info`就获取`info`信息。即：`/actuator/端点名称`【这个可以通过查看映射中的`/actuator`得到】
+
+除此之外还可以通过`jconsole`【这个是`Java`自带的，在`cmd`中直接输入即可】查看所有的数据信息。
+
+```yaml
+server:
+  port: 8083
+spring:
+  boot:
+    admin:
+      client:
+        url: http://localhost:8080
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        # 默认为 health
+        include: "*"
+```
+
+这里的`endpoint`是最原始的设置，`endpoints`只是允许`web`端查看的数据，具体能不能看到还要先看`endpoint`，比如此时我将`info.enabled`设置为了`false`，但是`endpoints.web.exposure.include="*"`仍然是全部，那么此时报的是`12`个，原本是`13`个。
+
+```yaml
+management:
+  endpoint:
+    health:
+      show-details: always
+    info:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        # 默认为 health
+        include: "*"
+```
+
+启用所有端点：
+
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        # 默认为 health
+        include: "*"
+  enabled-by-default: true
+```
+
+`include`单纯只是端点的暴露而`enabled-by-default`则是开放所有端口功能。
+
+#### 监控信息`info`【自定义】
+
+![](https://img-blog.csdnimg.cn/1dd75e3625664ffaa1b859719e14efcb.png)
+
+按理说应该会显示信息，并且最起码你得显示这个应用是干什么的，作者是谁？
+
+在`SpringBoot 2.6`以上需要手动开启设置信息：
+
+```yaml
+management:
+  info:
+    env:
+      enabled: true
+```
+
+此时再设置`info`信息即可：
+
+```yaml
+info:
+  project: @project.artifactId@ ---> 从 pom.xml 中获取
+  author: name
+```
+
+![](https://img-blog.csdnimg.cn/9bb6db0007cd4a5692c8a2852d3d2e2f.png)
+
+还可以通过编程的方式添加信息`info`：
+
+```java
+package com.kk.config;
+
+import org.springframework.boot.actuate.info.Info;
+import org.springframework.boot.actuate.info.InfoContributor;
+import org.springframework.stereotype.Component;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+@Component
+public class InfoConfig implements InfoContributor {
+    @Override
+    public void contribute(Info.Builder builder) {
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-dd-MM HH:mm:ss");
+        String currentDate = simpleDateFormat.format(date);
+        builder.withDetail("startTime", currentDate);
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("version", "0.0.1");
+        infoMap.put("test", "test");
+        builder.withDetails(infoMap);
+    }
+}
+```
+
+重启服务器验证显示信息 - 验证通过：
+
+![](https://img-blog.csdnimg.cn/dbeaade0d6a3467eaf32d0d60a245f74.png)
+
+#### 监控健康`health`【自定义】
+
+`health`是无法像`info`那样在`application.yml`配置文件中自定义的。
+
+`health`表示的应用的状态信息，要改可以，间接改，在应用中添加一些别的服务即可，比如`redis`。展示的内部组件的工作状态。
+
+如果执意要自定义也不是不行，可以通过代码的方式自定义，继承`AbstractHealthIndicator`即可，并且需要设置一下状态，否则在页面中的状态为`unknown`：
+
+```java
+package com.kk.config;
+
+import org.springframework.boot.actuate.health.AbstractHealthIndicator;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.Status;
+import org.springframework.stereotype.Component;
+
+@Component
+public class HealthConfig extends AbstractHealthIndicator {
+    @Override
+    protected void doHealthCheck(Health.Builder builder) throws Exception {
+        builder.withDetail("运行是否正常？", "运行正常");
+        builder.status(Status.UP);
+    }
+}
+```
+
+![](https://img-blog.csdnimg.cn/bf8cb7875ff44bc58aea20f62a1787f4.png)
+
+#### 监控性能`metrics`【自定义】
+
+为了模拟，我们现在只要用户删除一本图书我们默认当作一次付费，然后我们在监控性能的指标上擦好看：使用`MeterRegistry meterRegistry`添加性能
+
+```java
+package com.kk.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.kk.mapper.BookMapper;
+import com.kk.pojo.Book;
+import com.kk.service.IBookService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class IBookServiceImpl extends ServiceImpl<BookMapper, Book> implements IBookService {
+
+    @Autowired
+    private BookMapper bookMapper;
+
+    private Counter counter;
+
+    public IBookServiceImpl(MeterRegistry meterRegistry) {
+        counter = meterRegistry.counter("用户付费操作次数：");
+    }
+
+    public IPage<Book> getPage(int current, int pageSize, Book book) {
+        LambdaQueryWrapper<Book> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.like(Strings.isNotEmpty(book.getType()), Book::getType, book.getType());
+        lambdaQueryWrapper.like(Strings.isNotEmpty(book.getName()), Book::getName, book.getName());
+        lambdaQueryWrapper.like(Strings.isNotEmpty(book.getDescription()), Book::getDescription, book.getDescription());
+        IPage<Book> iPage = new Page<>(current, pageSize);
+        bookMapper.selectPage(iPage, lambdaQueryWrapper);
+        return iPage;
+    }
+
+    @Override
+    public boolean remove(Wrapper<Book> queryWrapper) {
+        counter.increment();
+        return super.remove(queryWrapper);
+    }
+}
+```
+
+![](https://img-blog.csdnimg.cn/0060c6432b3b40018ee7c76d36df2626.png)
+
+#### 自定义端点
+
+```java
+package com.kk.config;
+
+import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
+import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
+import org.springframework.stereotype.Component;
+
+@Component
+@Endpoint(id = "pay")
+public class PayEndPoint {
+    @ReadOperation
+    public Object getPay() {
+        return "唯物史观 辩证法 马克思 恩格斯 列宁 毛泽东！！！";
+    }
+}
+```
+
+![](https://img-blog.csdnimg.cn/bc6e156241a947ff9506e366aea6890a.png)
