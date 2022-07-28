@@ -8498,6 +8498,55 @@ public class PayEndPoint {
     ```
 
     当我们把这个`@Configuration`注解注释掉的时候，`getDirectQueue`和`getDirectExchange`都会报错，就是因为创建出来的消息队列和交换机对象不是同一个此时你每次发送消息给消息队列都会到不同的消息队列对象中去，这是不允许的，这样做也毫无意义，只有使用这个注解的时候创建的才是同一个对象。
+  
+- **<font color="red">第四种声明`Bean`的方式：`@Import`方式</font>**
+
+  直接使用`@Import`注解导入要注入的`Bean`对应的字节码
+
+  ```java
+  package com.kk.config;
+  
+  import com.kk.bean.Cat;
+  import com.kk.bean.Dog;
+  import org.springframework.context.annotation.Import;
+  
+  @Import({Dog.class, Cat.class})
+  public class SpringConfig4 {
+  }
+  ```
+
+  ```java
+  package com.kk.app;
+  
+  import com.kk.bean.Dog;
+  import com.kk.config.SpringConfig4;
+  import org.springframework.context.ApplicationContext;
+  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+  import org.springframework.context.support.ClassPathXmlApplicationContext;
+  
+  public class App4 {
+      public static void main(String[] args) {
+          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig4.class);
+          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+      }
+  }
+  ```
+
+  ```java
+  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+  org.springframework.context.annotation.internalCommonAnnotationProcessor
+  org.springframework.context.event.internalEventListenerProcessor
+  org.springframework.context.event.internalEventListenerFactory
+  springConfig4
+  com.kk.bean.Dog
+  com.kk.bean.Cat
+  ```
+
+  注：如果某个类中加入了`@Component(value = "")`注解并且`value`有值则导入的`bean`不是全类名而是类名称。
+
+  这种方式可以有效降低源代码与 Spring 技术的耦合度，在 Spring 技术底层以及诸多框架的整合中大量使用。
 
 ### 【前置课】`Spring bean`的加载控制
 
