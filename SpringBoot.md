@@ -7896,3 +7896,317 @@ public class PayEndPoint {
 ```
 
 ![](https://img-blog.csdnimg.cn/bc6e156241a947ff9506e366aea6890a.png)
+
+# `SpringBoot`原理篇
+
+原理篇并不能帮助你写出很多代码，但是可以解决很多疑惑给你一个合理的解释，要不然很多东西都是无法想明白的。
+
+## 自动配置
+
+`SpringBoot`底层最主要的原理。
+
+### 【前置课】`Spring bean`的加载方式
+
+1. 创建`Maven`项目`SpringBoot_demo27_BeanInit`
+
+2. 引入`Spring`的依赖：`spring-context`[包含`spring-core`等，比较大]，这个版本是有讲究的，打开之前任意一个项目，查看依赖，点击`spring-web`可以查看到`spring-core`为`5.3.21`。
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework</groupId>
+       <artifactId>spring-context</artifactId>
+       <version>5.3.21</version>
+   </dependency>
+   ```
+
+3. 创建管控的`bean`：`bean package ---> Cat Mouse Dog`
+
+   ```java
+   package com.kk.bean;
+   public class Cat {
+   }
+   
+   package com.kk.bean;
+   public class Dog {
+   }
+   
+   package com.kk.bean;
+   
+   public class Mouse {
+   }
+   ```
+
+4. 创建业务层`service`接口：`Bookservice`【`void check()`方法】
+
+   ```java
+   package com.kk.service;
+   
+   public interface BookService {
+       public abstract void check();
+   }
+   ```
+
+5. 创建业务层实现类：复制粘贴出一共`4`个的`BookServiceImpl`，方法内容为打印即可
+
+   ```java
+   package com.kk.service.impl;
+   import com.kk.service.BookService;
+   public class BookServiceImpl1 implements BookService {
+       @Override
+       public void check() {
+           System.out.println("Book Service 1..");
+       }
+   }
+   
+   package com.kk.service.impl;
+   import com.kk.service.BookService;
+   public class BookServiceImpl2 implements BookService {
+       @Override
+       public void check() {
+           System.out.println("Book Service 2....");
+       }
+   }
+   
+   package com.kk.service.impl;
+   import com.kk.service.BookService;
+   public class BookServiceImpl3 implements BookService {
+       @Override
+       public void check() {
+           System.out.println("Book Service 3......");
+       }
+   }
+   
+   package com.kk.service.impl;
+   import com.kk.service.BookService;
+   public class BookServiceImpl4 implements BookService {
+       @Override
+       public void check() {
+           System.out.println("Book Service 4........");
+       }
+   }
+   
+   ```
+
+- **<font color="red">第一种声明`Bean`的方式：`XML`方式</font>**
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+      <bean id="cat" class="com.kk.bean.Cat"></bean>
+      <bean class="com.kk.bean.Dog"></bean>
+  </beans>
+  ```
+
+  创建一个应用程序运行这个`xml`文件：
+
+  1. 使用名称获取`bean`
+
+     ```java
+     package com.kk.app;
+     
+     import com.kk.bean.Cat;
+     import org.springframework.context.ApplicationContext;
+     import org.springframework.context.support.ClassPathXmlApplicationContext;
+     
+     public class App1 {
+         public static void main(String[] args) {
+             ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
+             Object cat = applicationContext.getBean("cat");
+             System.out.println(cat);
+         }
+     }
+     ```
+
+  2. 使用类`class`获取`bean`：[如果不配`id`默认没有名称，无法使用名称获取`bean`，除此之外还可以使用名称+类的方式精准获取对象]
+     ```java
+     Object dog = applicationContext.getBean(Dog.class);
+     System.out.println(dog);
+     ```
+
+  3. 使用`applicationContext.getBeanDefinitionNames()`获取所有`bean`名称
+
+     ```java
+     <bean class="com.kk.bean.Dog"></bean>
+     <bean class="com.kk.bean.Dog"></bean>
+     <bean class="com.kk.bean.Dog"></bean>
+     <bean class="com.kk.bean.Dog"></bean>
+         
+     public class App1 {
+         public static void main(String[] args) {
+             ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
+             String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+             for(String beanDefinitionName : beanDefinitionNames) {
+                 System.out.println(beanDefinitionName);
+             }
+         }
+     }
+     
+     cat
+     com.kk.bean.Dog#0
+     com.kk.bean.Dog#1
+     com.kk.bean.Dog#2
+     com.kk.bean.Dog#3
+     ```
+
+  4. 使用`xml`声明第三方`bean`
+
+     ```java
+     <bean id="cat" class="com.kk.bean.Cat"></bean>
+     <bean class="com.kk.bean.Dog"></bean>
+     <bean class="com.kk.bean.Dog"></bean>
+     <bean class="com.kk.bean.Dog"></bean>
+     <bean class="com.kk.bean.Dog"></bean>
+     <bean id="druid" class="com.alibaba.druid.pool.DruidDataSource"></bean>
+     <bean class="com.alibaba.druid.pool.DruidDataSource"></bean>
+     <bean class="com.alibaba.druid.pool.DruidDataSource"></bean>
+     ```
+
+     ```java
+     String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+     for(String beanDefinitionName : beanDefinitionNames) {
+         System.out.println(beanDefinitionName);
+     }
+     
+     cat
+     com.kk.bean.Dog#0
+     com.kk.bean.Dog#1
+     com.kk.bean.Dog#2
+     com.kk.bean.Dog#3
+     druid
+     com.alibaba.druid.pool.DruidDataSource#0
+     com.alibaba.druid.pool.DruidDataSource#1
+     ```
+
+  使用`xml`方式定义`bean`的好处：只有一个配置文件，非常直观
+
+  使用`xml`方式定义`bean`的坏处：太过繁琐，每次创建一个`bean`都要在这里写
+
+- **<font color="red">第二种的声明`Bean`的方式：注解方式</font>**
+
+  ```java
+  package com.kk.bean;
+  
+  import org.springframework.stereotype.Component;
+  
+  @Component(value = "Tom")
+  public class Cat {
+  }
+  ```
+
+  ```java
+  package com.kk.bean;
+  
+  import org.springframework.stereotype.Component;
+  
+  @Component(value = "Jerry")
+  public class Mouse {
+  }
+  ```
+
+  `Spring`需要配置识别【`xmlns:context context`可以自己写】：
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:context="http://www.springframework.org/schema/context"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+      <context:component-scan base-package="com.kk.bean"/>
+  </beans>
+  ```
+
+  运行应用程序：
+
+  ```java
+  package com.kk.app;
+  
+  import com.kk.bean.Dog;
+  import org.springframework.context.ApplicationContext;
+  import org.springframework.context.support.ClassPathXmlApplicationContext;
+  
+  public class App2 {
+      public static void main(String[] args) {
+          ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext2.xml");
+          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+      }
+  }
+  ```
+
+  所有初始化的`bean`名称如下：
+
+  ```java
+  Tom
+  Jerry
+  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+  org.springframework.context.annotation.internalCommonAnnotationProcessor
+  org.springframework.context.event.internalEventListenerProcessor
+  org.springframework.context.event.internalEventListenerFactory
+  ```
+
+  **<font color="deepskyblue">第三方的`Bean`要想使用注解方式，直接去到源码中加入`@Component`还是其它显然是不现实的，所以要想使用注解方式加载第三方的`Bean`需要自定义配置类。</font>** ---> `@Configuration + @Bean`
+
+  **这里的`@Configuration`可以使用更原始的方式`@Component`，只不过`@Configuration`是专门用声明说这是一个配置类的，这跟`@Component`的关系就好比如：`@Repository @Service @Controller`跟`@Component`的关系。**
+
+  ```java
+  package com.kk.config;
+  
+  import com.alibaba.druid.pool.DruidDataSource;
+  import org.springframework.context.annotation.Bean;
+  import org.springframework.context.annotation.Configuration;
+  
+  @Configuration
+  public class DruidDataSourceConfig {
+      @Bean
+      public DruidDataSource druidDataSource() {
+          return new DruidDataSource();
+      }
+  }
+  ```
+
+  到这里就结束了吗？并不是，还记得当时在`applicationContext2.xml`中是如何配置的吗？
+
+  ```xml
+  <context:component-scan base-package="com.kk.bean"/>
+  ```
+
+  可见我们当时配的时候只扫描了`com.kk.bean`，而这个第三方的`bean`是在`com.kk.config`包下的，所以我们需要加入这个包，使其被扫描到：【多个包之间可以使用逗号、空格、分号】
+
+  ```xml
+  <context:component-scan base-package="com.kk.bean;com.kk.config"/>
+  ```
+
+  此时应用程序运行的结果为：可以看到有配置类`druidDataSourceConfig`以及配置类中定义的`bean`：`druiudDataSource`都已经被`Spring`装载到`ApplicationContext`容器中。
+
+  ```java
+  Tom
+  Jerry
+  druidDataSourceConfig
+  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+  org.springframework.context.annotation.internalCommonAnnotationProcessor
+  org.springframework.context.event.internalEventListenerProcessor
+  org.springframework.context.event.internalEventListenerFactory
+  druidDataSource
+  ```
+
+  
+
+### 【前置课】`Spring bean`的加载控制
+
+### `bean`依赖属性配置
+
+### 自动配置原理
+
+### 变更自动配置
+
+## 自定义`starter`
+
+用了很多`starter`觉得很好用，但不知道是怎么做出来的，这一节将告诉你`starter`是如何一步步打造出来并执行的。
+
+## 核心原理
+
+`SpringBoot`的核心原理。 
