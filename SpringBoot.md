@@ -8193,7 +8193,311 @@ public class PayEndPoint {
   druidDataSource
   ```
 
-  
+- **<font color="red">第三种的声明`Bean`的方式：注解配置类方式</font>**
+
+  - **因为配置文件`applicationContext.xml`写起来非常麻烦，所以`Spring`官方觉得干脆这个配置文件也不要了。直接写个配置类，所有的配置信息都写在一个类中 ---> `SpringConfig3.java` ---> 使用`AnnotationConfigApplicationContext`加载配置类【该配置类也会被加载成`Bean`】**
+
+    ```java
+    package com.kk.config;
+    
+    import org.springframework.context.annotation.ComponentScan;
+    
+    @ComponentScan(basePackages = {"com.kk.bean", "com.kk.config"})
+    public class SpringConfig3 {
+    }
+    ```
+
+    使用`AnnotaionConfigApplicationContext`运行加载该配置类：
+
+    ```java
+    package com.kk.app;
+    
+    import com.kk.config.SpringConfig3;
+    import org.springframework.context.ApplicationContext;
+    import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+    
+    public class App3 {
+        public static void main(String[] args) {
+            ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig3.class);
+            String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+            for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+        }
+    }
+    ```
+
+  - **有时候，我们想在创建对象`bean`的时候就进行一些工作，此时就需要使用到`FactoryBean`，此时你在加载配置`bean`的时候配置出来的就不是实现了`FactoryBean`接口的类了，而是这个工厂类返回的对象。**
+
+    例子：
+
+    创建一个狗狗工厂：你可以在`getObject()`中做一些初始化工作，比如你现在要连接`Redis`数据库那么你一定先是去判断`Redis`数据库是否连接得通。这就需要一些初始化工作，然后才可以返回对象。
+
+    ```java
+    package com.kk.bean;
+    
+    import org.springframework.beans.factory.FactoryBean;
+    
+    public class DogFactoryBean implements FactoryBean<Dog> {
+        @Override
+        public Dog getObject() throws Exception {
+            return new Dog();
+        }
+    
+        @Override
+        public Class<?> getObjectType() {
+            return Dog.class;
+        }
+    
+        @Override
+        public boolean isSingleton() {
+            return FactoryBean.super.isSingleton();
+        }
+    }
+    ```
+
+    配置`Bean`：
+
+    ```java
+    package com.kk.config;
+    
+    import com.kk.bean.DogFactoryBean;
+    import org.springframework.context.annotation.Bean;
+    import org.springframework.context.annotation.ComponentScan;
+    
+    @ComponentScan(basePackages = {"com.kk.bean", "com.kk.config"})
+    public class SpringConfig3 {
+        @Bean
+        public DogFactoryBean dogFactoryBean() {
+            return new DogFactoryBean();
+        }
+    }
+    ```
+
+    运行程序，可以观察到虽然这里配置的`@Bean`是`DogFactoryBean`但是返回的并不是`DogFactoryBean`，而是返回的`Dog`对象，就是因为`DogFactoryBean`实现了`FactoryBean`接口实现了`getObject()`方法而在这个方法中返回的就是`Dog`对象所以配置方法得到的也是`Dog`对象：【观察最后两行即可 ---> `Bean`对象的名称跟配置的方法名一样】
+
+    ```java
+    package com.kk.app;
+    
+    import com.kk.config.SpringConfig3;
+    import org.springframework.context.ApplicationContext;
+    import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+    
+    public class App3 {
+        public static void main(String[] args) {
+            ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig3.class);
+            String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+            for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+            Object dogFactoryBean1 = applicationContext.getBean("dogFactoryBean");
+            Object dogFactoryBean2 = applicationContext.getBean("dogFactoryBean");
+            Object dogFactoryBean3 = applicationContext.getBean("dogFactoryBean");
+            System.out.println(dogFactoryBean1);
+            System.out.println(dogFactoryBean2);
+            System.out.println(dogFactoryBean3);
+        }
+    }
+    
+    org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+    org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+    org.springframework.context.annotation.internalCommonAnnotationProcessor
+    org.springframework.context.event.internalEventListenerProcessor
+    org.springframework.context.event.internalEventListenerFactory
+    springConfig3
+    Tom
+    Jerry
+    druidDataSourceConfig
+    druidDataSource
+    dogFactoryBean
+    com.kk.bean.Dog@38c5cc4c
+    com.kk.bean.Dog@37918c79
+    com.kk.bean.Dog@78e94dcf
+    ```
+
+    这里为什么打印出来的`Dog`对象不是单例的呢？这是因为我在`DogFactoryBean.isSingleton()`中设置的返回值为：`false`，所以返回的不是单例对象而是多例对象【默认为`true`返回单例对象，我这里自己把它改了】。一般交给`Spring`管控的都是单例对象，否则也失去了`Spring`管控的意义了。
+
+    ```java
+    @Override
+    public boolean isSingleton() {
+        //return FactoryBean.super.isSingleton();
+        return false;
+    }
+    ```
+
+  - **上面的情况都是一开始就采用注解配置类的方式，那如果现在有一个系统它以前就有`applicationContext.xml`配置文件的存在，难道我们还要一个个拆出来吗？遇到问题算谁的呢？这就涉及到系统迁移的问题，如何在旧有配置文件中引入注解配置类呢？也就是如何把旧有的配置文件信息加载到配置类中？**
+
+    一开始啥都没有，`SpringConfig32.java`配置类长这样：
+
+    ```java
+    package com.kk.config;
+    
+    public class SpringConfig32 {
+    }
+    ```
+
+    加载配置类启动应用程序可以看到只有`springConfig32`这一个`bean`：
+
+    ```java
+    package com.kk.app;
+    
+    import com.kk.config.SpringConfig32;
+    import org.springframework.context.ApplicationContext;
+    import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+    
+    public class App32 {
+        public static void main(String[] args) {
+            ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig32.class);
+            String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+            for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+        }
+    }
+    
+    org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+    org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+    org.springframework.context.annotation.internalCommonAnnotationProcessor
+    org.springframework.context.event.internalEventListenerProcessor
+    org.springframework.context.event.internalEventListenerFactory
+    springConfig32
+    ```
+
+    此时我想引入`applicationContext.xml`只需要使用`@ImportReSource()`注解引入即可：
+
+    ```java
+    package com.kk.config;
+    
+    import org.springframework.context.annotation.ImportResource;
+    
+    @ImportResource(value = {"applicationContext1.xml"})
+    public class SpringConfig32 {
+    }
+    ```
+
+    此时可以看到结果加载了在`applicationContext1.xml`配置的`bean`：
+
+    ```java
+    org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+    org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+    org.springframework.context.annotation.internalCommonAnnotationProcessor
+    org.springframework.context.event.internalEventListenerProcessor
+    org.springframework.context.event.internalEventListenerFactory
+    springConfig32
+    cat
+    com.kk.bean.Dog#0
+    com.kk.bean.Dog#1
+    com.kk.bean.Dog#2
+    com.kk.bean.Dog#3
+    druid
+    com.alibaba.druid.pool.DruidDataSource#0
+    com.alibaba.druid.pool.DruidDataSource#1
+    ```
+
+  - **`@Configuration(proxyBeanMethods = true/false`**
+
+    如果配置类中不添加`@Configuration`的话，默认创建出来的`SpringConfig32`对象调用`cat()`方法，获取到的`cat`是不同的对象，但是使用`@Configuration(=true)`的话【这里的`proxyBeanMethods`默认为`true`，可不写】，获取到的都是同一个对象。
+
+    这是因为`proxyBeanMethods`表达的意思是是否表示该类创建出来的对象是一个代理对象，通过同一个代理对象创建出来的对象都是同一个对象。这就是添加`@Configuration`的妙处所在，`@Configuration`表示的是同一个代理，`@Bean`则是说这是一个`Bean`，通过代理创建出来的`bean`都是同一个对象，堪称神配置。
+
+    ```java
+    package com.kk.config;
+    
+    import com.kk.bean.Cat;
+    import org.springframework.context.annotation.Bean;
+    import org.springframework.context.annotation.Configuration;
+    import org.springframework.context.annotation.ImportResource;
+    
+    @Configuration(proxyBeanMethods = true)
+    @ImportResource(value = {"applicationContext1.xml"})
+    public class SpringConfig32 {
+        @Bean
+        public Cat cat() {
+            return new Cat();
+        }
+    }
+    ```
+
+    ```java
+    package com.kk.app;
+    
+    import com.kk.config.SpringConfig32;
+    import org.springframework.context.ApplicationContext;
+    import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+    
+    public class App32 {
+        public static void main(String[] args) {
+            ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig32.class);
+            String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+            for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+            SpringConfig32 springConfig32 = applicationContext.getBean("springConfig32", SpringConfig32.class);
+            System.out.println(springConfig32.cat());
+            System.out.println(springConfig32.cat());
+            System.out.println(springConfig32.cat());
+        }
+    }
+    ```
+
+    没有`@Configuration`注解：
+
+    ```java
+    com.kk.bean.Cat@16267862
+    com.kk.bean.Cat@453da22c
+    com.kk.bean.Cat@71248c21
+    ```
+
+    有`@Configuration`注解：
+
+    ```java
+    com.kk.bean.Cat@45018215
+    com.kk.bean.Cat@45018215
+    com.kk.bean.Cat@45018215
+    ```
+
+    还记得当时`RabbitMQ`消息队列的配置类吗？这也说明了为什么需要使用`@Configuration`注解的原因。它跟单纯的`@Component`是有区别的。
+
+    ```java
+    package com.kk.service.impl.rabbitmq.direct;
+    
+    import org.springframework.amqp.core.Binding;
+    import org.springframework.amqp.core.BindingBuilder;
+    import org.springframework.amqp.core.DirectExchange;
+    import org.springframework.amqp.core.Queue;
+    import org.springframework.context.annotation.Bean;
+    import org.springframework.context.annotation.Configuration;
+    
+    //@Configuration
+    public class RabbitMQConfiguration {
+        @Bean
+        //交给容器管理交换机对象，交换机负责绑定管理队列，并将消息推送到队列中
+        public DirectExchange getDirectExchange() {
+            return new DirectExchange("directExchange");
+        }
+    
+        @Bean
+        //创建队列1
+        public Queue getDirectQueue1() {
+            //durable：是否持久化，默认为 false
+            //exclusive：是否设定当前连接为专用，默认为 false ，连接关闭后队列即被删除
+            //autoDelete：是否自动删除，当生产者或消费者不再使用该队列时自动删除
+            return new Queue("directQueue1");
+        }
+    
+        @Bean
+        //创建队列2
+        public Queue getDirectQueue2() {
+            return new Queue("directQueue2");
+        }
+    
+        @Bean
+        //交换机绑定队列1 ---> 交换机+队列 ---> 绑定形成路由
+        public Binding bindingDirectQueue1() {
+            return BindingBuilder.bind(getDirectQueue1()).to(getDirectExchange()).with("direct1");
+        }
+    
+        @Bean
+        //交换机绑定队列2 ---> 交换机+队列 ---> 绑定形成路由
+        public Binding bindingDirectQueue2() {
+            return BindingBuilder.bind(getDirectQueue2()).to(getDirectExchange()).with("direct2");
+        }
+    }
+    ```
+
+    当我们把这个`@Configuration`注解注释掉的时候，`getDirectQueue`和`getDirectExchange`都会报错，就是因为创建出来的消息队列和交换机对象不是同一个此时你每次发送消息给消息队列都会到不同的消息队列对象中去，这是不允许的，这样做也毫无意义，只有使用这个注解的时候创建的才是同一个对象。
 
 ### 【前置课】`Spring bean`的加载控制
 
