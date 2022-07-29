@@ -9354,6 +9354,45 @@ Jerry1
 
 到这里就跟`SpringBoot`的底层原理越来越像了，`SpringBoot`底层就有好多好多这种`@ConditionalOnxxx`去做一个`Bean`加载控制的处理。
 
+多说一个：
+
+还可以在`Cat`加条件注解，然后配置类直接引入，效果是一样的：
+
+```java
+package com.kk.bean;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.stereotype.Component;
+
+@Component(value = "Tom")
+//@ConditionalOnMissingClass(value = {"com.kk.bean.Dog"})
+@ConditionalOnClass(name = {"com.kk.bean.Mouse"})
+@ConditionalOnBean(name = "Jerry")
+public class Cat {
+}
+```
+
+```java
+package com.kk.config;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+
+@Import(value = {Mouse.class, Cat.class})
+public class SpringConfigNext {
+    //@Bean
+    //public Cat Tom() {
+        //return new Cat();
+    //}
+}
+```
+
 ### `bean`依赖属性配置
 
 ### 自动配置原理

@@ -2,6 +2,6 @@ package com.kk.bean;
 
 import org.springframework.stereotype.Component;
 
-@Component(value = "Jerry1")
+@Component(value = "Jerry")
 public class Mouse {
 }

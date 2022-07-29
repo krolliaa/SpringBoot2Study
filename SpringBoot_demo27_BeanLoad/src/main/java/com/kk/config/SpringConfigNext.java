@@ -8,13 +8,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
-@Import(value = {Mouse.class})
+@Import(value = {Mouse.class, Cat.class})
 public class SpringConfigNext {
-    @Bean
-    //@ConditionalOnMissingClass(value = {"com.kk.bean.Dog"})
-    @ConditionalOnClass(name = {"com.kk.bean.Mouse"})
-    @ConditionalOnBean(name = "Jerry")
-    public Cat Tom() {
-        return new Cat();
-    }
+    //@Bean
+    //public Cat Tom() {
+        //return new Cat();
+    //}
 }
