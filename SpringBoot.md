@@ -8548,6 +8548,50 @@ public class PayEndPoint {
 
   这种方式可以有效降低源代码与 Spring 技术的耦合度，在 Spring 技术底层以及诸多框架的整合中大量使用。
 
+- **<font color="red">第五种声明`Bean`的方式：上下文容器加载完毕后自定配置</font>**
+
+  这种声明`bean`的方式并不常见也不常用，但是如果开发框架的话是很可能会用到的。
+
+  ```java
+  package com.kk.app;
+  
+  import com.kk.bean.Cat;
+  import com.kk.bean.Dog;
+  import com.kk.config.SpringConfig5;
+  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+  
+  public class App5 {
+      public static void main(String[] args) {
+          AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig5.class);
+          applicationContext.registerBean("Tom", Cat.class, 0);
+          applicationContext.registerBean("Tom", Cat.class, 1);
+          applicationContext.registerBean("Tom", Cat.class, 2);
+          applicationContext.register(Dog.class);
+          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+          System.out.println(applicationContext.getBean("Tom"));
+      }
+  }
+  ```
+
+  结果为：
+
+  ```java
+  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+  org.springframework.context.annotation.internalCommonAnnotationProcessor
+  org.springframework.context.event.internalEventListenerProcessor
+  org.springframework.context.event.internalEventListenerFactory
+  springConfig5
+  Tom
+  dog
+  Cat{age=2}
+  ```
+
+  可以看到虽然这里使用`applicationContext.registerBean("Tom", Cat.class, 0/1/2);`创建了`3`个`Tom Cat`，但是这里并没有报错，原因是这里有点类似于`Map`，新添加的会覆盖掉前面添加的内容，所以这里打印出来的`Cat`的`age = 2`。
+
+  其次，如果使用的是`applicationContext.register(Dog.class);`获取到的`Dog`对象名将直接采用的是类名小写形式。
+
 ### 【前置课】`Spring bean`的加载控制
 
 ### `bean`依赖属性配置
