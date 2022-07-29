@@ -9054,6 +9054,84 @@ Book Service 2....
 
 ### 【前置课】`Spring bean`的加载控制
 
+在`Bean`加载的过程中就对`Bean`加载进行控制，该控制可以在第`5、6、7、8`中加载`Bean`的方式完成。我们可以挑一种来测试下，这里我们使用第六种加载`Bean`的方式：导入实现了`ImportSelector`接口的类。
+
+可以看到该实现类中`Class.forName()`中`Wolf`是不存在的，只有`Cat Mouse Dog`。所以不加载任何`Bean`
+
+```java
+package com.kk.util;
+
+import org.springframework.context.annotation.ImportSelector;
+import org.springframework.core.type.AnnotationMetadata;
+
+public class MyImportSelector implements ImportSelector {
+    @Override
+    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+        try {
+            Class clazz = Class.forName("com.kk.bean.Wolf");
+            System.out.println("clazz = " + clazz);
+            if(clazz != null) return new String[]{"com.kk.bean.Cat"};
+        } catch (ClassNotFoundException e) {
+            return new String[0];
+        }
+        return null;
+    }
+}
+```
+
+```java
+package com.kk.config;
+
+import com.kk.util.MyImportSelector;
+import org.springframework.context.annotation.Import;
+
+@Import(value = {MyImportSelector.class})
+public class SpringConfig {
+}
+```
+
+```java
+package com.kk.app;
+
+import com.kk.config.SpringConfig;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class MyApp {
+    public static void main(String[] args) {
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig.class);
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+    }
+}
+```
+
+打印结果为：
+
+```java
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+springConfig
+```
+
+若是将`Wolf`更改为：`Mouse`则将加载`Bean`：
+
+```java
+clazz = class com.kk.bean.Mouse[自定义输出]
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+springConfig
+com.kk.bean.Cat
+```
+
+如此，我们就完成了`Bean`的控制。
+
 ### `bean`依赖属性配置
 
 ### 自动配置原理

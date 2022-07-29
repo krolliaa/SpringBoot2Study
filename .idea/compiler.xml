@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="SpringBoot_demo09_YamlProfile" />
+        <module name="SpringBoot_demo27_BeanLoad" />
         <module name="SpringBoot_demo05_MyBatisPlus" />
         <module name="SpringBoot_demo25_SpringBootAdminServer" />
         <module name="SpringBoot_demo17_MongoDB" />
@@ -70,6 +71,7 @@
       <module name="SpringBoot_demo25_SpringBootAdminClient" target="1.8" />
       <module name="SpringBoot_demo25_SpringBootAdminServer" target="1.8" />
       <module name="SpringBoot_demo26_BeanInit" target="1.8" />
+      <module name="SpringBoot_demo27_BeanLoad" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
