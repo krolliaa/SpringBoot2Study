@@ -8592,6 +8592,117 @@ public class PayEndPoint {
 
   其次，如果使用的是`applicationContext.register(Dog.class);`获取到的`Dog`对象名将直接采用的是类名小写形式。
 
+- **<font color="red">第六种声明`Bean`的方式：实现`ImportSelector`接口</font>**
+
+  该方式在源码中大量使用，就是因为该方式是一种选择器模式，可以做判定返回指定类型的对象，比如你如果在这个类中有这个注解，我给你返回的是`A`对象，但是你没有这个注解我就给你返回`B`对象。
+
+  除此之外有必要说一下的就是实现`ImportSelector`接口需要实现`selectImports(AnnotationMetadata metadata)`方法，这里的`AnnotationMetadata`参数指的是引入当前实现了`ImportSelector`接口的类的所在类。比如我有一个配置类叫做`SpringConfig6`，我在这里使用`@Import(value = {MyImportSelector.class})`那么这个`SpringConfig6`就是`AnnotationMetadata`注解元数据。
+
+  配置类代码：
+
+  ```java
+  package com.kk.config;
+  
+  import com.kk.util.MyImportSelector;
+  import org.springframework.context.annotation.Import;
+  
+  @Import(value = {MyImportSelector.class})
+  public class SpringConfig6 {
+  }
+  ```
+
+  导入选择器类代码：
+
+  ```java
+  package com.kk.util;
+  
+  import org.springframework.context.annotation.ImportSelector;
+  import org.springframework.core.type.AnnotationMetadata;
+  
+  public class MyImportSelector implements ImportSelector {
+      @Override
+      public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+          return new String[]{"com.kk.bean.Dog"};
+      }
+  }
+  ```
+
+  应用程序代码：
+
+  ```java
+  package com.kk.app;
+  
+  import com.kk.config.SpringConfig6;
+  import org.springframework.context.ApplicationContext;
+  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+  
+  public class App6 {
+      public static void main(String[] args) {
+          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig6.class);
+          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+      }
+  }
+  ```
+
+  可以看到结果加载了一个`Dog`类对象：
+
+  ```java
+  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+  org.springframework.context.annotation.internalCommonAnnotationProcessor
+  org.springframework.context.event.internalEventListenerProcessor
+  org.springframework.context.event.internalEventListenerFactory
+  springConfig6
+  com.kk.bean.Dog
+  ```
+
+  让我们进一步来看看这个引入选择器`ImportSelector`的强大魅力，在选择器里头我们可以通过`get is has`等获取到一些信息包括状态。然后判定需要注入哪些`Bean`。
+  
+  比如判断元数据是否拥有某个注解：
+  
+  ```java
+  System.out.println("是否拥有 @Configuration 注解："+importingClassMetadata.hasAnnotation("org.springframework.context.annotation.Configuration"));
+  
+  是否拥有 @Configuration 注解：true
+  ```
+  
+  再比如可以查看元数据中有哪些参数：
+  
+  ```java
+  //查看 @ComponentScan(basePackages = {}) 注解中配置参数
+  Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes("org.springframework.context.annotation.ComponentScan");
+  System.out.println(annotationAttributes);
+  ```
+  
+  然后我们来做一下，如果有`@Configuration`注解我们注入`Dog`，如果没有注入`Mouse`：
+  
+  ```java
+  package com.kk.util;
+  
+  import org.springframework.context.annotation.ImportSelector;
+  import org.springframework.core.type.AnnotationMetadata;
+  
+  import java.util.Map;
+  
+  public class MyImportSelector implements ImportSelector {
+      @Override
+      public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+          //判断元注解是否存在 @Configuration 注解
+          System.out.println("是否拥有 @Configuration 注解："+importingClassMetadata.hasAnnotation("org.springframework.context.annotation.Configuration"));
+          //查看 @ComponentScan(basePackages = {}) 注解中配置参数
+          Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes("org.springframework.context.annotation.ComponentScan");
+          System.out.println(annotationAttributes);
+          boolean flag = importingClassMetadata.hasAnnotation("org.springframework.context.annotation.Configuration");
+          if(flag) {
+              return new String[]{"com.kk.bean.Dog"};
+          }else {
+              return new String[]{"com.kk.bean.Mouse"};
+          }
+      }
+  }
+  ```
+
 ### 【前置课】`Spring bean`的加载控制
 
 ### `bean`依赖属性配置
