@@ -7987,799 +7987,1054 @@ public class PayEndPoint {
    
    ```
 
-- **<font color="red">第一种声明`Bean`的方式：`XML`方式</font>**
+#### **<font color="red">第一种声明`Bean`的方式：`XML`方式</font>**
 
-  ```xml
-  <?xml version="1.0" encoding="UTF-8"?>
-  <beans xmlns="http://www.springframework.org/schema/beans"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-      <bean id="cat" class="com.kk.bean.Cat"></bean>
-      <bean class="com.kk.bean.Dog"></bean>
-  </beans>
-  ```
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="cat" class="com.kk.bean.Cat"></bean>
+    <bean class="com.kk.bean.Dog"></bean>
+</beans>
+```
 
-  创建一个应用程序运行这个`xml`文件：
+创建一个应用程序运行这个`xml`文件：
 
-  1. 使用名称获取`bean`
+1. 使用名称获取`bean`
 
-     ```java
-     package com.kk.app;
-     
-     import com.kk.bean.Cat;
-     import org.springframework.context.ApplicationContext;
-     import org.springframework.context.support.ClassPathXmlApplicationContext;
-     
-     public class App1 {
-         public static void main(String[] args) {
-             ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
-             Object cat = applicationContext.getBean("cat");
-             System.out.println(cat);
-         }
-     }
-     ```
+   ```java
+   package com.kk.app;
+   
+   import com.kk.bean.Cat;
+   import org.springframework.context.ApplicationContext;
+   import org.springframework.context.support.ClassPathXmlApplicationContext;
+   
+   public class App1 {
+       public static void main(String[] args) {
+           ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
+           Object cat = applicationContext.getBean("cat");
+           System.out.println(cat);
+       }
+   }
+   ```
 
-  2. 使用类`class`获取`bean`：[如果不配`id`默认没有名称，无法使用名称获取`bean`，除此之外还可以使用名称+类的方式精准获取对象]
-     ```java
-     Object dog = applicationContext.getBean(Dog.class);
-     System.out.println(dog);
-     ```
+2. 使用类`class`获取`bean`：[如果不配`id`默认没有名称，无法使用名称获取`bean`，除此之外还可以使用名称+类的方式精准获取对象]
+   ```java
+   Object dog = applicationContext.getBean(Dog.class);
+   System.out.println(dog);
+   ```
 
-  3. 使用`applicationContext.getBeanDefinitionNames()`获取所有`bean`名称
+3. 使用`applicationContext.getBeanDefinitionNames()`获取所有`bean`名称
 
-     ```java
-     <bean class="com.kk.bean.Dog"></bean>
-     <bean class="com.kk.bean.Dog"></bean>
-     <bean class="com.kk.bean.Dog"></bean>
-     <bean class="com.kk.bean.Dog"></bean>
-         
-     public class App1 {
-         public static void main(String[] args) {
-             ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
-             String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-             for(String beanDefinitionName : beanDefinitionNames) {
-                 System.out.println(beanDefinitionName);
-             }
-         }
-     }
-     
-     cat
-     com.kk.bean.Dog#0
-     com.kk.bean.Dog#1
-     com.kk.bean.Dog#2
-     com.kk.bean.Dog#3
-     ```
+   ```java
+   <bean class="com.kk.bean.Dog"></bean>
+   <bean class="com.kk.bean.Dog"></bean>
+   <bean class="com.kk.bean.Dog"></bean>
+   <bean class="com.kk.bean.Dog"></bean>
+       
+   public class App1 {
+       public static void main(String[] args) {
+           ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
+           String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+           for(String beanDefinitionName : beanDefinitionNames) {
+               System.out.println(beanDefinitionName);
+           }
+       }
+   }
+   
+   cat
+   com.kk.bean.Dog#0
+   com.kk.bean.Dog#1
+   com.kk.bean.Dog#2
+   com.kk.bean.Dog#3
+   ```
 
-  4. 使用`xml`声明第三方`bean`
+4. 使用`xml`声明第三方`bean`
 
-     ```java
-     <bean id="cat" class="com.kk.bean.Cat"></bean>
-     <bean class="com.kk.bean.Dog"></bean>
-     <bean class="com.kk.bean.Dog"></bean>
-     <bean class="com.kk.bean.Dog"></bean>
-     <bean class="com.kk.bean.Dog"></bean>
-     <bean id="druid" class="com.alibaba.druid.pool.DruidDataSource"></bean>
-     <bean class="com.alibaba.druid.pool.DruidDataSource"></bean>
-     <bean class="com.alibaba.druid.pool.DruidDataSource"></bean>
-     ```
+   ```java
+   <bean id="cat" class="com.kk.bean.Cat"></bean>
+   <bean class="com.kk.bean.Dog"></bean>
+   <bean class="com.kk.bean.Dog"></bean>
+   <bean class="com.kk.bean.Dog"></bean>
+   <bean class="com.kk.bean.Dog"></bean>
+   <bean id="druid" class="com.alibaba.druid.pool.DruidDataSource"></bean>
+   <bean class="com.alibaba.druid.pool.DruidDataSource"></bean>
+   <bean class="com.alibaba.druid.pool.DruidDataSource"></bean>
+   ```
 
-     ```java
-     String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-     for(String beanDefinitionName : beanDefinitionNames) {
-         System.out.println(beanDefinitionName);
-     }
-     
-     cat
-     com.kk.bean.Dog#0
-     com.kk.bean.Dog#1
-     com.kk.bean.Dog#2
-     com.kk.bean.Dog#3
-     druid
-     com.alibaba.druid.pool.DruidDataSource#0
-     com.alibaba.druid.pool.DruidDataSource#1
-     ```
+   ```java
+   String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+   for(String beanDefinitionName : beanDefinitionNames) {
+       System.out.println(beanDefinitionName);
+   }
+   
+   cat
+   com.kk.bean.Dog#0
+   com.kk.bean.Dog#1
+   com.kk.bean.Dog#2
+   com.kk.bean.Dog#3
+   druid
+   com.alibaba.druid.pool.DruidDataSource#0
+   com.alibaba.druid.pool.DruidDataSource#1
+   ```
 
-  使用`xml`方式定义`bean`的好处：只有一个配置文件，非常直观
+使用`xml`方式定义`bean`的好处：只有一个配置文件，非常直观
 
-  使用`xml`方式定义`bean`的坏处：太过繁琐，每次创建一个`bean`都要在这里写
+使用`xml`方式定义`bean`的坏处：太过繁琐，每次创建一个`bean`都要在这里写
 
-- **<font color="red">第二种的声明`Bean`的方式：注解方式</font>**
+#### **<font color="red">第二种的声明`Bean`的方式：注解方式</font>**
+
+```java
+package com.kk.bean;
+
+import org.springframework.stereotype.Component;
+
+@Component(value = "Tom")
+public class Cat {
+}
+```
+
+```java
+package com.kk.bean;
+
+import org.springframework.stereotype.Component;
+
+@Component(value = "Jerry")
+public class Mouse {
+}
+```
+
+`Spring`需要配置识别【`xmlns:context context`可以自己写】：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+    <context:component-scan base-package="com.kk.bean"/>
+</beans>
+```
+
+运行应用程序：
+
+```java
+package com.kk.app;
+
+import com.kk.bean.Dog;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class App2 {
+    public static void main(String[] args) {
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext2.xml");
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+    }
+}
+```
+
+所有初始化的`bean`名称如下：
+
+```java
+Tom
+Jerry
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+```
+
+**<font color="deepskyblue">第三方的`Bean`要想使用注解方式，直接去到源码中加入`@Component`还是其它显然是不现实的，所以要想使用注解方式加载第三方的`Bean`需要自定义配置类。</font>** ---> `@Configuration + @Bean`
+
+**这里的`@Configuration`可以使用更原始的方式`@Component`，只不过`@Configuration`是专门用声明说这是一个配置类的，这跟`@Component`的关系就好比如：`@Repository @Service @Controller`跟`@Component`的关系。**
+
+```java
+package com.kk.config;
+
+import com.alibaba.druid.pool.DruidDataSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class DruidDataSourceConfig {
+    @Bean
+    public DruidDataSource druidDataSource() {
+        return new DruidDataSource();
+    }
+}
+```
+
+到这里就结束了吗？并不是，还记得当时在`applicationContext2.xml`中是如何配置的吗？
+
+```xml
+<context:component-scan base-package="com.kk.bean"/>
+```
+
+可见我们当时配的时候只扫描了`com.kk.bean`，而这个第三方的`bean`是在`com.kk.config`包下的，所以我们需要加入这个包，使其被扫描到：【多个包之间可以使用逗号、空格、分号】
+
+```xml
+<context:component-scan base-package="com.kk.bean;com.kk.config"/>
+```
+
+此时应用程序运行的结果为：可以看到有配置类`druidDataSourceConfig`以及配置类中定义的`bean`：`druiudDataSource`都已经被`Spring`装载到`ApplicationContext`容器中。
+
+```java
+Tom
+Jerry
+druidDataSourceConfig
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+druidDataSource
+```
+
+#### **<font color="red">第三种的声明`Bean`的方式：注解配置类方式</font>**
+
+- **因为配置文件`applicationContext.xml`写起来非常麻烦，所以`Spring`官方觉得干脆这个配置文件也不要了。直接写个配置类，所有的配置信息都写在一个类中 ---> `SpringConfig3.java` ---> 使用`AnnotationConfigApplicationContext`加载配置类【该配置类也会被加载成`Bean`】**
 
   ```java
-  package com.kk.bean;
+  package com.kk.config;
   
-  import org.springframework.stereotype.Component;
+  import org.springframework.context.annotation.ComponentScan;
   
-  @Component(value = "Tom")
-  public class Cat {
+  @ComponentScan(basePackages = {"com.kk.bean", "com.kk.config"})
+  public class SpringConfig3 {
   }
   ```
 
-  ```java
-  package com.kk.bean;
-  
-  import org.springframework.stereotype.Component;
-  
-  @Component(value = "Jerry")
-  public class Mouse {
-  }
-  ```
-
-  `Spring`需要配置识别【`xmlns:context context`可以自己写】：
-
-  ```xml
-  <?xml version="1.0" encoding="UTF-8"?>
-  <beans xmlns="http://www.springframework.org/schema/beans"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns:context="http://www.springframework.org/schema/context"
-         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
-      <context:component-scan base-package="com.kk.bean"/>
-  </beans>
-  ```
-
-  运行应用程序：
+  使用`AnnotaionConfigApplicationContext`运行加载该配置类：
 
   ```java
   package com.kk.app;
   
-  import com.kk.bean.Dog;
+  import com.kk.config.SpringConfig3;
   import org.springframework.context.ApplicationContext;
-  import org.springframework.context.support.ClassPathXmlApplicationContext;
+  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
   
-  public class App2 {
+  public class App3 {
       public static void main(String[] args) {
-          ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext2.xml");
+          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig3.class);
           String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
           for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
       }
   }
   ```
 
-  所有初始化的`bean`名称如下：
+- **有时候，我们想在创建对象`bean`的时候就进行一些工作，此时就需要使用到`FactoryBean`，此时你在加载配置`bean`的时候配置出来的就不是实现了`FactoryBean`接口的类了，而是这个工厂类返回的对象。**
+
+  例子：
+
+  创建一个狗狗工厂：你可以在`getObject()`中做一些初始化工作，比如你现在要连接`Redis`数据库那么你一定先是去判断`Redis`数据库是否连接得通。这就需要一些初始化工作，然后才可以返回对象。
 
   ```java
-  Tom
-  Jerry
+  package com.kk.bean;
+  
+  import org.springframework.beans.factory.FactoryBean;
+  
+  public class DogFactoryBean implements FactoryBean<Dog> {
+      @Override
+      public Dog getObject() throws Exception {
+          return new Dog();
+      }
+  
+      @Override
+      public Class<?> getObjectType() {
+          return Dog.class;
+      }
+  
+      @Override
+      public boolean isSingleton() {
+          return FactoryBean.super.isSingleton();
+      }
+  }
+  ```
+
+  配置`Bean`：
+
+  ```java
+  package com.kk.config;
+  
+  import com.kk.bean.DogFactoryBean;
+  import org.springframework.context.annotation.Bean;
+  import org.springframework.context.annotation.ComponentScan;
+  
+  @ComponentScan(basePackages = {"com.kk.bean", "com.kk.config"})
+  public class SpringConfig3 {
+      @Bean
+      public DogFactoryBean dogFactoryBean() {
+          return new DogFactoryBean();
+      }
+  }
+  ```
+
+  运行程序，可以观察到虽然这里配置的`@Bean`是`DogFactoryBean`但是返回的并不是`DogFactoryBean`，而是返回的`Dog`对象，就是因为`DogFactoryBean`实现了`FactoryBean`接口实现了`getObject()`方法而在这个方法中返回的就是`Dog`对象所以配置方法得到的也是`Dog`对象：【观察最后两行即可 ---> `Bean`对象的名称跟配置的方法名一样】
+
+  ```java
+  package com.kk.app;
+  
+  import com.kk.config.SpringConfig3;
+  import org.springframework.context.ApplicationContext;
+  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+  
+  public class App3 {
+      public static void main(String[] args) {
+          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig3.class);
+          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+          Object dogFactoryBean1 = applicationContext.getBean("dogFactoryBean");
+          Object dogFactoryBean2 = applicationContext.getBean("dogFactoryBean");
+          Object dogFactoryBean3 = applicationContext.getBean("dogFactoryBean");
+          System.out.println(dogFactoryBean1);
+          System.out.println(dogFactoryBean2);
+          System.out.println(dogFactoryBean3);
+      }
+  }
+  
   org.springframework.context.annotation.internalConfigurationAnnotationProcessor
   org.springframework.context.annotation.internalAutowiredAnnotationProcessor
   org.springframework.context.annotation.internalCommonAnnotationProcessor
   org.springframework.context.event.internalEventListenerProcessor
   org.springframework.context.event.internalEventListenerFactory
-  ```
-
-  **<font color="deepskyblue">第三方的`Bean`要想使用注解方式，直接去到源码中加入`@Component`还是其它显然是不现实的，所以要想使用注解方式加载第三方的`Bean`需要自定义配置类。</font>** ---> `@Configuration + @Bean`
-
-  **这里的`@Configuration`可以使用更原始的方式`@Component`，只不过`@Configuration`是专门用声明说这是一个配置类的，这跟`@Component`的关系就好比如：`@Repository @Service @Controller`跟`@Component`的关系。**
-
-  ```java
-  package com.kk.config;
-  
-  import com.alibaba.druid.pool.DruidDataSource;
-  import org.springframework.context.annotation.Bean;
-  import org.springframework.context.annotation.Configuration;
-  
-  @Configuration
-  public class DruidDataSourceConfig {
-      @Bean
-      public DruidDataSource druidDataSource() {
-          return new DruidDataSource();
-      }
-  }
-  ```
-
-  到这里就结束了吗？并不是，还记得当时在`applicationContext2.xml`中是如何配置的吗？
-
-  ```xml
-  <context:component-scan base-package="com.kk.bean"/>
-  ```
-
-  可见我们当时配的时候只扫描了`com.kk.bean`，而这个第三方的`bean`是在`com.kk.config`包下的，所以我们需要加入这个包，使其被扫描到：【多个包之间可以使用逗号、空格、分号】
-
-  ```xml
-  <context:component-scan base-package="com.kk.bean;com.kk.config"/>
-  ```
-
-  此时应用程序运行的结果为：可以看到有配置类`druidDataSourceConfig`以及配置类中定义的`bean`：`druiudDataSource`都已经被`Spring`装载到`ApplicationContext`容器中。
-
-  ```java
+  springConfig3
   Tom
   Jerry
   druidDataSourceConfig
-  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
-  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
-  org.springframework.context.annotation.internalCommonAnnotationProcessor
-  org.springframework.context.event.internalEventListenerProcessor
-  org.springframework.context.event.internalEventListenerFactory
   druidDataSource
+  dogFactoryBean
+  com.kk.bean.Dog@38c5cc4c
+  com.kk.bean.Dog@37918c79
+  com.kk.bean.Dog@78e94dcf
   ```
 
-- **<font color="red">第三种的声明`Bean`的方式：注解配置类方式</font>**
+  这里为什么打印出来的`Dog`对象不是单例的呢？这是因为我在`DogFactoryBean.isSingleton()`中设置的返回值为：`false`，所以返回的不是单例对象而是多例对象【默认为`true`返回单例对象，我这里自己把它改了】。一般交给`Spring`管控的都是单例对象，否则也失去了`Spring`管控的意义了。
 
-  - **因为配置文件`applicationContext.xml`写起来非常麻烦，所以`Spring`官方觉得干脆这个配置文件也不要了。直接写个配置类，所有的配置信息都写在一个类中 ---> `SpringConfig3.java` ---> 使用`AnnotationConfigApplicationContext`加载配置类【该配置类也会被加载成`Bean`】**
+  ```java
+  @Override
+  public boolean isSingleton() {
+      //return FactoryBean.super.isSingleton();
+      return false;
+  }
+  ```
 
-    ```java
-    package com.kk.config;
-    
-    import org.springframework.context.annotation.ComponentScan;
-    
-    @ComponentScan(basePackages = {"com.kk.bean", "com.kk.config"})
-    public class SpringConfig3 {
+- **上面的情况都是一开始就采用注解配置类的方式，那如果现在有一个系统它以前就有`applicationContext.xml`配置文件的存在，难道我们还要一个个拆出来吗？遇到问题算谁的呢？这就涉及到系统迁移的问题，如何在旧有配置文件中引入注解配置类呢？也就是如何把旧有的配置文件信息加载到配置类中？**
+
+  一开始啥都没有，`SpringConfig32.java`配置类长这样：
+
+  ```java
+  package com.kk.config;
+  
+  public class SpringConfig32 {
+  }
+  ```
+
+  加载配置类启动应用程序可以看到只有`springConfig32`这一个`bean`：
+
+  ```java
+  package com.kk.app;
+  
+  import com.kk.config.SpringConfig32;
+  import org.springframework.context.ApplicationContext;
+  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+  
+  public class App32 {
+      public static void main(String[] args) {
+          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig32.class);
+          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+      }
+  }
+  
+  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+  org.springframework.context.annotation.internalCommonAnnotationProcessor
+  org.springframework.context.event.internalEventListenerProcessor
+  org.springframework.context.event.internalEventListenerFactory
+  springConfig32
+  ```
+
+  此时我想引入`applicationContext.xml`只需要使用`@ImportReSource()`注解引入即可：
+
+  ```java
+  package com.kk.config;
+  
+  import org.springframework.context.annotation.ImportResource;
+  
+  @ImportResource(value = {"applicationContext1.xml"})
+  public class SpringConfig32 {
+  }
+  ```
+
+  此时可以看到结果加载了在`applicationContext1.xml`配置的`bean`：
+
+  ```java
+  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+  org.springframework.context.annotation.internalCommonAnnotationProcessor
+  org.springframework.context.event.internalEventListenerProcessor
+  org.springframework.context.event.internalEventListenerFactory
+  springConfig32
+  cat
+  com.kk.bean.Dog#0
+  com.kk.bean.Dog#1
+  com.kk.bean.Dog#2
+  com.kk.bean.Dog#3
+  druid
+  com.alibaba.druid.pool.DruidDataSource#0
+  com.alibaba.druid.pool.DruidDataSource#1
+  ```
+
+- **`@Configuration(proxyBeanMethods = true/false`**
+
+  如果配置类中不添加`@Configuration`的话，默认创建出来的`SpringConfig32`对象调用`cat()`方法，获取到的`cat`是不同的对象，但是使用`@Configuration(=true)`的话【这里的`proxyBeanMethods`默认为`true`，可不写】，获取到的都是同一个对象。
+
+  这是因为`proxyBeanMethods`表达的意思是是否表示该类创建出来的对象是一个代理对象，通过同一个代理对象创建出来的对象都是同一个对象。这就是添加`@Configuration`的妙处所在，`@Configuration`表示的是同一个代理，`@Bean`则是说这是一个`Bean`，通过代理创建出来的`bean`都是同一个对象，堪称神配置。
+
+  ```java
+  package com.kk.config;
+  
+  import com.kk.bean.Cat;
+  import org.springframework.context.annotation.Bean;
+  import org.springframework.context.annotation.Configuration;
+  import org.springframework.context.annotation.ImportResource;
+  
+  @Configuration(proxyBeanMethods = true)
+  @ImportResource(value = {"applicationContext1.xml"})
+  public class SpringConfig32 {
+      @Bean
+      public Cat cat() {
+          return new Cat();
+      }
+  }
+  ```
+
+  ```java
+  package com.kk.app;
+  
+  import com.kk.config.SpringConfig32;
+  import org.springframework.context.ApplicationContext;
+  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+  
+  public class App32 {
+      public static void main(String[] args) {
+          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig32.class);
+          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+          SpringConfig32 springConfig32 = applicationContext.getBean("springConfig32", SpringConfig32.class);
+          System.out.println(springConfig32.cat());
+          System.out.println(springConfig32.cat());
+          System.out.println(springConfig32.cat());
+      }
+  }
+  ```
+
+  没有`@Configuration`注解：
+
+  ```java
+  com.kk.bean.Cat@16267862
+  com.kk.bean.Cat@453da22c
+  com.kk.bean.Cat@71248c21
+  ```
+
+  有`@Configuration`注解：
+
+  ```java
+  com.kk.bean.Cat@45018215
+  com.kk.bean.Cat@45018215
+  com.kk.bean.Cat@45018215
+  ```
+
+  还记得当时`RabbitMQ`消息队列的配置类吗？这也说明了为什么需要使用`@Configuration`注解的原因。它跟单纯的`@Component`是有区别的。
+
+  ```java
+  package com.kk.service.impl.rabbitmq.direct;
+  
+  import org.springframework.amqp.core.Binding;
+  import org.springframework.amqp.core.BindingBuilder;
+  import org.springframework.amqp.core.DirectExchange;
+  import org.springframework.amqp.core.Queue;
+  import org.springframework.context.annotation.Bean;
+  import org.springframework.context.annotation.Configuration;
+  
+  //@Configuration
+  public class RabbitMQConfiguration {
+      @Bean
+      //交给容器管理交换机对象，交换机负责绑定管理队列，并将消息推送到队列中
+      public DirectExchange getDirectExchange() {
+          return new DirectExchange("directExchange");
+      }
+  
+      @Bean
+      //创建队列1
+      public Queue getDirectQueue1() {
+          //durable：是否持久化，默认为 false
+          //exclusive：是否设定当前连接为专用，默认为 false ，连接关闭后队列即被删除
+          //autoDelete：是否自动删除，当生产者或消费者不再使用该队列时自动删除
+          return new Queue("directQueue1");
+      }
+  
+      @Bean
+      //创建队列2
+      public Queue getDirectQueue2() {
+          return new Queue("directQueue2");
+      }
+  
+      @Bean
+      //交换机绑定队列1 ---> 交换机+队列 ---> 绑定形成路由
+      public Binding bindingDirectQueue1() {
+          return BindingBuilder.bind(getDirectQueue1()).to(getDirectExchange()).with("direct1");
+      }
+  
+      @Bean
+      //交换机绑定队列2 ---> 交换机+队列 ---> 绑定形成路由
+      public Binding bindingDirectQueue2() {
+          return BindingBuilder.bind(getDirectQueue2()).to(getDirectExchange()).with("direct2");
+      }
+  }
+  ```
+
+  当我们把这个`@Configuration`注解注释掉的时候，`getDirectQueue`和`getDirectExchange`都会报错，就是因为创建出来的消息队列和交换机对象不是同一个此时你每次发送消息给消息队列都会到不同的消息队列对象中去，这是不允许的，这样做也毫无意义，只有使用这个注解的时候创建的才是同一个对象。
+
+#### **<font color="red">第四种声明`Bean`的方式：`@Import`方式</font>**
+
+直接使用`@Import`注解导入要注入的`Bean`对应的字节码
+
+```java
+package com.kk.config;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Dog;
+import org.springframework.context.annotation.Import;
+
+@Import({Dog.class, Cat.class})
+public class SpringConfig4 {
+}
+```
+
+```java
+package com.kk.app;
+
+import com.kk.bean.Dog;
+import com.kk.config.SpringConfig4;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class App4 {
+    public static void main(String[] args) {
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig4.class);
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
     }
-    ```
+}
+```
 
-    使用`AnnotaionConfigApplicationContext`运行加载该配置类：
+```java
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+springConfig4
+com.kk.bean.Dog
+com.kk.bean.Cat
+```
 
-    ```java
-    package com.kk.app;
-    
-    import com.kk.config.SpringConfig3;
-    import org.springframework.context.ApplicationContext;
-    import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-    
-    public class App3 {
-        public static void main(String[] args) {
-            ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig3.class);
-            String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-            for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
-        }
+注：如果某个类中加入了`@Component(value = "")`注解并且`value`有值则导入的`bean`不是全类名而是类名称。
+
+这种方式可以有效降低源代码与 Spring 技术的耦合度，在 Spring 技术底层以及诸多框架的整合中大量使用。
+
+#### **<font color="red">第五种声明`Bean`的方式：上下文容器加载完毕后自定配置</font>**
+
+这种声明`bean`的方式并不常见也不常用，但是如果开发框架的话是很可能会用到的。
+
+```java
+package com.kk.app;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Dog;
+import com.kk.config.SpringConfig5;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class App5 {
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig5.class);
+        applicationContext.registerBean("Tom", Cat.class, 0);
+        applicationContext.registerBean("Tom", Cat.class, 1);
+        applicationContext.registerBean("Tom", Cat.class, 2);
+        applicationContext.register(Dog.class);
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+        System.out.println(applicationContext.getBean("Tom"));
     }
-    ```
+}
+```
 
-  - **有时候，我们想在创建对象`bean`的时候就进行一些工作，此时就需要使用到`FactoryBean`，此时你在加载配置`bean`的时候配置出来的就不是实现了`FactoryBean`接口的类了，而是这个工厂类返回的对象。**
+结果为：
 
-    例子：
+```java
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+springConfig5
+Tom
+dog
+Cat{age=2}
+```
 
-    创建一个狗狗工厂：你可以在`getObject()`中做一些初始化工作，比如你现在要连接`Redis`数据库那么你一定先是去判断`Redis`数据库是否连接得通。这就需要一些初始化工作，然后才可以返回对象。
+可以看到虽然这里使用`applicationContext.registerBean("Tom", Cat.class, 0/1/2);`创建了`3`个`Tom Cat`，但是这里并没有报错，原因是这里有点类似于`Map`，新添加的会覆盖掉前面添加的内容，所以这里打印出来的`Cat`的`age = 2`。
 
-    ```java
-    package com.kk.bean;
-    
-    import org.springframework.beans.factory.FactoryBean;
-    
-    public class DogFactoryBean implements FactoryBean<Dog> {
-        @Override
-        public Dog getObject() throws Exception {
-            return new Dog();
-        }
-    
-        @Override
-        public Class<?> getObjectType() {
-            return Dog.class;
-        }
-    
-        @Override
-        public boolean isSingleton() {
-            return FactoryBean.super.isSingleton();
-        }
-    }
-    ```
+其次，如果使用的是`applicationContext.register(Dog.class);`获取到的`Dog`对象名将直接采用的是类名小写形式。
 
-    配置`Bean`：
+#### **<font color="red">第六种声明`Bean`的方式：实现`ImportSelector`接口</font>**
 
-    ```java
-    package com.kk.config;
-    
-    import com.kk.bean.DogFactoryBean;
-    import org.springframework.context.annotation.Bean;
-    import org.springframework.context.annotation.ComponentScan;
-    
-    @ComponentScan(basePackages = {"com.kk.bean", "com.kk.config"})
-    public class SpringConfig3 {
-        @Bean
-        public DogFactoryBean dogFactoryBean() {
-            return new DogFactoryBean();
-        }
-    }
-    ```
+**该方式在源码中大量使用非常重要**，就是因为该方式是一种选择器模式，可以做判定返回指定类型的对象，比如你如果在这个类中有这个注解，我给你返回的是`A`对象，但是你没有这个注解我就给你返回`B`对象。
 
-    运行程序，可以观察到虽然这里配置的`@Bean`是`DogFactoryBean`但是返回的并不是`DogFactoryBean`，而是返回的`Dog`对象，就是因为`DogFactoryBean`实现了`FactoryBean`接口实现了`getObject()`方法而在这个方法中返回的就是`Dog`对象所以配置方法得到的也是`Dog`对象：【观察最后两行即可 ---> `Bean`对象的名称跟配置的方法名一样】
+除此之外有必要说一下的就是实现`ImportSelector`接口需要实现`selectImports(AnnotationMetadata metadata)`方法，这里的`AnnotationMetadata`参数指的是引入当前实现了`ImportSelector`接口的类的所在类。比如我有一个配置类叫做`SpringConfig6`，我在这里使用`@Import(value = {MyImportSelector.class})`那么这个`SpringConfig6`就是`AnnotationMetadata`注解元数据。
 
-    ```java
-    package com.kk.app;
-    
-    import com.kk.config.SpringConfig3;
-    import org.springframework.context.ApplicationContext;
-    import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-    
-    public class App3 {
-        public static void main(String[] args) {
-            ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig3.class);
-            String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-            for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
-            Object dogFactoryBean1 = applicationContext.getBean("dogFactoryBean");
-            Object dogFactoryBean2 = applicationContext.getBean("dogFactoryBean");
-            Object dogFactoryBean3 = applicationContext.getBean("dogFactoryBean");
-            System.out.println(dogFactoryBean1);
-            System.out.println(dogFactoryBean2);
-            System.out.println(dogFactoryBean3);
-        }
-    }
-    
-    org.springframework.context.annotation.internalConfigurationAnnotationProcessor
-    org.springframework.context.annotation.internalAutowiredAnnotationProcessor
-    org.springframework.context.annotation.internalCommonAnnotationProcessor
-    org.springframework.context.event.internalEventListenerProcessor
-    org.springframework.context.event.internalEventListenerFactory
-    springConfig3
-    Tom
-    Jerry
-    druidDataSourceConfig
-    druidDataSource
-    dogFactoryBean
-    com.kk.bean.Dog@38c5cc4c
-    com.kk.bean.Dog@37918c79
-    com.kk.bean.Dog@78e94dcf
-    ```
+配置类代码：
 
-    这里为什么打印出来的`Dog`对象不是单例的呢？这是因为我在`DogFactoryBean.isSingleton()`中设置的返回值为：`false`，所以返回的不是单例对象而是多例对象【默认为`true`返回单例对象，我这里自己把它改了】。一般交给`Spring`管控的都是单例对象，否则也失去了`Spring`管控的意义了。
+```java
+package com.kk.config;
 
-    ```java
+import com.kk.util.MyImportSelector;
+import org.springframework.context.annotation.Import;
+
+@Import(value = {MyImportSelector.class})
+public class SpringConfig6 {
+}
+```
+
+导入选择器类代码：
+
+```java
+package com.kk.util;
+
+import org.springframework.context.annotation.ImportSelector;
+import org.springframework.core.type.AnnotationMetadata;
+
+public class MyImportSelector implements ImportSelector {
     @Override
-    public boolean isSingleton() {
-        //return FactoryBean.super.isSingleton();
-        return false;
+    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+        return new String[]{"com.kk.bean.Dog"};
     }
-    ```
+}
+```
 
-  - **上面的情况都是一开始就采用注解配置类的方式，那如果现在有一个系统它以前就有`applicationContext.xml`配置文件的存在，难道我们还要一个个拆出来吗？遇到问题算谁的呢？这就涉及到系统迁移的问题，如何在旧有配置文件中引入注解配置类呢？也就是如何把旧有的配置文件信息加载到配置类中？**
+应用程序代码：
 
-    一开始啥都没有，`SpringConfig32.java`配置类长这样：
+```java
+package com.kk.app;
 
-    ```java
-    package com.kk.config;
-    
-    public class SpringConfig32 {
+import com.kk.config.SpringConfig6;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class App6 {
+    public static void main(String[] args) {
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig6.class);
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
     }
-    ```
+}
+```
 
-    加载配置类启动应用程序可以看到只有`springConfig32`这一个`bean`：
+可以看到结果加载了一个`Dog`类对象：
 
-    ```java
-    package com.kk.app;
-    
-    import com.kk.config.SpringConfig32;
-    import org.springframework.context.ApplicationContext;
-    import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-    
-    public class App32 {
-        public static void main(String[] args) {
-            ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig32.class);
-            String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-            for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
-        }
-    }
-    
-    org.springframework.context.annotation.internalConfigurationAnnotationProcessor
-    org.springframework.context.annotation.internalAutowiredAnnotationProcessor
-    org.springframework.context.annotation.internalCommonAnnotationProcessor
-    org.springframework.context.event.internalEventListenerProcessor
-    org.springframework.context.event.internalEventListenerFactory
-    springConfig32
-    ```
+```java
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+springConfig6
+com.kk.bean.Dog
+```
 
-    此时我想引入`applicationContext.xml`只需要使用`@ImportReSource()`注解引入即可：
+让我们进一步来看看这个引入选择器`ImportSelector`的强大魅力，在选择器里头我们可以通过`get is has`等获取到一些信息包括状态。然后判定需要注入哪些`Bean`。
 
-    ```java
-    package com.kk.config;
-    
-    import org.springframework.context.annotation.ImportResource;
-    
-    @ImportResource(value = {"applicationContext1.xml"})
-    public class SpringConfig32 {
-    }
-    ```
+比如判断元数据是否拥有某个注解：
 
-    此时可以看到结果加载了在`applicationContext1.xml`配置的`bean`：
+```java
+System.out.println("是否拥有 @Configuration 注解："+importingClassMetadata.hasAnnotation("org.springframework.context.annotation.Configuration"));
 
-    ```java
-    org.springframework.context.annotation.internalConfigurationAnnotationProcessor
-    org.springframework.context.annotation.internalAutowiredAnnotationProcessor
-    org.springframework.context.annotation.internalCommonAnnotationProcessor
-    org.springframework.context.event.internalEventListenerProcessor
-    org.springframework.context.event.internalEventListenerFactory
-    springConfig32
-    cat
-    com.kk.bean.Dog#0
-    com.kk.bean.Dog#1
-    com.kk.bean.Dog#2
-    com.kk.bean.Dog#3
-    druid
-    com.alibaba.druid.pool.DruidDataSource#0
-    com.alibaba.druid.pool.DruidDataSource#1
-    ```
+是否拥有 @Configuration 注解：true
+```
 
-  - **`@Configuration(proxyBeanMethods = true/false`**
+再比如可以查看元数据中有哪些参数：
 
-    如果配置类中不添加`@Configuration`的话，默认创建出来的`SpringConfig32`对象调用`cat()`方法，获取到的`cat`是不同的对象，但是使用`@Configuration(=true)`的话【这里的`proxyBeanMethods`默认为`true`，可不写】，获取到的都是同一个对象。
+```java
+//查看 @ComponentScan(basePackages = {}) 注解中配置参数
+Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes("org.springframework.context.annotation.ComponentScan");
+System.out.println(annotationAttributes);
+```
 
-    这是因为`proxyBeanMethods`表达的意思是是否表示该类创建出来的对象是一个代理对象，通过同一个代理对象创建出来的对象都是同一个对象。这就是添加`@Configuration`的妙处所在，`@Configuration`表示的是同一个代理，`@Bean`则是说这是一个`Bean`，通过代理创建出来的`bean`都是同一个对象，堪称神配置。
+然后我们来做一下，如果有`@Configuration`注解我们注入`Dog`，如果没有注入`Mouse`：
 
-    ```java
-    package com.kk.config;
-    
-    import com.kk.bean.Cat;
-    import org.springframework.context.annotation.Bean;
-    import org.springframework.context.annotation.Configuration;
-    import org.springframework.context.annotation.ImportResource;
-    
-    @Configuration(proxyBeanMethods = true)
-    @ImportResource(value = {"applicationContext1.xml"})
-    public class SpringConfig32 {
-        @Bean
-        public Cat cat() {
-            return new Cat();
+```java
+package com.kk.util;
+
+import org.springframework.context.annotation.ImportSelector;
+import org.springframework.core.type.AnnotationMetadata;
+
+import java.util.Map;
+
+public class MyImportSelector implements ImportSelector {
+    @Override
+    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+        //判断元注解是否存在 @Configuration 注解
+        System.out.println("是否拥有 @Configuration 注解："+importingClassMetadata.hasAnnotation("org.springframework.context.annotation.Configuration"));
+        //查看 @ComponentScan(basePackages = {}) 注解中配置参数
+        Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes("org.springframework.context.annotation.ComponentScan");
+        System.out.println(annotationAttributes);
+        boolean flag = importingClassMetadata.hasAnnotation("org.springframework.context.annotation.Configuration");
+        if(flag) {
+            return new String[]{"com.kk.bean.Dog"};
+        }else {
+            return new String[]{"com.kk.bean.Mouse"};
         }
     }
-    ```
+}
+```
 
-    ```java
-    package com.kk.app;
-    
-    import com.kk.config.SpringConfig32;
-    import org.springframework.context.ApplicationContext;
-    import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-    
-    public class App32 {
-        public static void main(String[] args) {
-            ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig32.class);
-            String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-            for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
-            SpringConfig32 springConfig32 = applicationContext.getBean("springConfig32", SpringConfig32.class);
-            System.out.println(springConfig32.cat());
-            System.out.println(springConfig32.cat());
-            System.out.println(springConfig32.cat());
-        }
+#### **<font color="red">第七种声明`Bean`的方式：实现`ImportBeanDefinitionRegistrar`接口</font>**
+
+这第七种方式比第六种的还要稍稍高端一些，实现`ImportBeanDefinitionRegistrar`接口默认没有让你重写任何方法原因是这个接口的两个方法都使用的是`default`修饰的`JDK1.8`新增。在接口中通过`default`关键字声明的方法可以实现类似一个普通类中的方法。可以减少代码量。
+
+这里为什么取名叫做：`ImportBeanDefinitionRegistrar`即引入`Bean`初始化器登记员【很形象，你想注入某个`Bean`到我这里来登记】，这是因为`Spring`内部造`Bean`其实是通过`BeanDefinition`初始化来的，所以名字中会有`BeanDefinition`。
+
+通过`Alt + Ins`可以查看当前可以重写的方法：
+
+1. `registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry, BeanNameGenerator importBeanNameGenerator)`
+2. `registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry)`
+
+可以看到这两个方法就参数个数不同，前者多了一个`BeanNameGenerator `，通过名字我们就猜到了，为什么有时候注入的`Bean`的名字可以是全类名可以是单纯的小写类名还可以是自定义的，原来都是通过`BeanNameGenerator`管控的。
+
+- `AnnotationMetadata importingClassMetadata`就是元数据，这个是老朋友了，在第六种方式就已经学习过了
+- `BeanDefinitionRegistry registry`注册注入`Bean`
+
+该种方式可以深入到注册`Bean`的某些过程了：
+
+```java
+package com.kk.util;
+
+import com.kk.bean.Dog;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.type.AnnotationMetadata;
+
+public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        BeanDefinition beanDefinition = BeanDefinitionBuilder.rootBeanDefinition(Dog.class).getBeanDefinition();
+        registry.registerBeanDefinition("Little Whit Dog", beanDefinition);
     }
-    ```
+}
+```
 
-    没有`@Configuration`注解：
+```java
+package com.kk.config;
 
-    ```java
-    com.kk.bean.Cat@16267862
-    com.kk.bean.Cat@453da22c
-    com.kk.bean.Cat@71248c21
-    ```
+import com.kk.util.MyImportBeanDefinitionRegistrar;
+import org.springframework.context.annotation.Import;
 
-    有`@Configuration`注解：
+@Import(value = {MyImportBeanDefinitionRegistrar.class})
+public class SpringConfig7 {
+}
+```
 
-    ```java
-    com.kk.bean.Cat@45018215
-    com.kk.bean.Cat@45018215
-    com.kk.bean.Cat@45018215
-    ```
+```java
+package com.kk.app;
 
-    还记得当时`RabbitMQ`消息队列的配置类吗？这也说明了为什么需要使用`@Configuration`注解的原因。它跟单纯的`@Component`是有区别的。
+import com.kk.config.SpringConfig7;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-    ```java
-    package com.kk.service.impl.rabbitmq.direct;
-    
-    import org.springframework.amqp.core.Binding;
-    import org.springframework.amqp.core.BindingBuilder;
-    import org.springframework.amqp.core.DirectExchange;
-    import org.springframework.amqp.core.Queue;
-    import org.springframework.context.annotation.Bean;
-    import org.springframework.context.annotation.Configuration;
-    
-    //@Configuration
-    public class RabbitMQConfiguration {
-        @Bean
-        //交给容器管理交换机对象，交换机负责绑定管理队列，并将消息推送到队列中
-        public DirectExchange getDirectExchange() {
-            return new DirectExchange("directExchange");
-        }
-    
-        @Bean
-        //创建队列1
-        public Queue getDirectQueue1() {
-            //durable：是否持久化，默认为 false
-            //exclusive：是否设定当前连接为专用，默认为 false ，连接关闭后队列即被删除
-            //autoDelete：是否自动删除，当生产者或消费者不再使用该队列时自动删除
-            return new Queue("directQueue1");
-        }
-    
-        @Bean
-        //创建队列2
-        public Queue getDirectQueue2() {
-            return new Queue("directQueue2");
-        }
-    
-        @Bean
-        //交换机绑定队列1 ---> 交换机+队列 ---> 绑定形成路由
-        public Binding bindingDirectQueue1() {
-            return BindingBuilder.bind(getDirectQueue1()).to(getDirectExchange()).with("direct1");
-        }
-    
-        @Bean
-        //交换机绑定队列2 ---> 交换机+队列 ---> 绑定形成路由
-        public Binding bindingDirectQueue2() {
-            return BindingBuilder.bind(getDirectQueue2()).to(getDirectExchange()).with("direct2");
-        }
+public class App7 {
+    public static void main(String[] args) {
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig7.class);
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
     }
-    ```
+}
+```
 
-    当我们把这个`@Configuration`注解注释掉的时候，`getDirectQueue`和`getDirectExchange`都会报错，就是因为创建出来的消息队列和交换机对象不是同一个此时你每次发送消息给消息队列都会到不同的消息队列对象中去，这是不允许的，这样做也毫无意义，只有使用这个注解的时候创建的才是同一个对象。
-  
-- **<font color="red">第四种声明`Bean`的方式：`@Import`方式</font>**
+结果为：
 
-  直接使用`@Import`注解导入要注入的`Bean`对应的字节码
+```java
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+springConfig7
+Little Whit Dog
+```
 
-  ```java
-  package com.kk.config;
-  
-  import com.kk.bean.Cat;
-  import com.kk.bean.Dog;
-  import org.springframework.context.annotation.Import;
-  
-  @Import({Dog.class, Cat.class})
-  public class SpringConfig4 {
-  }
-  ```
+可以看到引入了名为`Little Whit Dog`的对象。
 
-  ```java
-  package com.kk.app;
-  
-  import com.kk.bean.Dog;
-  import com.kk.config.SpringConfig4;
-  import org.springframework.context.ApplicationContext;
-  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-  import org.springframework.context.support.ClassPathXmlApplicationContext;
-  
-  public class App4 {
-      public static void main(String[] args) {
-          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig4.class);
-          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
-      }
-  }
-  ```
+#### **<font color="red">第八种声明`Bean`的方式：实现`BeanDefinitionRegistryPostProcessor`接口</font>**
 
-  ```java
-  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
-  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
-  org.springframework.context.annotation.internalCommonAnnotationProcessor
-  org.springframework.context.event.internalEventListenerProcessor
-  org.springframework.context.event.internalEventListenerFactory
-  springConfig4
-  com.kk.bean.Dog
-  com.kk.bean.Cat
-  ```
+该方式是最终声明的【不去考虑有多个实现了`BeanDefinitionRegistryPostProcessor`的情况】，它可以避免多个类同时引入被覆盖的现象。
 
-  注：如果某个类中加入了`@Component(value = "")`注解并且`value`有值则导入的`bean`不是全类名而是类名称。
+比如我在这个实现了`BeanDefinitionRegistryPostProcessor`的实现类中使用的是`BookServiceImpl1`：
 
-  这种方式可以有效降低源代码与 Spring 技术的耦合度，在 Spring 技术底层以及诸多框架的整合中大量使用。
+```java
+package com.kk.util;
 
-- **<font color="red">第五种声明`Bean`的方式：上下文容器加载完毕后自定配置</font>**
+import com.kk.service.impl.BookServiceImpl1;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 
-  这种声明`bean`的方式并不常见也不常用，但是如果开发框架的话是很可能会用到的。
+public class MyBeanDefinitionRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor {
+    @Override
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry beanDefinitionRegistry) throws BeansException {
+        BeanDefinition beanDefinition = BeanDefinitionBuilder.rootBeanDefinition(BookServiceImpl1.class).getBeanDefinition();
+        beanDefinitionRegistry.registerBeanDefinition("bookService", beanDefinition);
+    }
 
-  ```java
-  package com.kk.app;
-  
-  import com.kk.bean.Cat;
-  import com.kk.bean.Dog;
-  import com.kk.config.SpringConfig5;
-  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-  
-  public class App5 {
-      public static void main(String[] args) {
-          AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig5.class);
-          applicationContext.registerBean("Tom", Cat.class, 0);
-          applicationContext.registerBean("Tom", Cat.class, 1);
-          applicationContext.registerBean("Tom", Cat.class, 2);
-          applicationContext.register(Dog.class);
-          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
-          System.out.println(applicationContext.getBean("Tom"));
-      }
-  }
-  ```
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
 
-  结果为：
+    }
+}
+```
 
-  ```java
-  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
-  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
-  org.springframework.context.annotation.internalCommonAnnotationProcessor
-  org.springframework.context.event.internalEventListenerProcessor
-  org.springframework.context.event.internalEventListenerFactory
-  springConfig5
-  Tom
-  dog
-  Cat{age=2}
-  ```
+配置类代码如下：
 
-  可以看到虽然这里使用`applicationContext.registerBean("Tom", Cat.class, 0/1/2);`创建了`3`个`Tom Cat`，但是这里并没有报错，原因是这里有点类似于`Map`，新添加的会覆盖掉前面添加的内容，所以这里打印出来的`Cat`的`age = 2`。
+```java
+package com.kk.config;
 
-  其次，如果使用的是`applicationContext.register(Dog.class);`获取到的`Dog`对象名将直接采用的是类名小写形式。
+import com.kk.service.impl.BookServiceImpl2;
+import org.springframework.context.annotation.Import;
 
-- **<font color="red">第六种声明`Bean`的方式：实现`ImportSelector`接口</font>**
+@Import(value = {BookServiceImpl2.class})
+public class SpringConfig8 {
+}
+```
 
-  **该方式在源码中大量使用非常重要**，就是因为该方式是一种选择器模式，可以做判定返回指定类型的对象，比如你如果在这个类中有这个注解，我给你返回的是`A`对象，但是你没有这个注解我就给你返回`B`对象。
+在`BookServiceImpl2.class`我们引入`@Service`并取名为`bookService`：
 
-  除此之外有必要说一下的就是实现`ImportSelector`接口需要实现`selectImports(AnnotationMetadata metadata)`方法，这里的`AnnotationMetadata`参数指的是引入当前实现了`ImportSelector`接口的类的所在类。比如我有一个配置类叫做`SpringConfig6`，我在这里使用`@Import(value = {MyImportSelector.class})`那么这个`SpringConfig6`就是`AnnotationMetadata`注解元数据。
+```java
+package com.kk.config;
 
-  配置类代码：
+import com.kk.service.impl.BookServiceImpl2;
+import org.springframework.context.annotation.Import;
 
-  ```java
-  package com.kk.config;
-  
-  import com.kk.util.MyImportSelector;
-  import org.springframework.context.annotation.Import;
-  
-  @Import(value = {MyImportSelector.class})
-  public class SpringConfig6 {
-  }
-  ```
+@Import(value = {BookServiceImpl2.class})
+public class SpringConfig8 {
+}
+```
 
-  导入选择器类代码：
+`BookServiceImpl2.java`代码如下：
 
-  ```java
-  package com.kk.util;
-  
-  import org.springframework.context.annotation.ImportSelector;
-  import org.springframework.core.type.AnnotationMetadata;
-  
-  public class MyImportSelector implements ImportSelector {
-      @Override
-      public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-          return new String[]{"com.kk.bean.Dog"};
-      }
-  }
-  ```
+```java
+package com.kk.service.impl;
 
-  应用程序代码：
+import com.kk.service.BookService;
+import org.springframework.stereotype.Service;
 
-  ```java
-  package com.kk.app;
-  
-  import com.kk.config.SpringConfig6;
-  import org.springframework.context.ApplicationContext;
-  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-  
-  public class App6 {
-      public static void main(String[] args) {
-          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig6.class);
-          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
-      }
-  }
-  ```
+@Service(value = "bookService")
+public class BookServiceImpl2 implements BookService {
+    @Override
+    public void check() {
+        System.out.println("Book Service 2....");
+    }
+}
+```
 
-  可以看到结果加载了一个`Dog`类对象：
+现暂不引入`MyBeanDefinitionRegistryPostProcessor`实现类。可以看到结果如下：
+```java
+Book Service 2....
+```
 
-  ```java
-  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
-  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
-  org.springframework.context.annotation.internalCommonAnnotationProcessor
-  org.springframework.context.event.internalEventListenerProcessor
-  org.springframework.context.event.internalEventListenerFactory
-  springConfig6
-  com.kk.bean.Dog
-  ```
+现在我们使用`ImportBeanDefinitionRegistrar`再去注入一个同名`bookService`的`Bean`：
 
-  让我们进一步来看看这个引入选择器`ImportSelector`的强大魅力，在选择器里头我们可以通过`get is has`等获取到一些信息包括状态。然后判定需要注入哪些`Bean`。
-  
-  比如判断元数据是否拥有某个注解：
-  
-  ```java
-  System.out.println("是否拥有 @Configuration 注解："+importingClassMetadata.hasAnnotation("org.springframework.context.annotation.Configuration"));
-  
-  是否拥有 @Configuration 注解：true
-  ```
-  
-  再比如可以查看元数据中有哪些参数：
-  
-  ```java
-  //查看 @ComponentScan(basePackages = {}) 注解中配置参数
-  Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes("org.springframework.context.annotation.ComponentScan");
-  System.out.println(annotationAttributes);
-  ```
-  
-  然后我们来做一下，如果有`@Configuration`注解我们注入`Dog`，如果没有注入`Mouse`：
-  
-  ```java
-  package com.kk.util;
-  
-  import org.springframework.context.annotation.ImportSelector;
-  import org.springframework.core.type.AnnotationMetadata;
-  
-  import java.util.Map;
-  
-  public class MyImportSelector implements ImportSelector {
-      @Override
-      public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-          //判断元注解是否存在 @Configuration 注解
-          System.out.println("是否拥有 @Configuration 注解："+importingClassMetadata.hasAnnotation("org.springframework.context.annotation.Configuration"));
-          //查看 @ComponentScan(basePackages = {}) 注解中配置参数
-          Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes("org.springframework.context.annotation.ComponentScan");
-          System.out.println(annotationAttributes);
-          boolean flag = importingClassMetadata.hasAnnotation("org.springframework.context.annotation.Configuration");
-          if(flag) {
-              return new String[]{"com.kk.bean.Dog"};
-          }else {
-              return new String[]{"com.kk.bean.Mouse"};
-          }
-      }
-  }
-  ```
-  
-- **<font color="red">第七种声明`Bean`的方式：实现`ImportBeanDefinitionRegistrar`接口</font>**
+```java
+package com.kk.util;
 
-  这第七种方式比第六种的还要稍稍高端一些，实现`ImportBeanDefinitionRegistrar`接口默认没有让你重写任何方法原因是这个接口的两个方法都使用的是`default`修饰的`JDK1.8`新增。在接口中通过`default`关键字声明的方法可以实现类似一个普通类中的方法。可以减少代码量。
+import com.kk.service.impl.BookServiceImpl3;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.type.AnnotationMetadata;
 
-  这里为什么取名叫做：`ImportBeanDefinitionRegistrar`即引入`Bean`初始化器登记员【很形象，你想注入某个`Bean`到我这里来登记】，这是因为`Spring`内部造`Bean`其实是通过`BeanDefinition`初始化来的，所以名字中会有`BeanDefinition`。
+public class MyImportBeanDefinitionRegistrarNext1 implements ImportBeanDefinitionRegistrar {
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        BeanDefinition beanDefinition = BeanDefinitionBuilder.rootBeanDefinition(BookServiceImpl3.class).getBeanDefinition();
+        registry.registerBeanDefinition("bookService", beanDefinition);
+    }
+}
+```
 
-  通过`Alt + Ins`可以查看当前可以重写的方法：
+然后在配置类中使用注解`@Import`引入：
 
-  1. `registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry, BeanNameGenerator importBeanNameGenerator)`
-  2. `registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry)`
+```java
+package com.kk.config;
 
-  可以看到这两个方法就参数个数不同，前者多了一个`BeanNameGenerator `，通过名字我们就猜到了，为什么有时候注入的`Bean`的名字可以是全类名可以是单纯的小写类名还可以是自定义的，原来都是通过`BeanNameGenerator`管控的。
+import com.kk.service.impl.BookServiceImpl2;
+import com.kk.util.MyImportBeanDefinitionRegistrarNext;
+import org.springframework.context.annotation.Import;
 
-  - `AnnotationMetadata importingClassMetadata`就是元数据，这个是老朋友了，在第六种方式就已经学习过了
-  - `BeanDefinitionRegistry registry`注册注入`Bean`
+@Import(value = {BookServiceImpl2.class, MyImportBeanDefinitionRegistrarNext.class})
+public class SpringConfig8 {
+}
+```
 
-  该种方式可以深入到注册`Bean`的某些过程了：
+因为都叫`bookService`所以肯定会有覆盖的，我们来看看哪个优先级高：
 
-  ```java
-  package com.kk.util;
-  
-  import com.kk.bean.Dog;
-  import org.springframework.beans.factory.config.BeanDefinition;
-  import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-  import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-  import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-  import org.springframework.core.type.AnnotationMetadata;
-  
-  public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
-      @Override
-      public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-          BeanDefinition beanDefinition = BeanDefinitionBuilder.rootBeanDefinition(Dog.class).getBeanDefinition();
-          registry.registerBeanDefinition("Little Whit Dog", beanDefinition);
-      }
-  }
-  ```
+```java
+Book Service 3......
+```
 
-  ```java
-  package com.kk.config;
-  
-  import com.kk.util.MyImportBeanDefinitionRegistrar;
-  import org.springframework.context.annotation.Import;
-  
-  @Import(value = {MyImportBeanDefinitionRegistrar.class})
-  public class SpringConfig7 {
-  }
-  ```
+现在我们把`SpringConfig8.java`配置类中`@Import`注解的值调换一下，看是否跟顺序有关：
 
-  ```java
-  package com.kk.app;
-  
-  import com.kk.config.SpringConfig7;
-  import org.springframework.context.ApplicationContext;
-  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-  
-  public class App7 {
-      public static void main(String[] args) {
-          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig7.class);
-          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
-      }
-  }
-  ```
+```java
+package com.kk.config;
 
-  结果为：
+import com.kk.service.impl.BookServiceImpl2;
+import com.kk.util.MyImportBeanDefinitionRegistrarNext;
+import org.springframework.context.annotation.Import;
 
-  ```java
-  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
-  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
-  org.springframework.context.annotation.internalCommonAnnotationProcessor
-  org.springframework.context.event.internalEventListenerProcessor
-  org.springframework.context.event.internalEventListenerFactory
-  springConfig7
-  Little Whit Dog
-  ```
+@Import(value = {BookServiceImpl2.class, MyImportBeanDefinitionRegistrarNext.class})
+public class SpringConfig8 {
+}
+```
 
-  可以看到引入了名为`Little Whit Dog`的对象。
+打印结果仍然是`Book Service 3`：
+
+```java
+Book Service 3......
+```
+
+看来`ImportBeanDefinitionRegistrar`的优先级是要比使用`@Service`的优先级导入级别要高的，那如果有两个`ImportBeanDefinitionRegistrar`呢？此时优先级是按照排列顺序来吗？
+
+```java
+package com.kk.util;
+
+import com.kk.service.impl.BookServiceImpl3;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.type.AnnotationMetadata;
+
+public class MyImportBeanDefinitionRegistrarNext2 implements ImportBeanDefinitionRegistrar {
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        BeanDefinition beanDefinition = BeanDefinitionBuilder.rootBeanDefinition(BookServiceImpl4.class).getBeanDefinition();
+        registry.registerBeanDefinition("bookService", beanDefinition);
+    }
+}
+```
+
+然后在配置类中引入：
+
+```java
+package com.kk.config;
+
+import com.kk.service.impl.BookServiceImpl2;
+import com.kk.util.MyImportBeanDefinitionRegistrarNext1;
+import com.kk.util.MyImportBeanDefinitionRegistrarNext2;
+import org.springframework.context.annotation.Import;
+
+@Import(value = {MyImportBeanDefinitionRegistrarNext1.class,BookServiceImpl2.class, MyImportBeanDefinitionRegistrarNext2.class})
+public class SpringConfig8 {
+}
+```
+
+打印结果为：
+
+```java
+Book Service 4......
+```
+
+我们将两个登记员的位置调换一下：
+
+```java
+package com.kk.config;
+
+import com.kk.service.impl.BookServiceImpl2;
+import com.kk.util.MyImportBeanDefinitionRegistrarNext1;
+import com.kk.util.MyImportBeanDefinitionRegistrarNext2;
+import org.springframework.context.annotation.Import;
+
+@Import(value = {MyImportBeanDefinitionRegistrarNext2.class,MyImportBeanDefinitionRegistrarNext1.class,BookServiceImpl2.class})
+public class SpringConfig8 {
+}
+```
+
+结果为：
+
+```java
+Book Service 3......
+```
+
+看来如果有多个`ImportBeanDefinitionRegistrar`的话，注入`Bean`的顺序将按照配置类中配置的顺序来。
+
+现在我们将`BeanDefinitionRegistryPostProcessor`导入配置类，为了更直接地呈现效果我这里将其直接放在第一个位置，也即是按理说优先级是最低的位置：
+
+```java
+package com.kk.config;
+
+import com.kk.service.impl.BookServiceImpl2;
+import com.kk.util.MyBeanDefinitionRegistryPostProcessor;
+import com.kk.util.MyImportBeanDefinitionRegistrarNext1;
+import com.kk.util.MyImportBeanDefinitionRegistrarNext2;
+import org.springframework.context.annotation.Import;
+
+@Import(value = {MyBeanDefinitionRegistryPostProcessor.class,MyImportBeanDefinitionRegistrarNext2.class,MyImportBeanDefinitionRegistrarNext1.class,BookServiceImpl2.class})
+public class SpringConfig8 {
+}
+```
+
+得到结果：
+
+```java
+Book Service 1..
+```
+
+这时你就彻底明白了第八种加载方式的优先级是要高于第七种加载方式的优先级的。
+
+但是现在如果我们使用第五种加载`Bean`的方式，我们可以发现它的优先级比第八种加载`Bean`的方式还要高：
+
+```java
+package com.kk.app;
+
+import com.kk.config.SpringConfig8;
+import com.kk.service.BookService;
+import com.kk.service.impl.BookServiceImpl2;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class App8 {
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig8.class);
+        applicationContext.register(BookServiceImpl2.class);
+        BookService bookService = (BookService) applicationContext.getBean("bookService");
+        bookService.check();
+    }
+}
+```
+
+得到结果：
+
+```java
+Book Service 2....
+```
 
 ### 【前置课】`Spring bean`的加载控制
 
