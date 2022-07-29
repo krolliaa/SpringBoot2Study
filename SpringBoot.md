@@ -9054,6 +9054,8 @@ Book Service 2....
 
 ### 【前置课】`Spring bean`的加载控制
 
+#### 编程方式控制加载
+
 在`Bean`加载的过程中就对`Bean`加载进行控制，该控制可以在第`5、6、7、8`中加载`Bean`的方式完成。我们可以挑一种来测试下，这里我们使用第六种加载`Bean`的方式：导入实现了`ImportSelector`接口的类。
 
 可以看到该实现类中`Class.forName()`中`Wolf`是不存在的，只有`Cat Mouse Dog`。所以不加载任何`Bean`
@@ -9130,7 +9132,227 @@ springConfig
 com.kk.bean.Cat
 ```
 
-如此，我们就完成了`Bean`的控制。
+如此，我们就使用编程的方式完成了`Bean`的控制。
+
+#### 注解方式控制加载
+
+编程方式控制加载写的非常繁琐，于是就冒出来个简化的注解控制加载。
+
+使用`@ConditionalOnxxx`注解为`Bean`加载设置条件。
+
+在`Spring`中本来是想使用`@Conditional`，但是点开这个`@Conditional`注解你可以发现你需要实现`Condition`接口你才可以使用该注解：
+
+```java
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
+package org.springframework.context.annotation;
+
+import org.springframework.core.type.AnnotatedTypeMetadata;
+
+@FunctionalInterface
+public interface Condition {
+    boolean matches(ConditionContext var1, AnnotatedTypeMetadata var2);
+}
+```
+
+`Spring`是这样子的但是`SpringBoot`不是这样子的，我们在这个注解页面中点击`Ctrl + H`查看实现过该接口的注解，可以发现都是在`spring.boot.*`包中，所以我们这里直接使用`SpringBoot`提供的`@ConditionalOnxxx`注解即可。不过你首先需要导入`SpringBoot`相关依赖才可以使用，为了避免出现什么问题你可以选择将`spring`相关依赖注释掉。
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter</artifactId>
+    <version>2.7.2</version>
+</dependency>
+```
+
+这里新创建一个`SpringConfigNext`以及新的一个`MyAppNext`：
+
+```java
+package com.kk.config;
+
+import com.kk.bean.Cat;
+import org.springframework.context.annotation.Bean;
+
+public class SpringConfigNext {
+    @Bean
+    public Cat cat() {
+        return new Cat();
+    }
+}
+```
+
+```java
+package com.kk.app;
+
+import com.kk.config.SpringConfigNext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class MyAppNext {
+    public static void main(String[] args) {
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfigNext.class);
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+    }
+}
+```
+
+启动应用程序可以看到：
+
+```java
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+springConfigNext
+cat
+```
+
+我们给这个`Cat`类改个名字。
+
+```java
+package com.kk.config;
+
+import com.kk.bean.Cat;
+import org.springframework.context.annotation.Bean;
+
+public class SpringConfigNext {
+    @Bean
+    public Cat Tom() {
+        return new Cat();
+    }
+}
+```
+
+```java
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+springConfigNext
+Tom
+```
+
+添加`@ConditionalOnClass(value = {Mouse.class})`表示有这个`Class`我们再去加载`Tom`
+
+```java
+package com.kk.bean;
+
+import org.springframework.stereotype.Component;
+
+@Component(value = "Jerry")
+public class Mouse {
+}
+```
+
+```java
+package com.kk.config;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.annotation.Bean;
+
+public class SpringConfigNext {
+    @Bean
+    @ConditionalOnClass(value = {Mouse.class})
+    public Cat Tom() {
+        return new Cat();
+    }
+}
+```
+
+但是我们一般不这么用，因为`Mouse.class`存不存在这事情编译器就已经帮你做了，我们需要使用的是字符串。这里的意思是有了`Mouse`类才加载`Cat`类。否则不加载该`Bean`。
+
+```java
+package com.kk.config;
+
+import com.kk.bean.Cat;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.annotation.Bean;
+
+public class SpringConfigNext {
+    @Bean
+    @ConditionalOnClass(name = {"com.kk.bean.Mouse"})
+    public Cat Tom() {
+        return new Cat();
+    }
+}
+```
+
+现在我们再引入一个`@ConditionalOnMissingClass`注解，表明只有当这个类不存在的时候才加载`Bean`，下面代码表示虽然有`Mouse`但是这里有`Dog`，`Cat`照样不会加载。
+
+```java
+package com.kk.config;
+
+import com.kk.bean.Cat;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.context.annotation.Bean;
+
+public class SpringConfigNext {
+    @Bean
+    @ConditionalOnMissingClass(value = {"com.kk.bean.Dog"})
+    @ConditionalOnClass(name = {"com.kk.bean.Mouse"})
+    public Cat Tom() {
+        return new Cat();
+    }
+}
+```
+
+再来看一个注解`@ConditionalOnBean(name= {"Jerry"})`表示只有加载了这个`Bean`才会去加载`Cat Tom`这个`Bean`：
+
+```java
+package com.kk.config;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+
+@Import(value = {Mouse.class})
+public class SpringConfigNext {
+    @Bean
+    //@ConditionalOnMissingClass(value = {"com.kk.bean.Dog"})
+    @ConditionalOnClass(name = {"com.kk.bean.Mouse"})
+    @ConditionalOnBean(name = "Jerry")
+    public Cat Tom() {
+        return new Cat();
+    }
+}
+```
+
+此时我们将`Jerry`更改为`Jerry1`，此时将不加载`Cat`：
+
+```java
+package com.kk.bean;
+
+import org.springframework.stereotype.Component;
+
+@Component(value = "Jerry1")
+public class Mouse {
+}
+```
+
+```java
+org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+org.springframework.context.annotation.internalCommonAnnotationProcessor
+org.springframework.context.event.internalEventListenerProcessor
+org.springframework.context.event.internalEventListenerFactory
+springConfigNext
+Jerry1
+```
+
+到这里就跟`SpringBoot`的底层原理越来越像了，`SpringBoot`底层就有好多好多这种`@ConditionalOnxxx`去做一个`Bean`加载控制的处理。
 
 ### `bean`依赖属性配置
 
