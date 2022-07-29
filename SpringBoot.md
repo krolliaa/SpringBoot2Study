@@ -9393,15 +9393,287 @@ public class SpringConfigNext {
 }
 ```
 
-### `bean`依赖属性配置
+### `Bean`依赖属性配置
+
+```java
+package com.kk.cartoon;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import org.springframework.stereotype.Component;
+
+@Component
+public class TomAndJerry {
+    private Cat cat;
+    private Mouse mouse;
+
+    public void playCartoon() {
+        System.out.println(cat.getAge() + "岁的" + cat.getName() + "跟" + mouse.getAge() + "岁的" + mouse.getName() + "在干架！");
+    }
+}
+```
+
+启动类如下：
+
+```java
+package com.kk;
+
+import com.kk.cartoon.TomAndJerry;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+
+@SpringBootApplication
+public class MyApp {
+    public static void main(String[] args) {
+        ConfigurableApplicationContext configurableApplicationContext = SpringApplication.run(MyApp.class, args);
+        TomAndJerry tomAndJerry = (TomAndJerry) configurableApplicationContext.getBean("tomAndJerry");
+        tomAndJerry.playCartoon();
+    }
+}
+```
+
+启动后报错，非常正常，因为你这`Cat`跟`Mouse`都没有赋予属性值呢，所以我们使用配置文件配置信息使用`@ConfigurationProperties(prefix = "")`引入，最后在`TomAndJerry`类使用这个对象。
+
+```yaml
+cartoon:
+  cat:
+    name: tom
+    age: 3
+  mouse:
+    name: jerry
+    age: 4
+```
+
+```java
+package com.kk.cartoon;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Component
+@Data
+@ConfigurationProperties(prefix = "cartoon")
+public class TomAndJerry {
+    private Cat cat;
+    private Mouse mouse;
+
+    public void playCartoon() {
+        System.out.println(cat.getAge() + "岁的" + cat.getName() + "跟" + mouse.getAge() + "岁的" + mouse.getName() + "在干架！");
+    }
+}
+```
+
+```java
+package com.kk;
+
+import com.kk.cartoon.TomAndJerry;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+
+@SpringBootApplication
+public class MyApp {
+    public static void main(String[] args) {
+        ConfigurableApplicationContext configurableApplicationContext = SpringApplication.run(MyApp.class, args);
+        TomAndJerry tomAndJerry = (TomAndJerry) configurableApplicationContext.getBean("tomAndJerry");
+        tomAndJerry.playCartoon();
+    }
+}
+```
+
+此时再启动服务器，观察结果：
+
+```java
+3岁的tom跟4岁的jerry在干架！
+```
+
+但是这样就会产生一个问题了，我这边配置文件跟我的代码高度耦合，一旦我的配置文件中没配置，还是会报错，这咋办，简单，我们将`@ConfigurationProperties`搬个家。搞个独立的配置信息类出来，如果这个配置信息类没有东西，我们就默认赋值一个就可以了。
+
+`MyConfgurationProperties.java`代码如下：
+
+```java
+package com.kk.util;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Data
+@Component
+@ConfigurationProperties(prefix = "cartoon")
+public class MyConfigurationProperties {
+    private Cat cat;
+    private Mouse mouse;
+}
+```
+
+然后再更改下`TomAndJerry`类，这里不使用自动注解，而是使用代码方式使用构造器直接写：
+
+```java
+package com.kk.cartoon;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import com.kk.util.MyConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Component(value = "tomAndJerry")
+public class TomAndJerry {
+    private Cat cat;
+    private Mouse mouse;
+
+    private MyConfigurationProperties myConfigurationProperties;
+
+    public TomAndJerry(MyConfigurationProperties myConfigurationProperties) {
+        this.myConfigurationProperties = myConfigurationProperties;
+        cat = new Cat();
+        mouse = new Mouse();
+        this.cat.setName((myConfigurationProperties.getCat() != null && myConfigurationProperties.getCat().getName() != "") ? myConfigurationProperties.getCat().getName() : "出错啦");
+        this.cat.setAge((myConfigurationProperties.getCat() != null && myConfigurationProperties.getCat().getAge() != "") ? myConfigurationProperties.getCat().getAge() : "出错啦");
+        this.mouse.setName((myConfigurationProperties.getMouse() != null && myConfigurationProperties.getMouse().getName() != "") ? myConfigurationProperties.getMouse().getName() : "出错啦");
+        this.mouse.setAge((myConfigurationProperties.getMouse() != null && myConfigurationProperties.getMouse().getAge() != "") ? myConfigurationProperties.getMouse().getAge() : "出错啦");
+    }
+
+    public void playCartoon() {
+        System.out.println(cat.getAge() + "岁的" + cat.getName() + "跟" + mouse.getAge() + "岁的" + mouse.getName() + "在干架！");
+    }
+}
+```
+
+如此一来即使配置文件中没有配置信息，也能正常显示出页面~
+
+```java
+出错啦岁的出错啦跟出错啦岁的出错啦在干架！
+```
+
+最后面还有个小问题，就是这个业务类如果不用了，有必要还要加载`MyConfigurationProperties`这个类吗？当然没必要，所以我们需要使用到它的时候我们再呼唤它出来，这样岂不是更好？
+
+于是我们先将其`@Component`注解去掉然后只要在需要它的地方使用`@EnableConfigurationProperties(value = {})`即可：
+
+```java
+package com.kk.util;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import lombok.Data;
+import org.springframework.boot.contextpackage com.kk.cartoon;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import com.kk.util.MyConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@EnableConfigurationProperties(value = {MyConfigurationProperties.class})
+@Component(value = "tomAndJerry")
+public class TomAndJerry {
+    private Cat cat;
+    private Mouse mouse;
+
+    private MyConfigurationProperties myConfigurationProperties;
+
+    public TomAndJerry(MyConfigurationProperties myConfigurationProperties) {
+        this.myConfigurationProperties = myConfigurationProperties;
+        cat = new Cat();
+        mouse = new Mouse();
+        this.cat.setName((myConfigurationProperties.getCat() != null && myConfigurationProperties.getCat().getName() != "") ? myConfigurationProperties.getCat().getName() : "出错啦");
+        this.cat.setAge((myConfigurationProperties.getCat() != null && myConfigurationProperties.getCat().getAge() != "") ? myConfigurationProperties.getCat().getAge() : "出错啦");
+        this.mouse.setName((myConfigurationProperties.getMouse() != null && myConfigurationProperties.getMouse().getName() != "") ? myConfigurationProperties.getMouse().getName() : "出错啦");
+        this.mouse.setAge((myConfigurationProperties.getMouse() != null && myConfigurationProperties.getMouse().getAge() != "") ? myConfigurationProperties.getMouse().getAge() : "出错啦");
+    }
+
+    public void playCartoon() {
+        System.out.println(cat.getAge() + "岁的" + cat.getName() + "跟" + mouse.getAge() + "岁的" + mouse.getName() + "在干架！");
+    }
+}
+.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Data
+//@Component
+@ConfigurationProperties(prefix = "cartoon")
+public class MyConfigurationProperties {
+    private Cat cat;
+    private Mouse mouse;
+}
+```
+
+然后我们已经不用这个业务类了，还有必要加载`TomAndJerry`吗？也没必要即没必要使用`@Component`注解，那就在在需要它的地方去配置也就是在启动类使用`@Import`注解引入即可：
+
+```java
+package com.kk.cartoon;
+
+import com.kk.bean.Cat;
+import com.kk.bean.Mouse;
+import com.kk.util.MyConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@EnableConfigurationProperties(value = {MyConfigurationProperties.class})
+//@Component(value = "tomAndJerry")
+public class TomAndJerry {
+    private Cat cat;
+    private Mouse mouse;
+
+    private MyConfigurationProperties myConfigurationProperties;
+
+    public TomAndJerry(MyConfigurationProperties myConfigurationProperties) {
+        this.myConfigurationProperties = myConfigurationProperties;
+        cat = new Cat();
+        mouse = new Mouse();
+        this.cat.setName((myConfigurationProperties.getCat() != null && myConfigurationProperties.getCat().getName() != "") ? myConfigurationProperties.getCat().getName() : "出错啦");
+        this.cat.setAge((myConfigurationProperties.getCat() != null && myConfigurationProperties.getCat().getAge() != "") ? myConfigurationProperties.getCat().getAge() : "出错啦");
+        this.mouse.setName((myConfigurationProperties.getMouse() != null && myConfigurationProperties.getMouse().getName() != "") ? myConfigurationProperties.getMouse().getName() : "出错啦");
+        this.mouse.setAge((myConfigurationProperties.getMouse() != null && myConfigurationProperties.getMouse().getAge() != "") ? myConfigurationProperties.getMouse().getAge() : "出错啦");
+    }
+
+    public void playCartoon() {
+        System.out.println(cat.getAge() + "岁的" + cat.getName() + "跟" + mouse.getAge() + "岁的" + mouse.getName() + "在干架！");
+    }
+}
+```
+
+```java
+package com.kk;
+
+import com.kk.cartoon.TomAndJerry;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Import;
+
+@SpringBootApplication
+@Import(value = {TomAndJerry.class})
+public class MyApp {
+    public static void main(String[] args) {
+        ConfigurableApplicationContext configurableApplicationContext = SpringApplication.run(MyApp.class, args);
+        TomAndJerry tomAndJerry = (TomAndJerry) configurableApplicationContext.getBean(TomAndJerry.class);
+        tomAndJerry.playCartoon();
+    }
+}
+```
+
+`SpringBoot`底层源码特别特别多这些东西。
 
 ### 自动配置原理
 
+
+
 ### 变更自动配置
+
+
 
 ## 自定义`starter`
 
 用了很多`starter`觉得很好用，但不知道是怎么做出来的，这一节将告诉你`starter`是如何一步步打造出来并执行的。
+
+
 
 ## 核心原理
 

@@ -17,6 +17,7 @@
         <module name="SpringBoot_demo14_SQL" />
         <module name="SpringBoot_demo25_SpringBootAdminClient" />
         <module name="SpringBoot_demo03_JUnit" />
+        <module name="SpringBoot_demo28_Properties" />
         <module name="SpringBoot_demo26_BeanInit" />
         <module name="SpringBoot_demo02_BaseConfiguration" />
         <module name="SpringBoot_demo19_Cache" />
@@ -72,6 +73,7 @@
       <module name="SpringBoot_demo25_SpringBootAdminServer" target="1.8" />
       <module name="SpringBoot_demo26_BeanInit" target="1.8" />
       <module name="SpringBoot_demo27_BeanLoad" target="1.8" />
+      <module name="SpringBoot_demo28_Properties" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
