@@ -8594,7 +8594,7 @@ public class PayEndPoint {
 
 - **<font color="red">第六种声明`Bean`的方式：实现`ImportSelector`接口</font>**
 
-  该方式在源码中大量使用，就是因为该方式是一种选择器模式，可以做判定返回指定类型的对象，比如你如果在这个类中有这个注解，我给你返回的是`A`对象，但是你没有这个注解我就给你返回`B`对象。
+  **该方式在源码中大量使用非常重要**，就是因为该方式是一种选择器模式，可以做判定返回指定类型的对象，比如你如果在这个类中有这个注解，我给你返回的是`A`对象，但是你没有这个注解我就给你返回`B`对象。
 
   除此之外有必要说一下的就是实现`ImportSelector`接口需要实现`selectImports(AnnotationMetadata metadata)`方法，这里的`AnnotationMetadata`参数指的是引入当前实现了`ImportSelector`接口的类的所在类。比如我有一个配置类叫做`SpringConfig6`，我在这里使用`@Import(value = {MyImportSelector.class})`那么这个`SpringConfig6`就是`AnnotationMetadata`注解元数据。
 
@@ -8702,6 +8702,84 @@ public class PayEndPoint {
       }
   }
   ```
+  
+- **<font color="red">第七种声明`Bean`的方式：实现`ImportBeanDefinitionRegistrar`接口</font>**
+
+  这第七种方式比第六种的还要稍稍高端一些，实现`ImportBeanDefinitionRegistrar`接口默认没有让你重写任何方法原因是这个接口的两个方法都使用的是`default`修饰的`JDK1.8`新增。在接口中通过`default`关键字声明的方法可以实现类似一个普通类中的方法。可以减少代码量。
+
+  这里为什么取名叫做：`ImportBeanDefinitionRegistrar`即引入`Bean`初始化器登记员【很形象，你想注入某个`Bean`到我这里来登记】，这是因为`Spring`内部造`Bean`其实是通过`BeanDefinition`初始化来的，所以名字中会有`BeanDefinition`。
+
+  通过`Alt + Ins`可以查看当前可以重写的方法：
+
+  1. `registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry, BeanNameGenerator importBeanNameGenerator)`
+  2. `registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry)`
+
+  可以看到这两个方法就参数个数不同，前者多了一个`BeanNameGenerator `，通过名字我们就猜到了，为什么有时候注入的`Bean`的名字可以是全类名可以是单纯的小写类名还可以是自定义的，原来都是通过`BeanNameGenerator`管控的。
+
+  - `AnnotationMetadata importingClassMetadata`就是元数据，这个是老朋友了，在第六种方式就已经学习过了
+  - `BeanDefinitionRegistry registry`注册注入`Bean`
+
+  该种方式可以深入到注册`Bean`的某些过程了：
+
+  ```java
+  package com.kk.util;
+  
+  import com.kk.bean.Dog;
+  import org.springframework.beans.factory.config.BeanDefinition;
+  import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+  import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+  import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+  import org.springframework.core.type.AnnotationMetadata;
+  
+  public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+      @Override
+      public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+          BeanDefinition beanDefinition = BeanDefinitionBuilder.rootBeanDefinition(Dog.class).getBeanDefinition();
+          registry.registerBeanDefinition("Little Whit Dog", beanDefinition);
+      }
+  }
+  ```
+
+  ```java
+  package com.kk.config;
+  
+  import com.kk.util.MyImportBeanDefinitionRegistrar;
+  import org.springframework.context.annotation.Import;
+  
+  @Import(value = {MyImportBeanDefinitionRegistrar.class})
+  public class SpringConfig7 {
+  }
+  ```
+
+  ```java
+  package com.kk.app;
+  
+  import com.kk.config.SpringConfig7;
+  import org.springframework.context.ApplicationContext;
+  import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+  
+  public class App7 {
+      public static void main(String[] args) {
+          ApplicationContext applicationContext = new AnnotationConfigApplicationContext(SpringConfig7.class);
+          String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+          for (String beanDefinitionName : beanDefinitionNames) System.out.println(beanDefinitionName);
+      }
+  }
+  ```
+
+  结果为：
+
+  ```java
+  org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+  org.springframework.context.annotation.internalAutowiredAnnotationProcessor
+  org.springframework.context.annotation.internalCommonAnnotationProcessor
+  org.springframework.context.event.internalEventListenerProcessor
+  org.springframework.context.event.internalEventListenerFactory
+  springConfig7
+  Little Whit Dog
+  ```
+
+  可以看到引入了名为`Little Whit Dog`的对象。
 
 ### 【前置课】`Spring bean`的加载控制
 
