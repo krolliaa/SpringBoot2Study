@@ -9036,6 +9036,22 @@ public class App8 {
 Book Service 2....
 ```
 
+#### 声明`Bean`方式的总结
+
+加载`Bean`一共有八大方式：
+
+1. 在`applicationContext.xml`使用`<bean/>`配置
+2. 在`applicationContext.xml`使用`<context:component-scan>`配置 + `@Component`及其衍生注解
+3. 配置类 + 扫描 + 注解
+   - `@Bean`定义`FactoryBean`接口
+   - `@ImportResource`导入配置文件
+   - `@Configuration`注解的`ProxyBeanMethods`属性
+4. 配置类中使用`@Import`导入`Bean`类
+5. `AnnotationConfigApplicationContext`调用`register`方法
+6. 配置类中使用`@Import`导入实现了`@ImportSelector`接口的类
+7. 配置类中使用`@Import`导入实现了`@ImportBeanDefinitionRegistrar`接口的类
+8. 配置类中使用`@Import`导入实现了`@BeanDefinitionRegistryPostProcessor`接口的类
+
 ### 【前置课】`Spring bean`的加载控制
 
 ### `bean`依赖属性配置
