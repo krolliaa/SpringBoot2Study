@@ -9663,18 +9663,1039 @@ public class MyApp {
 
 ### 自动配置原理
 
+上述所有的内容其实都是为了给现在这个自动配置做铺垫的。学习之前，我的问题如下：
 
+1. 这个自动配置到底是个什么意思？【是什么】
+2. 如果真的可以做到自动配置，那它是怎么做到自动配置的？【怎么做到的？】
+3. 为什么要使用自动配置，自动配置带来了什么好处？【为什么】
+4. 自动配置还有什么不足之处？【不足之处】
+
+自动配置原理如下：
+
+1. 收集`Spring`开发者的编程习惯，整理开发过程使用的常用技术列表 ---> （**<font color="red">技术集A</font>**）
+2. 收集常用技术（技术集A）的使用参数，整理开发过程中每个技术的常用设置列表 ---> （**<font color="red">设置集B</font>**）
+3. 初始化`SpringBoot`基础环境，加载用户自定义的`bean`和导入的其它坐标，形成**<font color="red">初始化环境</font>**
+4. 将**<font color="red">技术集A</font>**包含的所有技术都定义出来，在`Spring/SpringBoot`启动时默认全部加载
+5. 将**<font color="red">技术集A</font>**具有使用条件的技术约定出来，设置成按条件加载，由开发者决定是否使用该技术（与**<font color="red">初始化环境</font>**做对比）
+6. 将**<font color="red">设置集B</font>**作为默认配置加载（约定大于配置），减少开发者配置工作量
+7. 开放**<font color="red">设置集B</font>**的配置覆盖接口，由开发者根据自身需要决定是否覆盖默认配置
+
+以上仅仅只是一个思想，如何用代码实现呢？如果现在要自己实现一个自动配置的功能，需要做什么工作呢？
+
+- 首先指定一个技术X，我们打算让技术X具备自动配置的功能，这个技术X可以是任意功能，这个技术隶属于上面描述的**技术集A**
+
+  ```java
+  public class CartoonCatAndMouse{
+  }
+  ```
+
+- 然后找出技术X使用过程中的常用配置Y，这个配置隶属于上面表述的**设置集B**
+
+  ```yaml
+  cartoon:
+  cat:
+  name: "图多盖洛"
+  age: 5
+  mouse:
+  name: "泰菲"
+  age: 1
+  ```
+
+- 将常用配置Y设计出对应的`yml`配置书写格式，然后定义一个属性类封装对应的配置属性，这个过程 其实就是上一节咱们做的`bean`的依赖属性管理，一模一样
+
+  ```java
+  @ConfigurationProperties(prefix = "cartoon")
+  @Data
+  public class CartoonProperties {
+  private Cat cat;
+  private Mouse mouse;
+  }
+  ```
+
+- 最后做一个配置类，当这个类加载的时候就可以初始化对应的功能bean，并且可以加载到对应的配置
+
+  ```java
+  @EnableConfigurationProperties(CartoonProperties.class)
+  public class CartoonCatAndMouse implements ApplicationContextAware {
+  private CartoonProperties cartoonProperties;
+  }
+  ```
+
+- 当然，你也可以为当前自动配置类设置上激活条件，例如使用`@CondtionOn* * * * `为其设置加载 条件
+
+  ```java
+  @ConditionalOnClass(name="org.springframework.data.redis.core.RedisOperations")
+  @EnableConfigurationProperties(CartoonProperties.class)
+  public class CartoonCatAndMouse implements ApplicationContextAware {
+  private CartoonProperties cartoonProperties;
+  }
+  ```
+
+做到这里都已经做完了，但是遇到了一个全新的问题，如何让`springboot`启动的时候去加载这个类呢？如果不加载的话，我们做的条件判定，做的属性加载这些全部都失效了。`springboot`为我们开放了 一个配置入口，在配置目录中创建`META-INF`目录，并创建`spring.factories`文件，在其中添加设置，说明哪些类要启动自动配置就可以了。
+
+【之前我们使用的是`@Import`的方式导入的，现在我们有了另外一种方式】
+
+```properties
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.itheima.bean.CartoonCatAndMouse
+```
+
+![](https://img-blog.csdnimg.cn/457202dfa0c54fe6a29c5abd49de3727.png)
+
+其实这个文件就只是做了一件事，通过这种配置的方式加载了指定的类。绕来绕去发现其实更最开始的使用`xml`配置文件加载`Bean`几乎没有任何区别，只不过格式变成了这种`spring.factories`而已。
+
+那自动配置的核心到底是什么呢？**其实自动配置是一个小生态。**可以这样去理解：
+
+1. 自动配置从根本上来说其实就一个`Bean`的加载
+2. 通过`bean`加载条件的控制给开发者一种感觉：自动配置是自适应的，可以根据情况自己判定，但其实实际上就是最普通的分支语句的应用，这是蒙蔽双眼的第一层面纱。
+3. 使用`bean`的时候，如果不设置属性就有默认值，如果不想用默认值就可以自己设置，也就是说你可以修改部分甚至全部参数，这也是一种自适应的形式，其实背后还是需要使用分支语句来做判断，这是蒙蔽双眼的第二层面纱。
+4. `SpringBoot`技术提前将大量开发者可能使用到的技术提前全部做好了【真猛真能肝】，条件也写好了，用的时候只需要导入一个坐标使用对应技术即可。其实就是早早地已经帮我们把`spring.factories`写好了，你可以到任何一个包中查看。这是蒙蔽双眼的第三层面纱。
+
+在不知道自动配置这个知识的时候发现`SpringBoot`碉堡了是怎么做到的，但是通过学习其实`SpringBoot`说白了就是把工作都做好了，`spring.factories`条件啥的都自己给写好了，我们使用的时候实在是感觉太方便了，所以生出了一种自动配置的错觉。`SpringBoot`程序在启动的时候后台偷偷做了这么多的检测，这么多的情况判定，效率肯定是不高的。
+
+总结：
+
+1. `SpringBoot`启动时先加载`spring.factories`文件中的`org.springframework.boot.autoconfigure.EnableAutoConfiguration`配置项，将其中配置的所有的类都加载成`Bean`
+2. 在加载`Bean`的时候，`Bean`对应的类定义上都设置有加载条件，因此有可能加载成功也可能因为不满足条件而不加载`Bean`
+3. 对于可以正常加载的`Bean`，通常会通过`@EnableConfigurationProperties`注解初始化对应的配置属性类并加载到对应的配置【跟我们上面做的`TomAndJerry`没啥区别，我们引入的是`MyConfigurationProperties`这个类】
+4. 配置属性类通常会通过`@ConfigurationProperties`加载指定前缀的配置，当然这些配置通常是有默认值的，如果没有默认值就会强制你必须配置后才可以使用这个配置属性类，否则你就甭想用。【跟我们上面的`MyConfigurationProperties`没有啥差别...】
+
+看来自动配置也就这么一回事。大量工作被`SpringBoot`做了。其实本质就是不断套娃，降低代码量。
 
 ### 变更自动配置
 
+可以手动干预工程禁用掉一些自动配置，方式比较多样，这里简单介绍下：
 
+1. 通过`application.yml`配置文件：
+
+   ```yaml
+   spring:
+   autoconfigure:
+   exclude:
+   -
+   org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration
+   ```
+
+2. 通过注解
+
+   ```java
+   @EnableAutoConfiguration(excludeName = "",exclude = {})
+   ```
+
+3. 排除坐标【较少使用】
+
+   比如这里不使用`tomcat`改用`jetty`：
+
+   ```xml
+   <dependencies>
+   	<dependency>
+   		<groupId>org.springframework.boot</groupId>
+   		<artifactId>spring-boot-starter-web</artifactId>
+   		<!--web起步依赖环境中，排除Tomcat起步依赖，匹配自动配置条件-->
+   		<exclusions>
+   			<exclusion>
+   				<groupId>org.springframework.boot</groupId>
+   				<artifactId>spring-boot-starter-tomcat</artifactId>
+   			</exclusion>
+   		</exclusions>
+   	</dependency>
+   	<!--添加Jetty起步依赖，匹配自动配置条件-->
+   	<dependency>
+   		<groupId>org.springframework.boot</groupId>
+   		<artifactId>spring-boot-starter-jetty</artifactId>
+   	</dependency>
+   </dependencies>
 
 ## 自定义`starter`
 
 用了很多`starter`觉得很好用，但不知道是怎么做出来的，这一节将告诉你`starter`是如何一步步打造出来并执行的。
 
+自动配置学习完毕就完全可以基于自动配置的特性，开发`SpringBoot`技术中最引以为傲的功能了`starter`。其实通过前期学习，发现使用什么技术直接导入对应的`starter`，然后就实现了`SpringBoot`整合对应技术再加上一些简单的配置就可以直接使用了。这种设计方式对开发者非常友好。
 
+### 案例：记录系统独立`IP`访问次数
+
+- 功能：统计网站独立`IP`访问次数，并将访问信息在后台持续输出【每`10s`输出一次监控信息，格式为：`IP + 访问次数`】，对用户的访问进行统计。
+
+- 例如：张三访问网站功能`15`次，`IP`地址：`192.168.0.135`，李四访问网站功能`20`次，`IP`地址： `61.129.65.248`。那么在网站后台就输出如下监控信息，此信息每`10`秒刷新一次。
+
+  ```java
+  P访问监控
+  +-----ip-address-----+--num--+
+  | 192.168.0.135 | 15 |
+  | 61.129.65.248 | 20 |
+  +--------------------+-------+
+  ```
+
+- 分析：
+
+  1. 数据记录在什么位置？
+
+     最终记录的数据是一个字符串`IP:访问次数`，我第一想到的是`redis`，当然也可以选择另外的数据存储模型`map`模型即`key-value`形式的键值对模型。这里直接用`map`简单模拟下。
+
+  2. 统计功能运行在什么位置？
+
+     因为每次`web`请求都需要进行统计，你来一次我就需要先拦截然后做处理，所以这里使用拦截器方案再好不过了。不过这里在制作初期，先使用调用的方式进行测试，等功能完成了再改成拦截器实现方案。
+
+  3. 所有的输出相关都可以通过配置实现：
+
+     - 输出频度：默认`10s`
+     - 数据特征：累计数据/阶段数据，默认累计数据
+     - 输出格式：详细模式/极简模式
+
+- 步骤：
+
+  1. 完成最基本的统计功能
+  2. 开发统计报表
+  3. 配置所有配置信息
+  4. 实现拦截器功能
+
+  【最终实现的效果：将该功能定义成一个`starter`，只要导入这个`starter`就可以将对应功能添加上，删除掉对应功能就消失，要求功能与原始项目全部解耦。因此需要开发一个独立的模块，制作对应功能。】
+
+1. 步骤一：创建全新模块，定义业务功能类
+
+   **注意这里是加载到`Spring`容器中，思想是容器思想，所以你这里不用考虑`static`返回的对象是否为静态的，因为加载到`Spring`容器中的对象是一个单例对象。不存在多个对象问题。**
+
+   ```java
+   package com.kkstater.service;
+   
+   import java.util.HashMap;
+   import java.util.Map;
+   
+   public class IpCountService {
+       private Map<String, Integer> ipCountMap = new HashMap<String, Integer>();
+   }
+   ```
+
+2. 步骤二：制作统计功能
+
+   如果是第一次访问需要新增`key`，多次访问则是增加记录次数。
+
+   ```java
+   package com.kkstater.service;
+   
+   import java.util.HashMap;
+   import java.util.Map;
+   
+   public class IpCountService {
+       private Map<String, Integer> ipCountMap = new HashMap<String, Integer>();
+   
+       public void count() {
+           //获取访问 ip
+           String ip = null;
+           //判断 map 中的 ip 是否是第一次
+           Integer count = ipCountMap.get(ip);
+           if (count == null) {
+               ipCountMap.put(ip, 1);
+           } else {
+               ipCountMap.put(ip, count + 1);
+           }
+       }
+   }
+   ```
+
+   因为最后完成的功能导入到其它的项目中，导入的功能必定是一个`web`项目【要不哪来的`IP`地址？】所以`ip`是我们可以直接从容器中获取请求对象然后再获取对应访问的`IP`地址即可。
+
+   ```java
+   package com.kkstater.service;
+   
+   import org.springframework.beans.factory.annotation.Autowired;
+   
+   import javax.servlet.http.HttpServletRequest;
+   import java.util.HashMap;
+   import java.util.Map;
+   
+   public class IpCountService {
+       private Map<String, Integer> ipCountMap = new HashMap<String, Integer>();
+   
+       @Autowired
+       private HttpServletRequest httpServletRequest;
+   
+       public void count() {
+           //获取访问 ip
+           String ip = httpServletRequest.getRemoteAddr();
+           //判断 map 中的 ip 是否是第一次
+           Integer count = ipCountMap.get(ip);
+           if (count == null) {
+               ipCountMap.put(ip, 1);
+           } else {
+               ipCountMap.put(ip, count + 1);
+           }
+       }
+   }
+   ```
+
+3. 步骤三：定义自动配置类
+
+   ```java
+   package com.kkstater.config;
+   
+   import com.kkstater.service.IpCountService;
+   import org.springframework.context.annotation.Bean;
+   
+   public class IpAutoConfiguration {
+       @Bean
+       public IpCountService ipCountService() {
+           return new IpCountService();
+       }
+   }
+   ```
+
+   若你需要自动配置，需要搞个`resources/META-INF/spring.factories`给`SpringBoot`读取。
+
+   ```properties
+   # Auto Configure
+   org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.kkstater.config.IpAutoConfiguration
+   ```
+
+   如此依赖我们就做好了这个功能。
+
+4. 步骤四：在原始项目中模拟调用，测试功能【建议每次安装之前都先`clean`再`install`】
+
+   ```xml
+   <dependency>
+       <groupId>com.kkstarter</groupId>
+       <artifactId>ip_spring_boot_starter</artifactId>
+       <version>0.0.1-SNAPSHOT</version>
+   </dependency>
+   ```
+
+   每次访问都调用下：
+
+   ```java
+   @Autowired
+   private IpCountService ipCountService;
+   public IPage<Book> getPage(int current, int pageSize, Book book) {
+       ipCountService.count();
+       LambdaQueryWrapper<Book> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+       lambdaQueryWrapper.like(Strings.isNotEmpty(book.getType()), Book::getType, book.getType());
+       lambdaQueryWrapper.like(Strings.isNotEmpty(book.getName()), Book::getName, book.getName());
+       lambdaQueryWrapper.like(Strings.isNotEmpty(book.getDescription()), Book::getDescription, book.getDescription());
+       IPage<Book> iPage = new Page<>(current, pageSize);
+       bookMapper.selectPage(iPage, lambdaQueryWrapper);
+       return iPage;
+   }
+   ```
+
+5. 步骤五：开启定时任务功能
+
+   ```java
+   package com.kkstater.config;
+   
+   import org.springframework.scheduling.annotation.EnableScheduling;
+   import com.kkstater.service.IpCountService;
+   import org.springframework.context.annotation.Bean;
+   
+   @EnableScheduling
+   public class IpAutoConfiguration {
+       @Bean
+       public IpCountService ipCountService() {
+           return new IpCountService();
+       }
+   }
+   ```
+
+6. 步骤六：打印并设置定时任务`print()` ---> `IpCountService`
+
+   ```java
+   @Scheduled(cron = "0/10/20/30/40/50 * * * * ?")
+   public void print() {
+       System.out.println(" IP访问监控");
+       System.out.println("+-----ip-address-----+--num--+");
+       for(Map.Entry<String, Integer> entry : ipCountMap.entrySet()) {
+           String key = entry.getKey();
+           Integer value = entry.getValue();
+           System.out.println(String.format("|%18s |%5d |",key,value));
+       }
+       System.out.println("+--------------------+-------+");
+   }
+   ```
+
+   测试结果如下：【记得每次安装`ip spring boot starter`的时候都`clean`然后再`install`】
+
+   ![](https://img-blog.csdnimg.cn/0c8ffcdd44ae4a2aaca47237d3c340ff.png)
+
+7. 步骤七：配置属性自定义格式
+
+   设置3个属性，分别用来控制显示周期`（cycle）`，阶段数据是否清空`（cycleReset）`，数据显示格 式`（model）`
+
+   ```yaml
+   tools:
+   	ip:
+   		cycle: 10
+   		cycleReset: false
+   		model: "detail"
+   ```
+
+8. 步骤八：封装配置参数到代码中
+
+   为防止项目组定义的参数种类过多，产生冲突，通常设置属性前缀会至少使用两级属性作为前缀进 行区分。日志输出模式是在若干个类别选项中选择某一项，对于此种分类性数据建议制作枚举定义分类数 据，当然使用字符串也可以。
+
+   这里赋予了默认值：
+
+   ```java
+   package com.kkstater.util;
+   
+   import org.springframework.boot.context.properties.ConfigurationProperties;
+   
+   @ConfigurationProperties(prefix = "tools.ip")
+   public class IpProperties {
+       //日志显示周期
+       private Long cycle = 5L;
+       //是否周期内充值数据
+       private Boolean cycleReset = false;
+       //日志输出模式：detail：详细模式，simple：极简模式 ---> 创建一个 LogModule 枚举类
+       private String model = LogModule.DETAIL.getValue();
+   }
+   ```
+
+   枚举类：
+
+   ```java
+   package com.kkstater.util;
+   
+   public enum LogModule {
+       DETAIL("detail"),
+       SIMPLE("simple");
+       private String value;
+       LogModule(String value) {
+           this.value = value;
+       }
+       public String getValue() {
+           return value;
+       }
+   }
+   ```
+
+9. 步骤九：加载属性类
+
+   ```java
+   package com.kkstater.config;
+   
+   import com.kkstater.util.IpProperties;
+   import org.springframework.boot.context.properties.EnableConfigurationProperties;
+   import org.springframework.scheduling.annotation.EnableScheduling;
+   import com.kkstater.service.IpCountService;
+   import org.springframework.context.annotation.Bean;
+   
+   @EnableScheduling
+   @EnableConfigurationProperties(IpProperties.class)
+   public class IpAutoConfiguration {
+       @Bean
+       public IpCountService ipCountService() {
+           return new IpCountService();
+       }
+   }
+   ```
+
+10. 步骤十：应用属性配置
+
+    ```java
+    package com.kkstater.service;
+    
+    import com.kkstater.util.IpProperties;
+    import com.kkstater.util.LogModule;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.scheduling.annotation.Scheduled;
+    
+    import javax.servlet.http.HttpServletRequest;
+    import java.util.HashMap;
+    import java.util.Map;
+    
+    public class IpCountService {
+        private Map<String, Integer> ipCountMap = new HashMap<String, Integer>();
+    
+        @Autowired
+        private HttpServletRequest httpServletRequest;
+    
+        @Autowired
+        private IpProperties ipProperties;
+    
+        public void count() {
+            //获取访问 ip
+            String ip = httpServletRequest.getRemoteAddr();
+            //判断 map 中的 ip 是否是第一次
+            Integer count = ipCountMap.get(ip);
+            if (count == null) {
+                ipCountMap.put(ip, 1);
+            } else {
+                ipCountMap.put(ip, count + 1);
+            }
+        }
+    
+        @Scheduled(cron = "0/5 * * * * ?")
+        public void print() {
+            if (ipProperties.getModel().equals(LogModule.DETAIL.getValue())) {
+                System.out.println(" IP访问监控");
+                System.out.println("+-----ip-address-----+--num--+");
+                for (Map.Entry<String, Integer> entry : ipCountMap.entrySet()) {
+                    String key = entry.getKey();
+                    Integer value = entry.getValue();
+                    System.out.println(String.format("|%18s |%5d |", key, value));
+                }
+                System.out.println("+--------------------+-------+");
+            } else if (ipProperties.getModel().equals(LogModule.SIMPLE.getValue())) {
+                System.out.println(" IP访问监控");
+                System.out.println("+-----ip-address-----+");
+                for (String key : ipCountMap.keySet()) {
+                    System.out.println(String.format("|%18s |", key));
+                }
+                System.out.println("+--------------------+");
+            }
+            //阶段内统计数据归零
+            if (ipProperties.getCycleReset()) {
+                ipCountMap.clear();
+            }
+        }
+    }
+    ```
+
+11. 步骤十一：设置自动读取定时参数
+
+    使用`@Scheduled(cron = "0/#{ipProperties.cycle} * * * * ?")`读取，但是这样需要自己命名才可以，否则默认是一个长类名，所以我们需要弃用：`@EnableConfigurationProperties`改用`@Component("ipProperties")`
+
+    如何使用：使用时导入即可 ---> 在`IpAutoConfiguration` ---> `@Import()`，`IpAutoConfiguration`采用的是自动配置（使用`spring.factories`换了个格式这个别忘了，逻辑要清晰）
+
+    ```java
+    //@Scheduled(cron = "0/5 * * * * ?")
+    @Scheduled(cron = "0/#{ipProperties.cycle} * * * * ?")
+    public void print() {}
+    ```
+
+    ```java
+    package com.kkstater.config;
+    
+    import com.kkstater.util.IpProperties;
+    import org.springframework.boot.context.properties.EnableConfigurationProperties;
+    import org.springframework.context.annotation.Import;
+    import org.springframework.scheduling.annotation.EnableScheduling;
+    import com.kkstater.service.IpCountService;
+    import org.springframework.context.annotation.Bean;
+    
+    @EnableScheduling
+    //@EnableConfigurationProperties(IpProperties.class)
+    @Import(value = {IpProperties.class})
+    public class IpAutoConfiguration {
+        @Bean
+        public IpCountService ipCountService() {
+            return new IpCountService();
+        }
+    }
+    ```
+
+    ```java
+    package com.kkstater.util;
+    
+    import lombok.Data;
+    import org.springframework.boot.context.properties.ConfigurationProperties;
+    import org.springframework.stereotype.Component;
+    
+    @Data
+    @ConfigurationProperties(prefix = "tools.ip")
+    @Component(value = "ipProperties")
+    public class IpProperties {
+        //日志显示周期
+        private Long cycle = 5L;
+        //是否周期内充值数据
+        private Boolean cycleReset = false;
+        //日志输出模式：detail：详细模式，simple：极简模式 ---> 创建一个 LogModule 枚举类
+        private String model = LogModule.DETAIL.getValue();
+    }
+    ```
+
+    此时就可以在配置文件中对周期进行控制
+
+12. 步骤十二：拦截器开发
+
+    对每一个请求都进行拦截器
+
+    ```java
+    package com.kkstater.interceptor;
+    
+    import com.kkstater.service.IpCountService;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.web.servlet.HandlerInterceptor;
+    
+    import javax.servlet.http.HttpServletRequest;
+    import javax.servlet.http.HttpServletResponse;
+    
+    public class IpCountInterceptor implements HandlerInterceptor {
+        @Autowired
+        private IpCountService ipCountService;
+    
+        @Override
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+            ipCountService.count();
+            return true;
+        }
+    }
+    ```
+
+    配置拦截器：
+
+    ```java
+    package com.kkstater.config;
+    
+    import com.kkstater.interceptor.IpCountInterceptor;
+    import org.springframework.context.annotation.Bean;
+    import org.springframework.context.annotation.Configuration;
+    import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+    import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+    
+    @Configuration
+    public class SpringWebMvcConfig implements WebMvcConfigurer {
+    
+        //只需要一个拦截器，交由容器管控，所以这里不需要 new
+        @Bean
+        public IpCountInterceptor ipCountInterceptor() {
+            return new IpCountInterceptor();
+        }
+    
+        @Override
+        public void addInterceptors(InterceptorRegistry registry) {
+            registry.addInterceptor(ipCountInterceptor()).addPathPatterns("/**");
+        }
+    }
+    ```
+
+    使用拦截器：
+
+    ```java
+    package com.kkstater.config;
+    
+    import com.kkstater.util.IpProperties;
+    import org.springframework.boot.context.properties.EnableConfigurationProperties;
+    import org.springframework.context.annotation.Import;
+    import org.springframework.scheduling.annotation.EnableScheduling;
+    import com.kkstater.service.IpCountService;
+    import org.springframework.context.annotation.Bean;
+    
+    @EnableScheduling
+    //@EnableConfigurationProperties(IpProperties.class)
+    @Import(value = {IpProperties.class, SpringWebMvcConfig.class})
+    public class IpAutoConfiguration {
+        @Bean
+        public IpCountService ipCountService() {
+            return new IpCountService();
+        }
+    }
+    ```
+
+13. 步骤十三：开启`yaml`提示功能
+
+    我们经常可以看到`application.yml`配置文件有自动提示的，但是现在开发的`starter`是没有自动提示的，非常的不友好，所以需要开启自动提示。
+
+    导入依赖：
+
+    ```xml
+    <dependency>
+    	<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-configuration-processor</artifactId>
+    	<optional>true</optional>
+    </dependency>
+    ```
+
+    安装后可以在`target/META-INF`看到`spring-configuration-metadata.json`，然后把这个复制到自己的目录中，随后把依赖去除否则会有两种，此时就可以在配置文件中看到正常的提示了：
+
+    ```json
+    {
+      "groups": [
+        {
+          "name": "tools.ip",
+          "type": "com.kkstater.util.IpProperties",
+          "sourceType": "com.kkstater.util.IpProperties"
+        }
+      ],
+      "properties": [
+        {
+          "name": "tools.ip.cycle",
+          "type": "java.lang.Long",
+          "sourceType": "com.kkstater.util.IpProperties"
+        },
+        {
+          "name": "tools.ip.cycle-reset",
+          "type": "java.lang.Boolean",
+          "sourceType": "com.kkstater.util.IpProperties"
+        },
+        {
+          "name": "tools.ip.model",
+          "type": "java.lang.String",
+          "sourceType": "com.kkstater.util.IpProperties"
+        }
+      ],
+      "hints": []
+    }
+    ```
+
+    **如果你想要有更具体地提示符，需要在`IpProperties`写文档注释。**
+
+    其中`groups`属性定义了当 前配置的提示信息总体描述，当前配置属于哪一个属性封装类，`properties`属性描述了当前配置中每一 个属性的具体设置，包含名称、类型、描述、默认值等信息。`hints`属性默认是空白的，没有进行设置。 `hints`属性可以参考`springboot`源码中的制作，设置当前属性封装类专用的提示信息，下例中为日志输出 模式属性`module`设置了两种可选提示信息。
 
 ## 核心原理
 
 `SpringBoot`的核心原理。 
+
+1. 创建一个空壳的`SpringBoot`项目
+
+2. 从`main`方法进入：
+
+   ```java
+   package com.kk;
+   
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.autoconfigure.SpringBootApplication;
+   
+   @SpringBootApplication
+   public class SpringBootDemo29StartUpApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(SpringBootDemo29StartUpApplication.class, args);
+       }
+   }
+   ```
+
+   核心：`SpringApplication.run(SpringBootDemo29StartUpApplication.class, args);`
+
+3. 进入到`run`方法：注意这里的`PrimarySource`，`Primary`表示主要的，有一个注解叫做`@Primary`在这里可以设定主要加载的`Bean`，相当于设置了一个优先级，比如我有一个接口，有四个类都实现了这个接口，那么谁是最先或者主要被加载的呢？此时就可以使用这个`@Primary`注解。这里也不难发现`primarySource`其实就是启动类。
+
+   ```java
+   public static ConfigurableApplicationContext run(Class<?> primarySource, String... args) {
+   	return run(new Class<?>[] { primarySource }, args);
+   }
+
+4. 再进入到`run`方法，可以看到：它`new`了一个`SpringApplication`对象，然后调用了`run`方法，所以需要分开两部分来看：`new SpringApplication(primarySource) + run(args)`
+
+   ```java
+   public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
+   	return new SpringApplication(primarySources).run(args);
+   }
+   ```
+
+   1. 先来看第一部分：`new SpringApplication(primarySource)`
+
+      这一部分用于**加载各种配置信息**，**初始化各种配置对象**
+
+      1. 点击进入来看下
+
+         ```java
+         public SpringApplication(Class<?>... primarySources) {
+         	this(null[resourceLoader], primarySources);
+         }
+         ```
+
+         第一个参数传递的是一个资源加载器，这个是干什么的？当然是从外面读东西，要不然要一个资源加载器干啥？
+
+      2. 然后点击`this`继续看：
+
+         ```java
+         public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+         	this.resourceLoader = resourceLoader;
+         	Assert.notNull(primarySources, "PrimarySources must not be null");
+         	this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+         	this.webApplicationType = WebApplicationType.deduceFromClasspath();
+         	this.bootstrapRegistryInitializers = new ArrayList<>(
+         			getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
+         	setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+         	setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+         	this.mainApplicationClass = deduceMainApplicationClass();
+         }
+         ```
+
+         可以看到调用了一个有参构造器。
+
+         - 将传递过来的资源加载器去初始化资源加载器，扩大了对象的作用范围，由一个形参【局部变量】升级成了整个类的成员变量。
+
+           ```java
+           this.resourceLoader = resourceLoader;
+           ```
+
+         - `Assert`表示断言，去判断一个东西，但是这里并不是做一个逻辑判断，而是判断传递过来的启动类是否为空【当然是不能为空的。】
+
+           一般的，对于没有要求有什么操作的断言基本上是不用看的，因为仅仅是在内部做了一个判定。
+
+           ```java
+           Assert.notNull(primarySources, "PrimarySources must not be null");
+           ```
+   
+         - 参数中`Class<?>... primarySources`是一个可变参数，所以这里先转化为一个集合然后用一个`LinkedHashSet`保存起来，该`LinkedHashSet`名称为`primarySources`。这种数据结构其最大的特点就是不可重复。
+   
+           ```java
+           this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+           ```
+   
+         - 接下来调用了一个枚举类`WebApplicationType`
+   
+           ```java
+           this.webApplicationType = WebApplicationType.deduceFromClasspath();
+           ```
+   
+           ```java
+           static WebApplicationType deduceFromClasspath() {
+           	if (ClassUtils.isPresent(WEBFLUX_INDICATOR_CLASS, null) && !ClassUtils.isPresent(WEBMVC_INDICATOR_CLASS, null)
+           			&& !ClassUtils.isPresent(JERSEY_INDICATOR_CLASS, null)) {
+           		return WebApplicationType.REACTIVE;
+           	}
+           	for (String className : SERVLET_INDICATOR_CLASSES) {
+           		if (!ClassUtils.isPresent(className, null)) {
+           			return WebApplicationType.NONE;
+           		}
+           	}
+           	return WebApplicationType.SERVLET;
+           }
+           ```
+   
+           耐心点可以发现：`WEBFLUX_INDICATOR_CLASS`、`WEBMVC_INDICATOR_CLASS`、`JERSEY_INDICATOR_CLASS`三个都是全类名：
+   
+           ```java
+           private static final String WEBMVC_INDICATOR_CLASS = "org.springframework.web.servlet.DispatcherServlet";
+           private static final String WEBFLUX_INDICATOR_CLASS = "org.springframework.web.reactive.DispatcherHandler";
+           private static final String JERSEY_INDICATOR_CLASS = "org.glassfish.jersey.servlet.ServletContainer";
+           ```
+   
+           那这个`ClassUtils.isPresent()`方法是干什么的呢？关键看下`forName(className, classLoader)`，再点进去看下。
+   
+           ```java
+           public static boolean isPresent(String className, @Nullable ClassLoader classLoader) {
+           	try {
+           		forName(className, classLoader);
+           		return true;
+           	}
+           	catch (IllegalAccessError err) {
+           		throw new IllegalStateException("Readability mismatch in inheritance hierarchy of class [" +
+           				className + "]: " + err.getMessage(), err);
+           	}
+           	catch (Throwable ex) {
+           		// Typically ClassNotFoundException or NoClassDefFoundError...
+           		return false;
+           	}
+           }
+           ```
+   
+           这段代码非常长，很多东西不认识，我们找找看有没有认识的`return`返回的信息：看来大概就是是否有加载这个类。
+   
+           ```java
+           public static Class<?> forName(String name, @Nullable ClassLoader classLoader) throws ClassNotFoundException, LinkageError {
+           		return Class.forName(nestedClassName, false, clToUse);
+           }
+           ```
+   
+           到这里我们也就知道了`ClassUtils.isPresent()`如果传递的全类名信息对应的这个类有被加载，第一个有其余两个都没有，那就返回一个`REACTIVE`类型的`Web`容器，如果下面的类都没被加载：
+   
+           ```java
+           private static final String[] SERVLET_INDICATOR_CLASSES = { "javax.servlet.Servlet",
+           		"org.springframework.web.context.ConfigurableWebApplicationContext" };
+           ```
+   
+           那就说明这不是一个`Web`环境，返回：`WebApplicationType.NONE`即没有`Web`容器。因为我们这里导包完全没有什么东西跟`web`相关的，所以也就不会产生`Web`环境。可以通过`Debug`验证一下。
+   
+           ![](https://img-blog.csdnimg.cn/70c56f35f2914be38a6dbf9f90943b4c.png)
+   
+           如果我们导包导入的是：`spring-boot-starter-web`，那会是什么结果呢？可以看到返回的是一个`SERVLET`类型的`Web`容器。【记得改回去】
+   
+           ![](https://img-blog.csdnimg.cn/ce0d4eda767f41718ef46fc5596d4730.png)
+   
+         - 再接着看下一行代码：
+   
+            ```java
+            this.bootstrapRegistryInitializers = new ArrayList<>(getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
+            ```
+   
+            进入到`getSpringFactoriesInstances`的代码中看：
+   
+            - **第一步：系统配置的引导信息`BootStapRegistryInitializer`。**
+   
+            ```java
+            this.bootstrapRegistryInitializers = new ArrayList<>(
+            		getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
+            setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+            setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+            ```
+   
+            可以看到`getSpringFactoriesInstances`，意思是获取`spring.factories`【这个在`springboot-auto`自动配置包下可以找到】**系统配置的引导信息`BootStapRegistryInitializer`**。
+   
+            【这里其实是没有加载任何东西的，写这一行代码的原因是避免客户写了一个`spring.factories`没有被加载到】
+   
+            - **第二步：获取`ApplicationContextInitializer.class`的实例**
+   
+            `getSpringFactoriesInstances(ApplicationContextInitializer.class)`这一步通过`ctrl`鼠标放到这个`ApplicationContextInitializer`可以看到这是属于`spring-context`包里头的，可以看到加载了`7`个对象。但是在`spring.factories`明明只有两个呀，为什么是七个呢？因为加载里面还有加载。所以加载了`7`个。【甚至可以自定义开发加载更多的东西】
+   
+            ![](https://img-blog.csdnimg.cn/80dfdea73291402f81b0850c69de82ec.png)
+   
+            **<font color="red">从这里也可以发现：`getSpringFactoriesInstances()`方法使用量非常大，它是`SpringBoot`里的一个核心，通过工厂加载对象。</font>**
+   
+            - **第三步：初始化监听器，通过监听器对初始化及运行过程进行干预**
+   
+            可以自定义一个监听器【模仿`spring.factories`】看看监听器。
+   
+            ```java
+            package com.kk.listener;
+            
+            import org.springframework.context.ApplicationEvent;
+            import org.springframework.context.ApplicationListener;
+            
+            public class MyListener implements ApplicationListener {
+            
+                @Override
+                public void onApplicationEvent(ApplicationEvent event) {
+                    System.out.println("===============Listener===============");
+                }
+            }
+            ```
+   
+            配置监听器：在`resources`创建`META-INF`文件夹然后创建`spring.factories`文件【其实就是模仿写一个】
+   
+            ```properties
+            # Application Listeners
+            org.springframework.context.ApplicationListener=\
+            com.kk.listener.MyListener
+            ```
+   
+            启动应用程序：
+   
+            ![](https://img-blog.csdnimg.cn/88c5e8deb92143baa187371be7364554.png)
+   
+            可以发现`MyListener`不止被运行了一次，神奇。
+   
+            `event`里头有一些信息我们可以打印一下：
+   
+            ```java
+            package com.kk.listener;
+            
+            import org.springframework.context.ApplicationEvent;
+            import org.springframework.context.ApplicationListener;
+            
+            public class MyListener implements ApplicationListener {
+            
+                @Override
+                public void onApplicationEvent(ApplicationEvent event) {
+                    System.out.println("===============Listener===============");
+                    System.out.println(event.getTimestamp());
+                    System.out.println(event.getSource());
+                    System.out.println(event.getClass());
+                }
+            }
+            ```
+   
+            **`SpringBoot`的初始化过程过于庞大了，它并没有去给每一个过程定义一个接口，而是定义成一个一个的事件即`event`，当程序员需要去干预这个过程的时候，就用监听器去干预就好了。倘若你要干预某个特定的过程，那就在监听器实现的接口处添加事件泛型即可。**
+   
+            **如果不加事件泛型，因为实现的接口默认就一种监听，则会在每一个事件位置都运行这个监听器。**
+   
+            注意这里实现接口的事件泛型：
+   
+            ```java
+            package com.kk.listener;
+            
+            import org.springframework.boot.context.event.SpringApplicationEvent;
+            import org.springframework.context.ApplicationListener;
+            
+            public class MyListener implements ApplicationListener<SpringApplicationEvent> {
+                @Override
+                public void onApplicationEvent(SpringApplicationEvent event) {
+                    System.out.println("===============Listener===============");
+                    System.out.println(event.getTimestamp());
+                    System.out.println(event.getSource());
+                    System.out.println(event.getClass());
+                }
+            }
+            ```
+   
+            通过`ctrl + h`可以查看`SpringApplicationEvent`其事件类型个数是非常庞杂的！
+   
+            ![](https://img-blog.csdnimg.cn/5879a7ea73614bfdbd0869d65785c314.png)
+   
+         - 获取引导类类名，就是你`main()`所在的那个类【用于备用】
+   
+            ```java
+            this.mainApplicationClass = deduceMainApplicationClass();
+            ```
+   
+      3. 到这里这第一部分就结束了，可以看到全都是在初始化信息，不是初始化资源加载器就是初始化`Web`环境的容器，以及加载各种系统配置类、容器初始化类、监听器以及做备用的引导类。
+   
+         **为的就是给初始化容器做准备的。**
+   
+         ```java
+         public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+         	this.resourceLoader = resourceLoader;
+         	Assert.notNull(primarySources, "PrimarySources must not be null");
+         	this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+         	this.webApplicationType = WebApplicationType.deduceFromClasspath();
+         	this.bootstrapRegistryInitializers = new ArrayList<>(
+         			getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
+         	setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+         	setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+         	this.mainApplicationClass = deduceMainApplicationClass();
+         }
+         ```
+   
+   2. 再来看第二部分：`.run(args)`
+   
+      这一部分用于**初始化容器**
+   
+      ```JAVA
+      Springboot30StartupApplication【10】->SpringApplication.run(Springboot30StartupApplication.class, args);
+          SpringApplication【1332】->return run(new Class<?>[] { primarySource }, args);
+              SpringApplication【1343】->return new SpringApplication(primarySources).run(args);
+                  SpringApplication【1343】->SpringApplication(primarySources)
+                  # 加载各种配置信息，初始化各种配置对象
+                      SpringApplication【266】->this(null, primarySources);
+                          SpringApplication【280】->public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources)
+                              SpringApplication【281】->this.resourceLoader = resourceLoader;
+                              # 初始化资源加载器
+                              SpringApplication【283】->this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+                              # 初始化配置类的类名信息（格式转换）
+                              SpringApplication【284】->this.webApplicationType = WebApplicationType.deduceFromClasspath();
+                              # 确认当前容器加载的类型
+                              SpringApplication【285】->this.bootstrapRegistryInitializers = getBootstrapRegistryInitializersFromSpringFactories();
+                              # 获取系统配置引导信息
+                              SpringApplication【286】->setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+                              # 获取ApplicationContextInitializer.class对应的实例
+                              SpringApplication【287】->setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+                              # 初始化监听器，对初始化过程及运行过程进行干预
+                              SpringApplication【288】->this.mainApplicationClass = deduceMainApplicationClass();
+                              # 初始化了引导类类名信息，备用
+                  SpringApplication【1343】->new SpringApplication(primarySources).run(args)
+                  # 初始化容器，得到ApplicationContext对象
+                      SpringApplication【323】->StopWatch stopWatch = new StopWatch();
+                      # 设置计时器
+                      SpringApplication【324】->stopWatch.start();
+                      # 计时开始
+                      SpringApplication【325】->DefaultBootstrapContext bootstrapContext = createBootstrapContext();
+                      # 系统引导信息对应的上下文对象
+                      SpringApplication【327】->configureHeadlessProperty();
+                      # 模拟输入输出信号，避免出现因缺少外设导致的信号传输失败，进而引发错误（模拟显示器，键盘，鼠标...）
+                          java.awt.headless=true
+                      SpringApplication【328】->SpringApplicationRunListeners listeners = getRunListeners(args);
+                      # 获取当前注册的所有监听器
+                      SpringApplication【329】->listeners.starting(bootstrapContext, this.mainApplicationClass);
+                      # 监听器执行了对应的操作步骤
+                      SpringApplication【331】->ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+                      # 获取参数
+                      SpringApplication【333】->ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);
+                      # 将前期读取的数据加载成了一个环境对象，用来描述信息
+                      SpringApplication【333】->configureIgnoreBeanInfo(environment);
+                      # 做了一个配置，备用
+                      SpringApplication【334】->Banner printedBanner = printBanner(environment);
+                      # 初始化logo
+                      SpringApplication【335】->context = createApplicationContext();
+                      # 创建容器对象，根据前期配置的容器类型进行判定并创建
+                      SpringApplication【363】->context.setApplicationStartup(this.applicationStartup);
+                      # 设置启动模式
+                      SpringApplication【337】->prepareContext(bootstrapContext, context, environment, listeners, applicationArguments, printedBanner);
+                      # 对容器进行设置，参数来源于前期的设定
+                      SpringApplication【338】->refreshContext(context);
+                      # 刷新容器环境
+                      SpringApplication【339】->afterRefresh(context, applicationArguments);
+                      # 刷新完毕后做后处理
+                      SpringApplication【340】->stopWatch.stop();
+                      # 计时结束
+                      SpringApplication【341】->if (this.logStartupInfo) {
+                      # 判定是否记录启动时间的日志
+                      SpringApplication【342】->    new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
+                      # 创建日志对应的对象，输出日志信息，包含启动时间
+                      SpringApplication【344】->listeners.started(context);
+                      # 监听器执行了对应的操作步骤
+                      SpringApplication【345】->callRunners(context, applicationArguments);
+                      # 调用运行器
+                      SpringApplication【353】->listeners.running(context);
+                      # 监听器执行了对应的操作步骤
+
+`SpringBoot`原理篇到此结束。

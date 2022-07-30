@@ -31,5 +31,7 @@
     <file url="file://$PROJECT_DIR$/SpringBoot_demo24_MQ/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/SpringBoot_demo25_SpringBootAdminClient/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/SpringBoot_demo25_SpringBootAdminServer/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SpringBoot_demo29_StartUp/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SpringBoot_demo30_Starter/src/main/java" charset="UTF-8" />
   </component>
 </project>

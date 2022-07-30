@@ -13,6 +13,7 @@
         <module name="SpringBoot_demo25_SpringBootAdminServer" />
         <module name="SpringBoot_demo17_MongoDB" />
         <module name="SpringBoot_demo07_SSMP" />
+        <module name="SpringBoot_demo29_StartUp" />
         <module name="SpringBoot_demo08_Config" />
         <module name="SpringBoot_demo14_SQL" />
         <module name="SpringBoot_demo25_SpringBootAdminClient" />
@@ -29,6 +30,7 @@
         <module name="SpringBoot_demo12_Configuration" />
         <module name="SpringBoot_demo13_Test" />
         <module name="SpringBoot_demo23_JavaMail" />
+        <module name="SpringBoot_demo30_Starter" />
         <module name="SpringBoot_demo16_Redis" />
         <module name="SpringBoot_demo20_Jetcache" />
         <module name="SpringBoot_demo22_Task" />
@@ -74,6 +76,8 @@
       <module name="SpringBoot_demo26_BeanInit" target="1.8" />
       <module name="SpringBoot_demo27_BeanLoad" target="1.8" />
       <module name="SpringBoot_demo28_Properties" target="1.8" />
+      <module name="SpringBoot_demo29_StartUp" target="1.8" />
+      <module name="SpringBoot_demo30_Starter" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -106,6 +110,8 @@
       <module name="SpringBoot_demo24_MQ" options="-parameters" />
       <module name="SpringBoot_demo25_SpringBootAdminClient" options="-parameters" />
       <module name="SpringBoot_demo25_SpringBootAdminServer" options="-parameters" />
+      <module name="SpringBoot_demo29_StartUp" options="-parameters" />
+      <module name="SpringBoot_demo30_Starter" options="-parameters" />
     </option>
   </component>
 </project>

@@ -1,0 +1,27 @@
+{
+  "groups": [
+    {
+      "name": "tools.ip",
+      "type": "com.kkstater.util.IpProperties",
+      "sourceType": "com.kkstater.util.IpProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "tools.ip.cycle",
+      "type": "java.lang.Long",
+      "sourceType": "com.kkstater.util.IpProperties"
+    },
+    {
+      "name": "tools.ip.cycle-reset",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.kkstater.util.IpProperties"
+    },
+    {
+      "name": "tools.ip.model",
+      "type": "java.lang.String",
+      "sourceType": "com.kkstater.util.IpProperties"
+    }
+  ],
+  "hints": []
+}

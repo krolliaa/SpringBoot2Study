@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.kk.controller.utils.MessageAgreement;
 import com.kk.pojo.Book;
 import com.kk.service.impl.IBookServiceImpl;
+import com.kkstater.service.IpCountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,9 +44,13 @@ public class BookController2 {
         return new MessageAgreement(true, iBookService.getById(id));
     }
 
+    @Autowired
+    private IpCountService ipCountService;
+
     //分页查询 + 按条件查询
     @GetMapping(value = "/{current}/{pageSize}")
     public MessageAgreement getPage(@PathVariable Integer current, @PathVariable Integer pageSize, Book book) {
+        ipCountService.count();
         System.out.println("Hot Devtools...");
         System.out.println("Hot Devtools...");
         System.out.println("Hot Devtools...");
